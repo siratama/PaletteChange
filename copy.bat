@@ -1,0 +1,1 @@
+xcopy /y deploy\jsx\PalletChanger.jsx "C:\Program Files\Adobe\Adobe Photoshop CS6 (64 Bit)\Presets\Scripts"

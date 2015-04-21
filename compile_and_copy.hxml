@@ -1,0 +1,4 @@
+compile.hxml
+
+--next
+-cmd "copy.bat"

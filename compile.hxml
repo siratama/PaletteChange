@@ -1,0 +1,27 @@
+#-swf deploy/PalletChanger.swf
+#-main Panel
+#-cp src/panel
+#-cp src/adobe_csxs
+#-swf-version 11
+#-swf-header 480:320:24:000000
+#-swf-lib libs/CSXSLibrary-2.0-sdk-3.4.swc
+#
+#--next
+
+-js deploy/pallet/js/index.js
+-main app.Pallet
+-cp src/pallet
+-cp src/extern
+-cp src/lib
+-lib jQueryExtern
+-lib createjs
+-debug
+
+--next
+
+-js deploy/jsx/PalletChanger.jsx
+-main app.PalletChanger
+-cp src/jsx
+-cp src/extern
+-cp src/lib
+
