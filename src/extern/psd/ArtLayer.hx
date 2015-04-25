@@ -1,6 +1,7 @@
 package psd;
 
-@:native("com.adobe.photoshop.ArtLayer")
+@:native("ArtLayer")
 extern class ArtLayer extends Layer
 {
+	public function merge():ArtLayer;
 }

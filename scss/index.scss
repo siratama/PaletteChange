@@ -4,94 +4,11 @@
 }
 body{
 }
-img{
-  padding-right: 10px;
 
-  -ms-interpolation-mode: nearest-neighbor;
-  image-rendering: -webkit-optimize-contrast;
-  image-rendering: -moz-crisp-edges;
-  image-rendering: -o-crisp-edges;
-  image-rendering: pixelated;
-}
-
+/*
 $image_width: 100px;
 $image_height: 100px;
-
-#image_viewer{
-
-  .pair{
-    background-color: #cccccc;
-    height: $image_height + 20;
-    width: 100%;
-
-    .image{
-      background-color: #ffffff;
-      height: $image_height;
-      width: $image_width;
-    }
-
-    .before{
-      float: left;
-    }
-    .after{
-      position: absolute;
-      left: 150px;
-    }
-  }
-  margin-bottom: 20px;
-}
-
-#add_images_window{
-
-  .drop_box{
-    position: relative;;
-
-    .drop_zone{
-      background-color: #cccccc;
-      width: 100px;
-      height: 100px;
-      text-align: center;
-      padding: 10px;
-      margin: 10px;
-      border: 2px dashed #777777;
-      color: #ffffff;
-      font-weight: bold;
-    }
-
-    .before{
-      float: left;
-    }
-    .after{
-      position: absolute;
-      left: 150px;
-    }
-  }
-  .ui{
-    font-size: 0.9rem;
-
-    .ok{
-      float: left;
-    }
-    .cancel{
-      position: absolute;
-      left: 150px;
-    }
-    .button{
-      //text-align: center;
-      width: 100px;
-      height: 30px;
-      background-color: #cccccc;
-    }
-  }
-}
-
-#add_images_button{
-  text-align: center;
-  background-color: #999999;
-  color: #ffffff;
-  height: 50px;
-  width: 200px;
-}
+*/
 
 .clear{
   clear: both;

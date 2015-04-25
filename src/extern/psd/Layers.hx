@@ -1,6 +1,6 @@
 package psd;
 
-@:native("com.adobe.photoshop.Layers")
+@:native("Layers")
 extern class Layers implements ArrayAccess<Layer>
 {
 	public var length(default, null):Int;

@@ -1,9 +1,11 @@
 package psd;
 
-@:native("com.adobe.photoshop.Document")
+@:native("Document")
 extern class Document
 {
-	public var activeLayer(default, null):Layer;
+	public var activeLayer:Layer;
 	public var artLayers(default, null):ArtLayers;
 	public var layers(default, null):Layers;
+	public var colorSamplers(default, null):ColorSamplers;
+	public var selection(default, null):Selection;
 }
