@@ -2,7 +2,7 @@ package jsx;
 
 import jsx.util.LayersDisplay;
 import js.html.Point;
-import jsx.PalletInfo.PalletColorPosition;
+import jsx.PaletteInfo.PaletteColorPosition;
 import psd.RGBColor;
 import psd.SolidColor;
 import psd.Document;
@@ -17,12 +17,12 @@ class Converter
 	private var application:Application;
 	private var activeDocument:Document;
 	private var layers:Layers;
-	private var palletInfo:PalletInfo;
+	private var palletInfo:PaletteInfo;
 	private var layersDisplay:LayersDisplay;
 
 	public function new()
 	{
-		palletInfo = PalletInfo.instance;
+		palletInfo = PaletteInfo.instance;
 
 		application = untyped app;
 		activeDocument = application.activeDocument;
@@ -70,8 +70,8 @@ class Converter
 				var palletColorPosition = palletInfo.before.indexOf(colorSample.color.rgb.hexValue);
 				switch(palletColorPosition)
 				{
-					case PalletColorPosition.NONE: continue;
-					case PalletColorPosition.EXSITS(index):
+					case PaletteColorPosition.NONE: continue;
+					case PaletteColorPosition.EXSITS(index):
 
 						var conversionData = new ConversionData(new Point(x, y), palletInfo.after.rgbHexValueSet[index]);
 						conversionDataSet.push(conversionData);

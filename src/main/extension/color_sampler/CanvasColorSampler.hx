@@ -3,11 +3,11 @@ import jQuery.JQuery;
 class CanvasColorSampler
 {
 	private var element:JQuery;
-	private var palletContainer:PalletContainer;
+	private var palletContainer:PaletteContainer;
 
 	public function new()
 	{
 		element = new JQuery("#canvas_color_sampler");
-		palletContainer = new PalletContainer(element);
+		palletContainer = new PaletteContainer(element);
 	}
 }

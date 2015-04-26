@@ -13,7 +13,7 @@ class PaletteArea
 			case PaletteKind.BEFORE: "before";
 			case PaletteKind.AFTER: "after";
 		}
-		element = new JQuery('#$idName', parentElement);
+		element = new JQuery('.$idName', parentElement);
 
 		palette = new Palette(element);
 		scanButton = new ScanButton(element, "scan_button");

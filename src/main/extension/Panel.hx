@@ -1,6 +1,6 @@
 package extension;
 
-import extension.pallet_changer.PaletteChanger;
+import extension.palette_change.PaletteChange;
 import extension.color_sampler.CanvasColorSampler;
 import csinterface.CSInterface;
 import common.ClassName;
@@ -12,7 +12,7 @@ class Panel
 	private var csInterface:AbstractCSInterface;
 
 	private var canvasColorSampler:CanvasColorSampler;
-	private var palletChanger:PaletteChanger;
+	private var palletChange:PaletteChange;
 
 	public static function main(){
 		new Panel();
@@ -22,10 +22,10 @@ class Panel
 	}
 	private function initialize(event)
 	{
-		csInterface = AbstractCSInterface.create();
+		//csInterface = AbstractCSInterface.create();
 
 		canvasColorSampler = new CanvasColorSampler();
-		palletChanger = new PaletteChanger();
+		palletChange = new PaletteChange();
 	}
 
 	private function callCanvasColorSampler()

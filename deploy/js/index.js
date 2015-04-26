@@ -1,334 +1,159 @@
 (function () { "use strict";
-var EReg = function(r,opt) {
-	opt = opt.split("u").join("");
-	this.r = new RegExp(r,opt);
+function $extend(from, fields) {
+	function Inherit() {} Inherit.prototype = from; var proto = new Inherit();
+	for (var name in fields) proto[name] = fields[name];
+	if( fields.toString !== Object.prototype.toString ) proto.toString = fields.toString;
+	return proto;
+}
+var common = {};
+common.ClassName = function() { };
+var csinterface = {};
+csinterface.AbstractCSInterface = function(csInterface) {
+	this.csInterface = csInterface;
 };
-EReg.__name__ = true;
-EReg.prototype = {
-	match: function(s) {
-		if(this.r.global) this.r.lastIndex = 0;
-		this.r.m = this.r.exec(s);
-		this.r.s = s;
-		return this.r.m != null;
+csinterface.AbstractCSInterface.create = function() {
+	return new csinterface.AbstractCSInterface(new CSInterface());
+};
+csinterface.AbstractCSInterface.prototype = {
+	getExtensionUri: function() {
+		return "file:///" + this.csInterface.getSystemPath(SystemPath.EXTENSION);
+	}
+	,evalScript: function(script,callback) {
+		this.csInterface.evalScript(script,callback);
 	}
 };
-var Std = function() { };
-Std.__name__ = true;
-Std.string = function(s) {
-	return js.Boot.__string_rec(s,"");
+var extension = {};
+extension.Panel = function() {
+	window.addEventListener("load",$bind(this,this.initialize));
 };
-var app = {};
-app.Attention = function() {
-	this.element = new $("#attention");
+extension.Panel.main = function() {
+	new extension.Panel();
 };
-app.Attention.__name__ = true;
-app.Attention.get_instance = function() {
-	if(app.Attention.instance == null) return app.Attention.instance = new app.Attention(); else return app.Attention.instance;
-};
-app.Attention.prototype = {
-	show: function(message) {
-		this.element.text(message);
+extension.Panel.prototype = {
+	initialize: function(event) {
+		this.canvasColorSampler = new extension.color_sampler.CanvasColorSampler();
+		this.palletChange = new extension.palette_change.PaletteChange();
 	}
-	,clear: function() {
-		this.element.text("");
+	,callCanvasColorSampler: function() {
+		this.csInterface.evalScript("new " + "CanvasColorSampler" + "();",function(data) {
+		});
 	}
-};
-app.DropZoneEvent = { __ename__ : true, __constructs__ : ["NONE","DROP_FILE_ERROR","DROPPED"] };
-app.DropZoneEvent.NONE = ["NONE",0];
-app.DropZoneEvent.NONE.__enum__ = app.DropZoneEvent;
-app.DropZoneEvent.DROP_FILE_ERROR = function(message) { var $x = ["DROP_FILE_ERROR",1,message]; $x.__enum__ = app.DropZoneEvent; return $x; };
-app.DropZoneEvent.DROPPED = function(file) { var $x = ["DROPPED",2,file]; $x.__enum__ = app.DropZoneEvent; return $x; };
-app.DropZone = function() {
-	var dropZoneElement = new $(".drop_zone");
-	dropZoneElement.on("drop",null,$bind(this,this.drop));
-	dropZoneElement.on("dragover",null,$bind(this,this.dragover));
-	this.event = app.DropZoneEvent.NONE;
-};
-app.DropZone.__name__ = true;
-app.DropZone.get_instance = function() {
-	if(app.DropZone.instance == null) return app.DropZone.instance = new app.DropZone(); else return app.DropZone.instance;
-};
-app.DropZone.prototype = {
-	getEvent: function() {
-		var n = this.event;
-		this.event = app.DropZoneEvent.NONE;
-		return n;
-	}
-	,dragover: function(event) {
-		this.preventEvent(event);
-		event.originalEvent.dataTransfer.dropEffect = "copy";
-	}
-	,drop: function(event) {
-		this.preventEvent(event);
-		var files = event.originalEvent.dataTransfer.files;
-		var file = files[0];
-		if(!new EReg("image.*","").match(file.type)) this.event = app.DropZoneEvent.DROP_FILE_ERROR("Set image file"); else this.event = app.DropZoneEvent.DROPPED(file);
-	}
-	,preventEvent: function(event) {
-		event.preventDefault();
-		event.stopPropagation();
+	,callPalletChanger: function() {
+		var rgbHexValueCSV = "";
+		this.csInterface.evalScript("new " + "PalletChanger" + "(" + rgbHexValueCSV + ");",function(data) {
+		});
 	}
 };
-app.ImageFileReaderEvent = { __ename__ : true, __constructs__ : ["NONE","READ"] };
-app.ImageFileReaderEvent.NONE = ["NONE",0];
-app.ImageFileReaderEvent.NONE.__enum__ = app.ImageFileReaderEvent;
-app.ImageFileReaderEvent.READ = function(data) { var $x = ["READ",1,data]; $x.__enum__ = app.ImageFileReaderEvent; return $x; };
-app.ImageFileReader = function() {
-	this.fileReader = new FileReader();
-	this.fileReader.addEventListener("load",$bind(this,this.onLoadFile));
-	this.event = app.ImageFileReaderEvent.NONE;
+extension.color_sampler = {};
+extension.color_sampler.CanvasColorSampler = function() {
+	this.element = new $("#canvas_color_sampler");
+	this.palletContainer = new extension.color_sampler.PaletteContainer(this.element);
 };
-app.ImageFileReader.__name__ = true;
-app.ImageFileReader.get_instance = function() {
-	if(app.ImageFileReader.instance == null) return app.ImageFileReader.instance = new app.ImageFileReader(); else return app.ImageFileReader.instance;
-};
-app.ImageFileReader.prototype = {
-	getEvent: function() {
-		var n = this.event;
-		this.event = app.ImageFileReaderEvent.NONE;
-		return n;
-	}
-	,onLoadFile: function(event) {
-		this.event = app.ImageFileReaderEvent.READ(event.target.result);
-	}
-	,start: function(file) {
-		this.fileReader.readAsDataURL(file);
-	}
-};
-app.ImageViewer = function() {
-	this.imagePairSet = [];
-	this.element = new $("#image_viewer");
-};
-app.ImageViewer.__name__ = true;
-app.ImageViewer.get_instance = function() {
-	if(app.ImageViewer.instance == null) return app.ImageViewer.instance = new app.ImageViewer(); else return app.ImageViewer.instance;
-};
-app.ImageViewer.prototype = {
-	show: function(imageSourceUri) {
-		this.imageElement = new $("<img>").appendTo(this.element);
-		this.imageElement.attr("src",imageSourceUri);
-	}
-	,getHTMLImageElement: function() {
-		return this.imageElement[0];
-	}
-};
-app.ImagePair = function(parentElement) {
-	this.element = new $("<div>").appendTo(parentElement);
-	this.element.attr("class","pair");
-	this.before = new app.Image(this.element);
-	this.after = new app.Image(this.element);
-};
-app.ImagePair.__name__ = true;
-app.Image = function(parentElement) {
-	this.element = new $("<div>").appendTo(parentElement);
-	this.element.attr("class","image");
-};
-app.Image.__name__ = true;
-app.Image.prototype = {
-	setImageTag: function(imageSourceUri) {
-		this.imageElement = new $("<img>").appendTo(this.element);
-		this.imageElement.attr("src",imageSourceUri);
-	}
-	,getHTMLImageElement: function() {
-		return this.imageElement[0];
-	}
-};
-app.Pallet = function() {
+extension.parts = {};
+extension.parts.Button = function(parentElement,className) {
 	var _g = this;
-	new $(function() {
-		_g.initialize();
+	this.element = new $("." + className,parentElement);
+	this.element.click(function(event) {
+		_g.clicked = true;
 	});
 };
-app.Pallet.__name__ = true;
-app.Pallet.main = function() {
-	new app.Pallet();
-};
-app.Pallet.prototype = {
-	initialize: function() {
-		if(app.DropZone.instance == null) this.dropZone = app.DropZone.instance = new app.DropZone(); else this.dropZone = app.DropZone.instance;
-		if(app.Attention.instance == null) this.attention = app.Attention.instance = new app.Attention(); else this.attention = app.Attention.instance;
-		if(app.ImageFileReader.instance == null) this.imageFileReader = app.ImageFileReader.instance = new app.ImageFileReader(); else this.imageFileReader = app.ImageFileReader.instance;
-		if(app.ImageViewer.instance == null) this.imageViewer = app.ImageViewer.instance = new app.ImageViewer(); else this.imageViewer = app.ImageViewer.instance;
-		this.mainFunction = $bind(this,this.waitToDropImageFile);
-		this.timer = new haxe.Timer(100);
-		this.timer.run = $bind(this,this.run);
-	}
-	,run: function() {
-		this.mainFunction();
-	}
-	,waitToDropImageFile: function() {
-		var event = this.dropZone.getEvent();
-		switch(event[1]) {
-		case 0:
-			return;
-		case 1:
-			var message = event[2];
-			this.attention.show(message);
-			break;
-		case 2:
-			var file = event[2];
-			this.initializeToReadImageFile(file);
-			break;
-		}
-	}
-	,initializeToReadImageFile: function(file) {
-		this.imageFileReader.start(file);
-		this.mainFunction = $bind(this,this.readImageFile);
-	}
-	,readImageFile: function() {
-		var event = this.imageFileReader.getEvent();
-		switch(event[1]) {
-		case 0:
-			return;
-		case 1:
-			var data = event[2];
-			this.attention.clear();
-			this.imageViewer.show(data);
-			this.mainFunction = $bind(this,this.finish);
-			break;
-		}
-	}
-	,finish: function() {
-		this.timer.stop();
+extension.parts.Button.prototype = {
+	isClicked: function() {
+		var n = this.clicked;
+		this.clicked = false;
+		return n;
 	}
 };
-var color = {};
-color.Converter = function() { };
-color.Converter.__name__ = true;
-color.Converter.create = function(a,r,g,b) {
-	return { a : a, r : r, g : g, b : b};
+extension.color_sampler.PaletteClearButton = function(parentElement,className) {
+	extension.parts.Button.call(this,parentElement,className);
 };
-color.Converter.toInstance = function(rgbaValue) {
-	var a = rgbaValue >> 24 & 255;
-	var r = rgbaValue >> 16 & 255;
-	var g = rgbaValue >> 8 & 255;
-	var b = rgbaValue & 255;
-	return { a : a, r : r, g : g, b : b};
+extension.color_sampler.PaletteClearButton.__super__ = extension.parts.Button;
+extension.color_sampler.PaletteClearButton.prototype = $extend(extension.parts.Button.prototype,{
+});
+extension.color_sampler.PaletteContainer = function(parentElement) {
+	this.element = new $(".container",parentElement);
+	this.before = new extension.color_sampler.palette.PaletteArea(this.element,extension.color_sampler.palette.PaletteKind.BEFORE);
+	this.after = new extension.color_sampler.palette.PaletteArea(this.element,extension.color_sampler.palette.PaletteKind.AFTER);
+	this.clearButton = new extension.color_sampler.PaletteClearButton(this.element,"clear_button");
 };
-color.Converter.toString = function(rgba) {
-	haxe.Log.trace(Std.string((function($this) {
-		var $r;
-		var $int = rgba.a;
-		$r = $int < 0?4294967296.0 + $int:$int + 0.0;
-		return $r;
-	}(this))),{ fileName : "RGBA.hx", lineNumber : 26, className : "color.Converter", methodName : "toString", customParams : [rgba.r,rgba.g,rgba.b]});
-};
-var haxe = {};
-haxe.Log = function() { };
-haxe.Log.__name__ = true;
-haxe.Log.trace = function(v,infos) {
-	js.Boot.__trace(v,infos);
-};
-haxe.Timer = function(time_ms) {
-	var me = this;
-	this.id = setInterval(function() {
-		me.run();
-	},time_ms);
-};
-haxe.Timer.__name__ = true;
-haxe.Timer.prototype = {
-	stop: function() {
-		if(this.id == null) return;
-		clearInterval(this.id);
-		this.id = null;
-	}
-	,run: function() {
+extension.color_sampler.palette = {};
+extension.color_sampler.palette.Palette = function(parentElement) {
+	this.element = new $(".palette",parentElement);
+	this.lines = [];
+	var _g = 0;
+	while(_g < 8) {
+		var i = _g++;
+		this.lines.push(new extension.color_sampler.palette.Line(this.element));
 	}
 };
-var js = {};
-js.Boot = function() { };
-js.Boot.__name__ = true;
-js.Boot.__unhtml = function(s) {
-	return s.split("&").join("&amp;").split("<").join("&lt;").split(">").join("&gt;");
-};
-js.Boot.__trace = function(v,i) {
-	var msg;
-	if(i != null) msg = i.fileName + ":" + i.lineNumber + ": "; else msg = "";
-	msg += js.Boot.__string_rec(v,"");
-	if(i != null && i.customParams != null) {
-		var _g = 0;
-		var _g1 = i.customParams;
-		while(_g < _g1.length) {
-			var v1 = _g1[_g];
-			++_g;
-			msg += "," + js.Boot.__string_rec(v1,"");
-		}
-	}
-	var d;
-	if(typeof(document) != "undefined" && (d = document.getElementById("haxe:trace")) != null) d.innerHTML += js.Boot.__unhtml(msg) + "<br/>"; else if(typeof console != "undefined" && console.log != null) console.log(msg);
-};
-js.Boot.__string_rec = function(o,s) {
-	if(o == null) return "null";
-	if(s.length >= 5) return "<...>";
-	var t = typeof(o);
-	if(t == "function" && (o.__name__ || o.__ename__)) t = "object";
-	switch(t) {
-	case "object":
-		if(o instanceof Array) {
-			if(o.__enum__) {
-				if(o.length == 2) return o[0];
-				var str = o[0] + "(";
-				s += "\t";
-				var _g1 = 2;
-				var _g = o.length;
-				while(_g1 < _g) {
-					var i = _g1++;
-					if(i != 2) str += "," + js.Boot.__string_rec(o[i],s); else str += js.Boot.__string_rec(o[i],s);
-				}
-				return str + ")";
-			}
-			var l = o.length;
-			var i1;
-			var str1 = "[";
-			s += "\t";
-			var _g2 = 0;
-			while(_g2 < l) {
-				var i2 = _g2++;
-				str1 += (i2 > 0?",":"") + js.Boot.__string_rec(o[i2],s);
-			}
-			str1 += "]";
-			return str1;
-		}
-		var tostr;
-		try {
-			tostr = o.toString;
-		} catch( e ) {
-			return "???";
-		}
-		if(tostr != null && tostr != Object.toString) {
-			var s2 = o.toString();
-			if(s2 != "[object Object]") return s2;
-		}
-		var k = null;
-		var str2 = "{\n";
-		s += "\t";
-		var hasp = o.hasOwnProperty != null;
-		for( var k in o ) {
-		if(hasp && !o.hasOwnProperty(k)) {
-			continue;
-		}
-		if(k == "prototype" || k == "__class__" || k == "__super__" || k == "__interfaces__" || k == "__properties__") {
-			continue;
-		}
-		if(str2.length != 2) str2 += ", \n";
-		str2 += s + k + " : " + js.Boot.__string_rec(o[k],s);
-		}
-		s = s.substring(1);
-		str2 += "\n" + s + "}";
-		return str2;
-	case "function":
-		return "<function>";
-	case "string":
-		return o;
-	default:
-		return String(o);
+extension.color_sampler.palette.Line = function(parentElement) {
+	this.element = new $("<tr>").attr("class","line").appendTo(parentElement);
+	this.cells = [];
+	var _g = 0;
+	while(_g < 8) {
+		var i = _g++;
+		this.cells.push(new extension.color_sampler.palette.Cell(this.element));
 	}
 };
+extension.color_sampler.palette.Cell = function(parentElement) {
+	this.element = new $("<td>").attr("class","cell editable").appendTo(parentElement);
+	this.element.click(function(event) {
+	});
+};
+extension.color_sampler.palette.Cell.prototype = {
+	fill: function(rgbHexColor) {
+		this.element.css("background-color","#" + rgbHexColor);
+		this.painted = true;
+	}
+	,clear: function() {
+		this.element.css("background-color","transparent");
+		this.painted = false;
+	}
+};
+extension.color_sampler.palette.PaletteArea = function(parentElement,kind) {
+	var idName;
+	switch(kind[1]) {
+	case 0:
+		idName = "before";
+		break;
+	case 1:
+		idName = "after";
+		break;
+	}
+	this.element = new $("." + idName,parentElement);
+	this.palette = new extension.color_sampler.palette.Palette(this.element);
+	this.scanButton = new extension.color_sampler.palette.ScanButton(this.element,"scan_button");
+};
+extension.color_sampler.palette.PaletteKind = { __constructs__ : ["BEFORE","AFTER"] };
+extension.color_sampler.palette.PaletteKind.BEFORE = ["BEFORE",0];
+extension.color_sampler.palette.PaletteKind.BEFORE.__enum__ = extension.color_sampler.palette.PaletteKind;
+extension.color_sampler.palette.PaletteKind.AFTER = ["AFTER",1];
+extension.color_sampler.palette.PaletteKind.AFTER.__enum__ = extension.color_sampler.palette.PaletteKind;
+extension.color_sampler.palette.ScanButton = function(parentElement,className) {
+	extension.parts.Button.call(this,parentElement,className);
+};
+extension.color_sampler.palette.ScanButton.__super__ = extension.parts.Button;
+extension.color_sampler.palette.ScanButton.prototype = $extend(extension.parts.Button.prototype,{
+});
+extension.palette_change = {};
+extension.palette_change.PaletteChange = function() {
+	this.element = new $("#palette_changer");
+	this.runButton = new extension.palette_change.RunButton(this.element,"run_button");
+};
+extension.palette_change.RunButton = function(parentElement,className) {
+	extension.parts.Button.call(this,parentElement,className);
+};
+extension.palette_change.RunButton.__super__ = extension.parts.Button;
+extension.palette_change.RunButton.prototype = $extend(extension.parts.Button.prototype,{
+});
 var $_, $fid = 0;
 function $bind(o,m) { if( m == null ) return null; if( m.__id__ == null ) m.__id__ = $fid++; var f; if( o.hx__closures__ == null ) o.hx__closures__ = {}; else f = o.hx__closures__[m.__id__]; if( f == null ) { f = function(){ return f.method.apply(f.scope, arguments); }; f.scope = o; f.method = m; o.hx__closures__[m.__id__] = f; } return f; }
-String.__name__ = true;
-Array.__name__ = true;
-app.Pallet.main();
+common.ClassName.CANVAS_COLOR_SAMPLER = "CanvasColorSampler";
+common.ClassName.PALLET_CHANGER = "PalletChanger";
+extension.Panel.INSTANCE_NAME = "main";
+extension.color_sampler.palette.Palette.LINE_TOTAL = 8;
+extension.color_sampler.palette.Line.CELL_TOTAL = 8;
+extension.Panel.main();
 })();
 
 //# sourceMappingURL=index.js.map

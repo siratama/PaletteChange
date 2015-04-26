@@ -1,13 +1,13 @@
 package extension.color_sampler;
-import extension.color_sampler.pallet.PaletteKind;
-import extension.color_sampler.pallet.PaletteArea;
+import extension.color_sampler.palette.PaletteKind;
+import extension.color_sampler.palette.PaletteArea;
 import jQuery.JQuery;
-class PalletContainer
+class PaletteContainer
 {
 	private var element:JQuery;
 	public var before(default, null):PaletteArea;
 	public var after(default, null):PaletteArea;
-	private var clearButton:PalletClearButton;
+	private var clearButton:PaletteClearButton;
 
 	public function new(parentElement:JQuery)
 	{
@@ -15,6 +15,6 @@ class PalletContainer
 		before = new PaletteArea(element, PaletteKind.BEFORE);
 		after = new PaletteArea(element, PaletteKind.AFTER);
 
-		clearButton = new PalletClearButton(element, "clear_button");
+		clearButton = new PaletteClearButton(element, "clear_button");
 	}
 }

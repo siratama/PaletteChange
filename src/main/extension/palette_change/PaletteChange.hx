@@ -1,6 +1,6 @@
-package extension.palette_changer;
+package extension.palette_change;
 import jQuery.JQuery;
-class PaletteChanger
+class PaletteChange
 {
 	private var element:JQuery;
 	private var runButton:RunButton;

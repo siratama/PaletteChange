@@ -2,23 +2,23 @@ package jsx;
 import common.CSV;
 import haxe.format.JsonParser;
 
-class PalletInfo
+class PaletteInfo
 {
-	public var before(default, null):Pallet;
-	public var after(default, null):Pallet;
+	public var before(default, null):Palette;
+	public var after(default, null):Palette;
 	public var parsedResult(default, null):Bool;
 
-	@:allow(jsx) private static var instance(get, null):PalletInfo;
-	private static inline function get_instance():PalletInfo
-		return instance == null ? instance = new PalletInfo(): instance;
+	@:allow(jsx) private static var instance(get, null):PaletteInfo;
+	private static inline function get_instance():PaletteInfo
+		return instance == null ? instance = new PaletteInfo(): instance;
 
 	private function new() {}
 	public function convert(code:String)
 	{
 		try{
 			var json:Array<String> = JsonParser.parse(code);
-			before = new Pallet(json[0]);
-			after = new Pallet(json[1]);
+			before = new Palette(json[0]);
+			after = new Palette(json[1]);
 			parsedResult = true;
 		}
 		catch(error:String)
@@ -28,7 +28,7 @@ class PalletInfo
 	}
 }
 
-class Pallet
+class Palette
 {
 	public var rgbHexValueSet(default, null):Array<String>;
 	public function new(rgbHexValueCsv:String)
@@ -36,20 +36,20 @@ class Pallet
 		this.rgbHexValueSet = rgbHexValueCsv.split(CSV.RGB_HAX_VALUE_DELIMITER);
 	}
 
-	public function indexOf(checkedRgbHexValue:String):PalletColorPosition
+	public function indexOf(checkedRgbHexValue:String):PaletteColorPosition
 	{
 		for (i in 0...rgbHexValueSet.length)
 		{
 			if(rgbHexValueSet[i] == checkedRgbHexValue)
 			{
-				return PalletColorPosition.EXSITS(i);
+				return PaletteColorPosition.EXSITS(i);
 			}
 		}
-		return PalletColorPosition.NONE;
+		return PaletteColorPosition.NONE;
 	}
 }
 
-enum PalletColorPosition
+enum PaletteColorPosition
 {
 	NONE;
 	EXSITS(index:Int);

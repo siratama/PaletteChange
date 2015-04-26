@@ -2,41 +2,48 @@ package extension.color_sampler.palette;
 import jQuery.JQuery;
 class Palette
 {
-	private static inline var DEFAULT_TOTAL_X = 10;
-	private static inline var DEFAULT_TOTAL_Y = 10;
+	private static inline var LINE_TOTAL = 8;
 
-	private var colorBlocks:Array<Array<ColorBlock>>;
+	private var lines:Array<Line>;
 
 	private var element:JQuery;
 	public function new(parentElement:JQuery)
 	{
 		element = new JQuery(".palette", parentElement);
-
-		colorBlocks = [];
-		for (y in 0...DEFAULT_TOTAL_Y)
-		{
-			var colorBlocksX:Array<ColorBlock> = [];
-			for (x in 0...DEFAULT_TOTAL_X)
-			{
-				var colorBlock = new ColorBlock(element);
-				colorBlocksX.push(colorBlock);
-			}
-			colorBlocks.push(colorBlocksX);
-		}
+		lines = [];
+		for (i in 0...LINE_TOTAL) lines.push(new Line(element));
 	}
 }
 
-class ColorBlock
+class Line
 {
-	private static inline var BLOCK_PIXEL = 10;
+	public static inline var CELL_TOTAL = 8;
+	public var cells(default, null):Array<Cell>;
+	private var element:JQuery;
+
+	public function new(parentElement:JQuery)
+	{
+		element = new JQuery("<tr>")
+			.attr("class", "line")
+			.appendTo(parentElement);
+
+		cells = [];
+		for (i in 0...CELL_TOTAL) cells.push(new Cell(element));
+	}
+}
+
+class Cell
+{
 	private var element:JQuery;
 	public var painted(default, null):Bool;
 
 	public function new(parentElement:JQuery)
 	{
-		element = new JQuery(".block").appendTo(parentElement);
-		element.css("width", '${BLOCK_PIXEL}px');
-		element.css("height", '${BLOCK_PIXEL}px');
+		element = new JQuery("<td>")
+			//.attr("class", "cell")
+			//.attr("class", "cell active")
+			.attr("class", "cell editable")
+			.appendTo(parentElement);
 
 		element.click(function(event){
 
@@ -46,5 +53,10 @@ class ColorBlock
 	{
 		element.css("background-color", '#$rgbHexColor');
 		painted = true;
+	}
+	public function clear()
+	{
+		element.css("background-color", 'transparent');
+		painted = false;
 	}
 }

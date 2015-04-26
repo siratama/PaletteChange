@@ -2,13 +2,13 @@ package jsx;
 
 import psd.Application;
 
-class PalletChanger
+class PaletteChange
 {
 	private static inline var ATTENTION_WIDTH = 400;
 	private static inline var ATTENTION_HEIGHT = 400;
 
 	private var application:Application;
-	private var palletInfo:PalletInfo;
+	private var palletInfo:PaletteInfo;
 
 	public static function main()
 	{
@@ -33,7 +33,7 @@ class PalletChanger
 		if(code == null) return;
 		*/
 
-		palletInfo = PalletInfo.instance;
+		palletInfo = PaletteInfo.instance;
 		palletInfo.convert(code);
 		if(!palletInfo.parsedResult){
 			js.Lib.alert("code error");

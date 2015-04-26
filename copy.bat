@@ -1,1 +1,1 @@
-xcopy /y deploy\main\PalletChanger.jsx "C:\Program Files\Adobe\Adobe Photoshop CS6 (64 Bit)\Presets\Scripts"
+xcopy /y deploy\jsx\*.jsx "C:\Program Files\Adobe\Adobe Photoshop CS6 (64 Bit)\Presets\Scripts"

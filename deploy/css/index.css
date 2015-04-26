@@ -1,41 +1,68 @@
-/*
-Error: Invalid CSS after "}": expected selector or at-rule, was "/*"
-        on line 8 of index.scss
+@charset "UTF-8";
+* {
+  margin: 0;
+  padding: 0; }
 
-3:   padding: 0;
-4: }
-5: body{
-6: }
-7: 
-8: /*
-9: $image_width: 100px;
-10: $image_height: 100px;
-11: 
-12: .clear{
-13:   clear: both;
+body {
+  background-color: #454545;
+  color: #d7d7d7;
+  overflow: hidden;
+  font: 11px arial, helvetica, "メイリオ", Meiryo, "ＭＳ Ｐゴシック", clean, sans-serif; }
 
-Backtrace:
-index.scss:8
-C:/Ruby22-x64/lib/ruby/gems/2.2.0/gems/sass-3.4.13/lib/sass/scss/parser.rb:1165:in `expected'
-C:/Ruby22-x64/lib/ruby/gems/2.2.0/gems/sass-3.4.13/lib/sass/scss/parser.rb:1101:in `expected'
-C:/Ruby22-x64/lib/ruby/gems/2.2.0/gems/sass-3.4.13/lib/sass/scss/parser.rb:43:in `parse'
-C:/Ruby22-x64/lib/ruby/gems/2.2.0/gems/sass-3.4.13/lib/sass/engine.rb:393:in `_to_tree'
-C:/Ruby22-x64/lib/ruby/gems/2.2.0/gems/sass-3.4.13/lib/sass/engine.rb:368:in `_render_with_sourcemap'
-C:/Ruby22-x64/lib/ruby/gems/2.2.0/gems/sass-3.4.13/lib/sass/engine.rb:285:in `render_with_sourcemap'
-C:/Ruby22-x64/lib/ruby/gems/2.2.0/gems/sass-3.4.13/lib/sass/plugin/compiler.rb:490:in `update_stylesheet'
-C:/Ruby22-x64/lib/ruby/gems/2.2.0/gems/sass-3.4.13/lib/sass/plugin/compiler.rb:215:in `block in update_stylesheets'
-C:/Ruby22-x64/lib/ruby/gems/2.2.0/gems/sass-3.4.13/lib/sass/plugin/compiler.rb:209:in `each'
-C:/Ruby22-x64/lib/ruby/gems/2.2.0/gems/sass-3.4.13/lib/sass/plugin/compiler.rb:209:in `update_stylesheets'
-C:/Ruby22-x64/lib/ruby/gems/2.2.0/gems/sass-3.4.13/lib/sass/plugin.rb:82:in `update_stylesheets'
-C:/Ruby22-x64/lib/ruby/gems/2.2.0/gems/sass-3.4.13/lib/sass/exec/sass_scss.rb:361:in `watch_or_update'
-C:/Ruby22-x64/lib/ruby/gems/2.2.0/gems/sass-3.4.13/lib/sass/exec/sass_scss.rb:51:in `process_result'
-C:/Ruby22-x64/lib/ruby/gems/2.2.0/gems/sass-3.4.13/lib/sass/exec/base.rb:52:in `parse'
-C:/Ruby22-x64/lib/ruby/gems/2.2.0/gems/sass-3.4.13/lib/sass/exec/base.rb:19:in `parse!'
-C:/Ruby22-x64/lib/ruby/gems/2.2.0/gems/sass-3.4.13/bin/scss:13:in `<top (required)>'
-C:/Ruby22-x64/bin/scss:23:in `load'
-C:/Ruby22-x64/bin/scss:23:in `<main>'
-*/
-body:before {
-  white-space: pre;
-  font-family: monospace;
-  content: "Error: Invalid CSS after \"}\": expected selector or at-rule, was \"/*\"\A         on line 8 of index.scss\A \A 3:   padding: 0;\A 4: }\A 5: body{\A 6: }\A 7: \A 8: /*\A 9: $image_width: 100px;\A 10: $image_height: 100px;\A 11: \A 12: .clear{\A 13:   clear: both;"; }
+.container {
+  padding: 5px; }
+
+button {
+  padding: 1px 0;
+  width: 70px;
+  color: #d7d7d7;
+  font-size: 11px;
+  border: 1px solid #151515;
+  background: -webkit-linear-gradient(top, #535353, #3e3e3e); }
+  button:enabled:hover:hover {
+    background: -webkit-linear-gradient(top, #636363, #4e4e4e); }
+  button:enabled:hover:active {
+    border: 1px solid #c69100; }
+  button:disabled {
+    color: #686868; }
+
+#canvas_color_sampler .container .area {
+  float: left;
+  width: 150px; }
+  #canvas_color_sampler .container .area .frame {
+    position: relative; }
+    #canvas_color_sampler .container .area .frame .palette {
+      float: left;
+      background-color: #333333; }
+      #canvas_color_sampler .container .area .frame .palette .line .cell {
+        width: 10px;
+        height: 10px;
+        border: 1px solid #555555; }
+      #canvas_color_sampler .container .area .frame .palette .line .cell.active {
+        border: 1px solid #888888; }
+      #canvas_color_sampler .container .area .frame .palette .line .cell.editable:hover {
+        cursor: pointer;
+        border: 1px solid #cccccc; }
+    #canvas_color_sampler .container .area .frame .scroll {
+      position: absolute;
+      left: 118px;
+      height: 100%; }
+      #canvas_color_sampler .container .area .frame .scroll .button {
+        background-color: #333333;
+        width: 15px;
+        margin-bottom: 2px; }
+  #canvas_color_sampler .container .area .scan_button {
+    margin-top: 5px;
+    margin-left: 20px; }
+#canvas_color_sampler .container .to {
+  float: left;
+  margin-right: 20px; }
+  #canvas_color_sampler .container .to .arrow {
+    background-color: #333333;
+    margin-top: 50px;
+    color: #444444; }
+
+.clear {
+  clear: both; }
+
+/*# sourceMappingURL=index.css.map */

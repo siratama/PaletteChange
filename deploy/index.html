@@ -11,22 +11,42 @@
 </head>
 <body>
 
-<div id="canvas_color_sampler">
-    <div class="container">
-        <div class="area before">
-            <div class="palette"></div>
-            <div class="scan_button"></div>
-        </div>
-        <div class="area after">
-            <div class="palette"></div>
-            <div class="scan_button"></div>
-        </div>
-    </div>
-    <div class="clear_button">CLEAR</div>
-</div>
+<div class="container">
+	<div id="canvas_color_sampler">
+		<div class="container">
+			<div class="area before">
+				<div class="frame">
+					<table class="palette"></table>
+					<div class="scroll">
+						<button class="up button">▲</button>
+						<button class="down button">▼</button>
+					</div>
+					<div class="clear"></div>
+				</div>
+				<button class="scan_button">SCAN DOC</button>
+			</div>
+			<div class="to">
+				<div class="arrow">▶</div>
+			</div>
+			<div class="area after">
+				<div class="frame">
+					<table class="palette"></table>
+					<div class="scroll">
+						<button class="up button">▲</button>
+						<button class="down button">▼</button>
+					</div>
+					<div class="clear"></div>
+				</div>
+				<button class="scan_button">SCAN DOC</button>
+			</div>
+			<div class="clear"></div>
+		</div>
+		<button class="clear_button">CLEAR</button>
+	</div>
 
-<div id="palette_changer">
-    <div class="run_button">RUN</div>
+	<div id="palette_changer">
+		<button class="run_button">RUN</button>
+	</div>
 </div>
 
 </body>
