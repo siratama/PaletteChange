@@ -7,14 +7,11 @@ class PaletteContainer
 	private var element:JQuery;
 	public var before(default, null):PaletteArea;
 	public var after(default, null):PaletteArea;
-	private var clearButton:PaletteClearButton;
 
 	public function new(parentElement:JQuery)
 	{
 		element = new JQuery(".container", parentElement);
 		before = new PaletteArea(element, PaletteKind.BEFORE);
 		after = new PaletteArea(element, PaletteKind.AFTER);
-
-		clearButton = new PaletteClearButton(element, "clear_button");
 	}
 }

@@ -48,6 +48,24 @@ extension.color_sampler = {};
 extension.color_sampler.CanvasColorSampler = function() {
 	this.element = new $("#canvas_color_sampler");
 	this.palletContainer = new extension.color_sampler.PaletteContainer(this.element);
+	new extension.color_sampler.PageUI();
+};
+extension.color_sampler.PageUI = function() {
+	this.element = new $("#page_ui");
+	this.leftButton = this.setButton("prev");
+	this.rightButton = this.setButton("next");
+	this.pageNumber = new extension.color_sampler.PageNumber(this.element);
+};
+extension.color_sampler.PageUI.prototype = {
+	setButton: function(className) {
+		var button = new extension.color_sampler.ScrollButton(this.element,className);
+		button.initialize();
+		return button;
+	}
+};
+extension.color_sampler.PageNumber = function(parentElement) {
+	this.element = new $(".page",parentElement);
+	this.element.text(1);
 };
 extension.parts = {};
 extension.parts.Button = function(parentElement,className) {
@@ -64,6 +82,15 @@ extension.parts.Button.prototype = {
 		return n;
 	}
 };
+extension.color_sampler.ScrollButton = function(parentElement,className) {
+	extension.parts.Button.call(this,parentElement,className);
+};
+extension.color_sampler.ScrollButton.__super__ = extension.parts.Button;
+extension.color_sampler.ScrollButton.prototype = $extend(extension.parts.Button.prototype,{
+	initialize: function() {
+		this.element.attr("disabled","disabled");
+	}
+});
 extension.color_sampler.PaletteClearButton = function(parentElement,className) {
 	extension.parts.Button.call(this,parentElement,className);
 };
@@ -74,14 +101,13 @@ extension.color_sampler.PaletteContainer = function(parentElement) {
 	this.element = new $(".container",parentElement);
 	this.before = new extension.color_sampler.palette.PaletteArea(this.element,extension.color_sampler.palette.PaletteKind.BEFORE);
 	this.after = new extension.color_sampler.palette.PaletteArea(this.element,extension.color_sampler.palette.PaletteKind.AFTER);
-	this.clearButton = new extension.color_sampler.PaletteClearButton(this.element,"clear_button");
 };
 extension.color_sampler.palette = {};
 extension.color_sampler.palette.Palette = function(parentElement) {
 	this.element = new $(".palette",parentElement);
 	this.lines = [];
 	var _g = 0;
-	while(_g < 8) {
+	while(_g < 5) {
 		var i = _g++;
 		this.lines.push(new extension.color_sampler.palette.Line(this.element));
 	}
@@ -90,7 +116,7 @@ extension.color_sampler.palette.Line = function(parentElement) {
 	this.element = new $("<tr>").attr("class","line").appendTo(parentElement);
 	this.cells = [];
 	var _g = 0;
-	while(_g < 8) {
+	while(_g < 10) {
 		var i = _g++;
 		this.cells.push(new extension.color_sampler.palette.Cell(this.element));
 	}
@@ -123,6 +149,7 @@ extension.color_sampler.palette.PaletteArea = function(parentElement,kind) {
 	this.element = new $("." + idName,parentElement);
 	this.palette = new extension.color_sampler.palette.Palette(this.element);
 	this.scanButton = new extension.color_sampler.palette.ScanButton(this.element,"scan_button");
+	this.clearButton = new extension.color_sampler.PaletteClearButton(this.element,"clear_button");
 };
 extension.color_sampler.palette.PaletteKind = { __constructs__ : ["BEFORE","AFTER"] };
 extension.color_sampler.palette.PaletteKind.BEFORE = ["BEFORE",0];
@@ -151,8 +178,9 @@ function $bind(o,m) { if( m == null ) return null; if( m.__id__ == null ) m.__id
 common.ClassName.CANVAS_COLOR_SAMPLER = "CanvasColorSampler";
 common.ClassName.PALLET_CHANGER = "PalletChanger";
 extension.Panel.INSTANCE_NAME = "main";
-extension.color_sampler.palette.Palette.LINE_TOTAL = 8;
-extension.color_sampler.palette.Line.CELL_TOTAL = 8;
+extension.color_sampler.PageNumber.DEFAULT_INDEX = 1;
+extension.color_sampler.palette.Palette.LINE_TOTAL = 5;
+extension.color_sampler.palette.Line.CELL_TOTAL = 10;
 extension.Panel.main();
 })();
 

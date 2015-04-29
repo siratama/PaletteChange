@@ -2,7 +2,7 @@ package extension.color_sampler.palette;
 import jQuery.JQuery;
 class Palette
 {
-	private static inline var LINE_TOTAL = 8;
+	private static inline var LINE_TOTAL = 5;
 
 	private var lines:Array<Line>;
 
@@ -17,7 +17,7 @@ class Palette
 
 class Line
 {
-	public static inline var CELL_TOTAL = 8;
+	public static inline var CELL_TOTAL = 10;
 	public var cells(default, null):Array<Cell>;
 	private var element:JQuery;
 

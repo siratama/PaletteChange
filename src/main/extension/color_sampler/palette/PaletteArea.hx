@@ -6,6 +6,7 @@ class PaletteArea
 	private var element:JQuery;
 	private var palette:Palette;
 	private var scanButton:ScanButton;
+	private var clearButton:PaletteClearButton;
 
 	public function new(parentElement:JQuery, kind:PaletteKind)
 	{
@@ -17,5 +18,6 @@ class PaletteArea
 
 		palette = new Palette(element);
 		scanButton = new ScanButton(element, "scan_button");
+		clearButton = new PaletteClearButton(element, "clear_button");
 	}
 }

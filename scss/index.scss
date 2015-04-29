@@ -11,13 +11,9 @@ body{
   overflow: hidden;
   font: 11px arial, helvetica, "メイリオ", Meiryo, "ＭＳ Ｐゴシック", clean, sans-serif;
 }
-.container{
-  padding: 5px;
-}
 
-button {
-  padding: 1px 0;
-  width: 70px;
+button{
+  height: 32px;
   color: #d7d7d7;
   font-size: 11px;
   border: 1px solid #151515;
@@ -33,21 +29,54 @@ button {
   }
   &:disabled{
     color: #686868;
+    background: -webkit-linear-gradient(top, $gradient_first - #111111, $gradient_end - #111111);
+    img{
+      opacity: 0.2;
+    }
   }
+}
+
+#container{
+  //padding: 6px 0 0 10px;
 }
 
 #canvas_color_sampler{
 
+  padding: 6px 0 0 10px;
+  margin-bottom: 9px;
+
+  #page_ui{
+    $size: 17px;
+    margin-bottom: 6px;
+
+    .button{
+      width: $size;
+      height: $size;
+      float: left;
+    }
+    .page{
+      height: 15px;
+      font-size: 10px;
+      background-color: #303030;
+      padding: 2px 5px 0px 5px;
+      margin: 0 2px;
+      text-align: center;
+      float: left;
+    }
+  }
   .container{
     .area{
-      float: left;
-      width: 150px;
+      height: 72px;
+
       .frame{
         $background-color: #333333;
         position: relative;
+
         .palette{
           float: left;
+          //width: 142px;
           background-color: $background-color;
+
           .line{
             .cell{
               $size: 10px;
@@ -66,43 +95,36 @@ button {
             }
           }
         }
-        .scroll{
+        .button_area{
+          width: 36px;
           position: absolute;
-          left: 118px;
-          height: 100%;
-          .button{
-            background-color: $background-color;
-            width: 15px;
-            margin-bottom: 2px;
+          left: 147px;
+          button{
+            margin-bottom: 8px;
           }
         }
       }
-      .scan_button{
-        margin-top: 5px;
-        margin-left: 20px;
-      }
     }
     .area.before{
+      margin-bottom: 5px;
     }
     .to{
-      float: left;
-      margin-right: 20px;
-
-      .arrow{
-        $background-color: #333333;
-        background-color: $background-color;
-        margin-top: 50px;
-        color: $background-color + #111111;
-      }
+      padding: 0 0 0 65px;
+      height: 14px;
     }
-    .area.after{
-    }
-  }
-  .clear_button{
-
   }
 }
+
+hr{
+  border: 1px solid #333333;
+  margin-bottom: 11px;
+}
+
 #palette_changer{
+  padding-left: 30px;
+  button{
+    width: 130px;
+  }
 }
 
 .clear{

@@ -9,12 +9,8 @@ body {
   overflow: hidden;
   font: 11px arial, helvetica, "メイリオ", Meiryo, "ＭＳ Ｐゴシック", clean, sans-serif; }
 
-.container {
-  padding: 5px; }
-
 button {
-  padding: 1px 0;
-  width: 70px;
+  height: 32px;
   color: #d7d7d7;
   font-size: 11px;
   border: 1px solid #151515;
@@ -24,43 +20,64 @@ button {
   button:enabled:hover:active {
     border: 1px solid #c69100; }
   button:disabled {
-    color: #686868; }
+    color: #686868;
+    background: -webkit-linear-gradient(top, #424242, #2d2d2d); }
+    button:disabled img {
+      opacity: 0.2; }
 
-#canvas_color_sampler .container .area {
-  float: left;
-  width: 150px; }
-  #canvas_color_sampler .container .area .frame {
-    position: relative; }
-    #canvas_color_sampler .container .area .frame .palette {
-      float: left;
-      background-color: #333333; }
-      #canvas_color_sampler .container .area .frame .palette .line .cell {
-        width: 10px;
-        height: 10px;
-        border: 1px solid #555555; }
-      #canvas_color_sampler .container .area .frame .palette .line .cell.active {
-        border: 1px solid #888888; }
-      #canvas_color_sampler .container .area .frame .palette .line .cell.editable:hover {
-        cursor: pointer;
-        border: 1px solid #cccccc; }
-    #canvas_color_sampler .container .area .frame .scroll {
-      position: absolute;
-      left: 118px;
-      height: 100%; }
-      #canvas_color_sampler .container .area .frame .scroll .button {
-        background-color: #333333;
-        width: 15px;
-        margin-bottom: 2px; }
-  #canvas_color_sampler .container .area .scan_button {
-    margin-top: 5px;
-    margin-left: 20px; }
-#canvas_color_sampler .container .to {
-  float: left;
-  margin-right: 20px; }
-  #canvas_color_sampler .container .to .arrow {
-    background-color: #333333;
-    margin-top: 50px;
-    color: #444444; }
+#canvas_color_sampler {
+  padding: 6px 0 0 10px;
+  margin-bottom: 9px; }
+  #canvas_color_sampler #page_ui {
+    margin-bottom: 6px; }
+    #canvas_color_sampler #page_ui .button {
+      width: 17px;
+      height: 17px;
+      float: left; }
+    #canvas_color_sampler #page_ui .page {
+      height: 15px;
+      font-size: 10px;
+      background-color: #303030;
+      padding: 2px 5px 0px 5px;
+      margin: 0 2px;
+      text-align: center;
+      float: left; }
+  #canvas_color_sampler .container .area {
+    height: 72px; }
+    #canvas_color_sampler .container .area .frame {
+      position: relative; }
+      #canvas_color_sampler .container .area .frame .palette {
+        float: left;
+        background-color: #333333; }
+        #canvas_color_sampler .container .area .frame .palette .line .cell {
+          width: 10px;
+          height: 10px;
+          border: 1px solid #555555; }
+        #canvas_color_sampler .container .area .frame .palette .line .cell.active {
+          border: 1px solid #888888; }
+        #canvas_color_sampler .container .area .frame .palette .line .cell.editable:hover {
+          cursor: pointer;
+          border: 1px solid #cccccc; }
+      #canvas_color_sampler .container .area .frame .button_area {
+        width: 36px;
+        position: absolute;
+        left: 147px; }
+        #canvas_color_sampler .container .area .frame .button_area button {
+          margin-bottom: 8px; }
+  #canvas_color_sampler .container .area.before {
+    margin-bottom: 5px; }
+  #canvas_color_sampler .container .to {
+    padding: 0 0 0 65px;
+    height: 14px; }
+
+hr {
+  border: 1px solid #333333;
+  margin-bottom: 11px; }
+
+#palette_changer {
+  padding-left: 30px; }
+  #palette_changer button {
+    width: 130px; }
 
 .clear {
   clear: both; }

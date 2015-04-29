@@ -9,5 +9,6 @@ class CanvasColorSampler
 	{
 		element = new JQuery("#canvas_color_sampler");
 		palletContainer = new PaletteContainer(element);
+		new PageUI();
 	}
 }

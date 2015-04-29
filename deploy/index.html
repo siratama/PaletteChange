@@ -11,38 +11,58 @@
 </head>
 <body>
 
-<div class="container">
+<div id="container">
 	<div id="canvas_color_sampler">
+		<div id="page_ui">
+			<button class="button prev">
+				<img src="img/page_arrow_left.png">
+			</button>
+			<div>
+				<span class="page">1</span>
+			</div>
+			<button class="button next">
+				<img src="img/page_arrow_right.png">
+			</button>
+			<div class="clear"></div>
+		</div>
 		<div class="container">
 			<div class="area before">
 				<div class="frame">
 					<table class="palette"></table>
-					<div class="scroll">
-						<button class="up button">▲</button>
-						<button class="down button">▼</button>
+					<div class="button_area">
+						<button class="scan_button">
+							<img src="img/scan.png" />
+						</button>
+						<button class="clear_button">
+							<img src="img/clear.png" />
+						</button>
 					</div>
 					<div class="clear"></div>
 				</div>
-				<button class="scan_button">SCAN DOC</button>
 			</div>
 			<div class="to">
-				<div class="arrow">▶</div>
+				<div class="arrow">
+					<img src="img/arrow.png" />
+				</div>
 			</div>
 			<div class="area after">
 				<div class="frame">
 					<table class="palette"></table>
-					<div class="scroll">
-						<button class="up button">▲</button>
-						<button class="down button">▼</button>
+					<div class="button_area">
+						<button class="scan_button">
+							<img src="img/scan.png" />
+						</button>
+						<button class="clear_button">
+							<img src="img/clear.png" />
+						</button>
 					</div>
 					<div class="clear"></div>
 				</div>
-				<button class="scan_button">SCAN DOC</button>
 			</div>
-			<div class="clear"></div>
 		</div>
-		<button class="clear_button">CLEAR</button>
 	</div>
+
+	<hr />
 
 	<div id="palette_changer">
 		<button class="run_button">RUN</button>
