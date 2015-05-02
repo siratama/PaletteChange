@@ -1,6 +1,5 @@
-package jsx;
-import common.CSV;
-import haxe.format.JsonParser;
+package jsx.palette_change;
+import haxe.Unserializer;
 
 class PaletteInfo
 {
@@ -16,9 +15,9 @@ class PaletteInfo
 	public function convert(code:String)
 	{
 		try{
-			var json:Array<String> = JsonParser.parse(code);
-			before = new Palette(json[0]);
-			after = new Palette(json[1]);
+			var rgbHexValueSets:Array<Array<String>> = Unserializer.run(code);
+			before = new Palette(rgbHexValueSets[0]);
+			after = new Palette(rgbHexValueSets[1]);
 			parsedResult = true;
 		}
 		catch(error:String)
@@ -31,9 +30,9 @@ class PaletteInfo
 class Palette
 {
 	public var rgbHexValueSet(default, null):Array<String>;
-	public function new(rgbHexValueCsv:String)
+	public function new(rgbHexValueSet:Array<String>)
 	{
-		this.rgbHexValueSet = rgbHexValueCsv.split(CSV.RGB_HAX_VALUE_DELIMITER);
+		this.rgbHexValueSet = rgbHexValueSet;
 	}
 
 	public function indexOf(checkedRgbHexValue:String):PaletteColorPosition

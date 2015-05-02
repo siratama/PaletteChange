@@ -14,4 +14,19 @@ class PaletteContainer
 		before = new PaletteArea(element, PaletteKind.BEFORE);
 		after = new PaletteArea(element, PaletteKind.AFTER);
 	}
+	public function changePage()
+	{
+		before.palette.update();
+		after.palette.update();
+	}
+	public function getPageMaximumIndex():Int
+	{
+		var beforeMaximumIndex = before.palette.getMaximumIndex();
+		var afterMaximumIndex = after.palette.getMaximumIndex();
+		return (beforeMaximumIndex >= afterMaximumIndex) ? beforeMaximumIndex: afterMaximumIndex;
+	}
+	public function getRgbHexValueSets():Array<Array<String>>
+	{
+		return [before.palette.rgbHexColorSet, after.palette.rgbHexColorSet];
+	}
 }

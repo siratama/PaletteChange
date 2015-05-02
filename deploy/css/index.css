@@ -53,11 +53,11 @@ button {
           width: 10px;
           height: 10px;
           border: 1px solid #555555; }
-        #canvas_color_sampler .container .area .frame .palette .line .cell.active {
-          border: 1px solid #888888; }
-        #canvas_color_sampler .container .area .frame .palette .line .cell.editable:hover {
+        #canvas_color_sampler .container .area .frame .palette .line .cell.active:hover, #canvas_color_sampler .container .area .frame .palette .line .cell.editable:hover {
           cursor: pointer;
           border: 1px solid #cccccc; }
+        #canvas_color_sampler .container .area .frame .palette .line .cell.active {
+          border: 1px solid #888888; }
       #canvas_color_sampler .container .area .frame .button_area {
         width: 36px;
         position: absolute;

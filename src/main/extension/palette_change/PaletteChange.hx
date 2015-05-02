@@ -3,7 +3,7 @@ import jQuery.JQuery;
 class PaletteChange
 {
 	private var element:JQuery;
-	private var runButton:RunButton;
+	public var runButton(default, null):RunButton;
 	public function new()
 	{
 		element =  new JQuery("#palette_changer");

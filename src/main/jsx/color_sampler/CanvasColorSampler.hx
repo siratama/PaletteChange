@@ -1,6 +1,6 @@
-package jsx;
+package jsx.color_sampler;
 
-import common.CSV;
+import haxe.Serializer;
 import psd.Layer;
 import jsx.util.LayersDisplay;
 import psd.Document;
@@ -47,7 +47,8 @@ class CanvasColorSampler
 			}
 		}
 		layersDisplay.restore();
-		return rgbHexValueSet.join(CSV.RGB_HAX_VALUE_DELIMITER);
+		//return rgbHexValueSet.join(CSV.RGB_HAX_VALUE_DELIMITER);
+		return Serializer.run(rgbHexValueSet);
 	}
 
 	/**

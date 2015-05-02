@@ -9,14 +9,14 @@
 --next
 
 -js deploy/jsx/CanvasColorSampler.jsx
--main jsx.CanvasColorSampler
+-main jsx.color_sampler.CanvasColorSampler
 -cp src/main
 -cp src/extern
 
 --next
 
 -js deploy/jsx/PaletteChange.jsx
--main jsx.PaletteChange
+-main jsx.palette_change.PaletteChange
 -cp src/main
 -cp src/extern
 

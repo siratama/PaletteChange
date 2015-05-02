@@ -1,8 +1,8 @@
-package jsx;
+package jsx.palette_change;
 
 import jsx.util.LayersDisplay;
 import js.html.Point;
-import jsx.PaletteInfo.PaletteColorPosition;
+import jsx.palette_change.PaletteInfo.PaletteColorPosition;
 import psd.RGBColor;
 import psd.SolidColor;
 import psd.Document;

@@ -20,4 +20,12 @@ class Button
 			clicked = true;
 		});
 	}
+	public function disable()
+	{
+		element.attr("disabled", "disabled");
+	}
+	public function removeDisabled()
+	{
+		element.removeAttr("disabled");
+	}
 }

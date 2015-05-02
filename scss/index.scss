@@ -84,14 +84,16 @@ button{
               height: $size;
               border: 1px solid $background-color + #222222;
             }
-            .cell.active{
-              border: 1px solid $background-color + #555555;
-            }
-            .cell.editable{
+            .cell.active, .cell.editable{
               &:hover {
                 cursor: pointer;
                 border: 1px solid $background-color + #999999;
               }
+            }
+            .cell.active{
+              border: 1px solid $background-color + #555555;
+            }
+            .cell.editable{
             }
           }
         }

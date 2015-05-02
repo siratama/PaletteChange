@@ -1,6 +1,31 @@
 (function () { "use strict";
+var $hxClasses = {};
 var HxOverrides = function() { };
+$hxClasses["HxOverrides"] = HxOverrides;
 HxOverrides.__name__ = true;
+HxOverrides.strDate = function(s) {
+	var _g = s.length;
+	switch(_g) {
+	case 8:
+		var k = s.split(":");
+		var d = new Date();
+		d.setTime(0);
+		d.setUTCHours(k[0]);
+		d.setUTCMinutes(k[1]);
+		d.setUTCSeconds(k[2]);
+		return d;
+	case 10:
+		var k1 = s.split("-");
+		return new Date(k1[0],k1[1] - 1,k1[2],0,0,0);
+	case 19:
+		var k2 = s.split(" ");
+		var y = k2[0].split("-");
+		var t = k2[1].split(":");
+		return new Date(y[0],y[1] - 1,y[2],t[0],t[1],t[2]);
+	default:
+		throw "Invalid date format : " + s;
+	}
+};
 HxOverrides.cca = function(s,index) {
 	var x = s.charCodeAt(index);
 	if(x != x) return undefined;
@@ -15,241 +40,425 @@ HxOverrides.substr = function(s,pos,len) {
 	} else if(len < 0) len = s.length + len - pos;
 	return s.substr(pos,len);
 };
+var List = function() {
+	this.length = 0;
+};
+$hxClasses["List"] = List;
+List.__name__ = true;
+List.prototype = {
+	add: function(item) {
+		var x = [item];
+		if(this.h == null) this.h = x; else this.q[1] = x;
+		this.q = x;
+		this.length++;
+	}
+	,__class__: List
+};
+var IMap = function() { };
+$hxClasses["IMap"] = IMap;
+IMap.__name__ = true;
+Math.__name__ = true;
 var Reflect = function() { };
+$hxClasses["Reflect"] = Reflect;
 Reflect.__name__ = true;
-Reflect.setField = function(o,field,value) {
-	o[field] = value;
+Reflect.field = function(o,field) {
+	try {
+		return o[field];
+	} catch( e ) {
+		return null;
+	}
+};
+Reflect.isFunction = function(f) {
+	return typeof(f) == "function" && !(f.__name__ || f.__ename__);
 };
 var Std = function() { };
+$hxClasses["Std"] = Std;
 Std.__name__ = true;
-Std.parseInt = function(x) {
-	var v = parseInt(x,10);
-	if(v == 0 && (HxOverrides.cca(x,1) == 120 || HxOverrides.cca(x,1) == 88)) v = parseInt(x);
-	if(isNaN(v)) return null;
-	return v;
-};
 Std.parseFloat = function(x) {
 	return parseFloat(x);
 };
-var StringBuf = function() {
-	this.b = "";
-};
-StringBuf.__name__ = true;
-StringBuf.prototype = {
-	addSub: function(s,pos,len) {
-		if(len == null) this.b += HxOverrides.substr(s,pos,null); else this.b += HxOverrides.substr(s,pos,len);
-	}
-	,__class__: StringBuf
-};
 var StringTools = function() { };
+$hxClasses["StringTools"] = StringTools;
 StringTools.__name__ = true;
 StringTools.fastCodeAt = function(s,index) {
 	return s.charCodeAt(index);
 };
-var common = {};
-common.CSV = function() { };
-common.CSV.__name__ = true;
-var haxe = {};
-haxe.format = {};
-haxe.format.JsonParser = function(str) {
-	this.str = str;
-	this.pos = 0;
+var Type = function() { };
+$hxClasses["Type"] = Type;
+Type.__name__ = true;
+Type.resolveClass = function(name) {
+	var cl = $hxClasses[name];
+	if(cl == null || !cl.__name__) return null;
+	return cl;
 };
-haxe.format.JsonParser.__name__ = true;
-haxe.format.JsonParser.prototype = {
-	parseRec: function() {
+Type.resolveEnum = function(name) {
+	var e = $hxClasses[name];
+	if(e == null || !e.__ename__) return null;
+	return e;
+};
+Type.createEmptyInstance = function(cl) {
+	function empty() {}; empty.prototype = cl.prototype;
+	return new empty();
+};
+Type.createEnum = function(e,constr,params) {
+	var f = Reflect.field(e,constr);
+	if(f == null) throw "No such constructor " + constr;
+	if(Reflect.isFunction(f)) {
+		if(params == null) throw "Constructor " + constr + " need parameters";
+		return f.apply(e,params);
+	}
+	if(params != null && params.length != 0) throw "Constructor " + constr + " does not need parameters";
+	return f;
+};
+Type.getEnumConstructs = function(e) {
+	var a = e.__constructs__;
+	return a.slice();
+};
+var haxe = {};
+haxe.Unserializer = function(buf) {
+	this.buf = buf;
+	this.length = buf.length;
+	this.pos = 0;
+	this.scache = new Array();
+	this.cache = new Array();
+	var r = haxe.Unserializer.DEFAULT_RESOLVER;
+	if(r == null) {
+		r = Type;
+		haxe.Unserializer.DEFAULT_RESOLVER = r;
+	}
+	this.setResolver(r);
+};
+$hxClasses["haxe.Unserializer"] = haxe.Unserializer;
+haxe.Unserializer.__name__ = true;
+haxe.Unserializer.initCodes = function() {
+	var codes = new Array();
+	var _g1 = 0;
+	var _g = haxe.Unserializer.BASE64.length;
+	while(_g1 < _g) {
+		var i = _g1++;
+		codes[haxe.Unserializer.BASE64.charCodeAt(i)] = i;
+	}
+	return codes;
+};
+haxe.Unserializer.run = function(v) {
+	return new haxe.Unserializer(v).unserialize();
+};
+haxe.Unserializer.prototype = {
+	setResolver: function(r) {
+		if(r == null) this.resolver = { resolveClass : function(_) {
+			return null;
+		}, resolveEnum : function(_1) {
+			return null;
+		}}; else this.resolver = r;
+	}
+	,get: function(p) {
+		return this.buf.charCodeAt(p);
+	}
+	,readDigits: function() {
+		var k = 0;
+		var s = false;
+		var fpos = this.pos;
 		while(true) {
-			var c = StringTools.fastCodeAt(this.str,this.pos++);
-			switch(c) {
-			case 32:case 13:case 10:case 9:
-				break;
-			case 123:
-				var obj = { };
-				var field = null;
-				var comma = null;
-				while(true) {
-					var c1 = StringTools.fastCodeAt(this.str,this.pos++);
-					switch(c1) {
-					case 32:case 13:case 10:case 9:
-						break;
-					case 125:
-						if(field != null || comma == false) this.invalidChar();
-						return obj;
-					case 58:
-						if(field == null) this.invalidChar();
-						Reflect.setField(obj,field,this.parseRec());
-						field = null;
-						comma = true;
-						break;
-					case 44:
-						if(comma) comma = false; else this.invalidChar();
-						break;
-					case 34:
-						if(comma) this.invalidChar();
-						field = this.parseString();
-						break;
-					default:
-						this.invalidChar();
-					}
-				}
-				break;
-			case 91:
-				var arr = [];
-				var comma1 = null;
-				while(true) {
-					var c2 = StringTools.fastCodeAt(this.str,this.pos++);
-					switch(c2) {
-					case 32:case 13:case 10:case 9:
-						break;
-					case 93:
-						if(comma1 == false) this.invalidChar();
-						return arr;
-					case 44:
-						if(comma1) comma1 = false; else this.invalidChar();
-						break;
-					default:
-						if(comma1) this.invalidChar();
-						this.pos--;
-						arr.push(this.parseRec());
-						comma1 = true;
-					}
-				}
-				break;
-			case 116:
-				var save = this.pos;
-				if(StringTools.fastCodeAt(this.str,this.pos++) != 114 || StringTools.fastCodeAt(this.str,this.pos++) != 117 || StringTools.fastCodeAt(this.str,this.pos++) != 101) {
-					this.pos = save;
-					this.invalidChar();
-				}
-				return true;
-			case 102:
-				var save1 = this.pos;
-				if(StringTools.fastCodeAt(this.str,this.pos++) != 97 || StringTools.fastCodeAt(this.str,this.pos++) != 108 || StringTools.fastCodeAt(this.str,this.pos++) != 115 || StringTools.fastCodeAt(this.str,this.pos++) != 101) {
-					this.pos = save1;
-					this.invalidChar();
-				}
-				return false;
-			case 110:
-				var save2 = this.pos;
-				if(StringTools.fastCodeAt(this.str,this.pos++) != 117 || StringTools.fastCodeAt(this.str,this.pos++) != 108 || StringTools.fastCodeAt(this.str,this.pos++) != 108) {
-					this.pos = save2;
-					this.invalidChar();
-				}
-				return null;
-			case 34:
-				return this.parseString();
-			case 48:case 49:case 50:case 51:case 52:case 53:case 54:case 55:case 56:case 57:case 45:
-				return this.parseNumber(c);
-			default:
-				this.invalidChar();
+			var c = this.buf.charCodeAt(this.pos);
+			if(c != c) break;
+			if(c == 45) {
+				if(this.pos != fpos) break;
+				s = true;
+				this.pos++;
+				continue;
 			}
+			if(c < 48 || c > 57) break;
+			k = k * 10 + (c - 48);
+			this.pos++;
 		}
+		if(s) k *= -1;
+		return k;
 	}
-	,parseString: function() {
-		var start = this.pos;
-		var buf = new StringBuf();
+	,unserializeObject: function(o) {
 		while(true) {
-			var c = StringTools.fastCodeAt(this.str,this.pos++);
-			if(c == 34) break;
-			if(c == 92) {
-				buf.addSub(this.str,start,this.pos - start - 1);
-				c = StringTools.fastCodeAt(this.str,this.pos++);
-				switch(c) {
-				case 114:
-					buf.b += "\r";
-					break;
-				case 110:
-					buf.b += "\n";
-					break;
-				case 116:
-					buf.b += "\t";
-					break;
-				case 98:
-					buf.b += "\x08";
-					break;
-				case 102:
-					buf.b += "\x0C";
-					break;
-				case 47:case 92:case 34:
-					buf.b += String.fromCharCode(c);
-					break;
-				case 117:
-					var uc = Std.parseInt("0x" + HxOverrides.substr(this.str,this.pos,4));
-					this.pos += 4;
-					buf.b += String.fromCharCode(uc);
-					break;
-				default:
-					throw "Invalid escape sequence \\" + String.fromCharCode(c) + " at position " + (this.pos - 1);
-				}
-				start = this.pos;
-			} else if(c != c) throw "Unclosed string";
+			if(this.pos >= this.length) throw "Invalid object";
+			if(this.buf.charCodeAt(this.pos) == 103) break;
+			var k = this.unserialize();
+			if(!(typeof(k) == "string")) throw "Invalid object key";
+			var v = this.unserialize();
+			o[k] = v;
 		}
-		buf.addSub(this.str,start,this.pos - start - 1);
-		return buf.b;
+		this.pos++;
 	}
-	,parseNumber: function(c) {
-		var start = this.pos - 1;
-		var minus = c == 45;
-		var digit = !minus;
-		var zero = c == 48;
-		var point = false;
-		var e = false;
-		var pm = false;
-		var end = false;
-		while(true) {
-			c = StringTools.fastCodeAt(this.str,this.pos++);
-			switch(c) {
-			case 48:
-				if(zero && !point) this.invalidNumber(start);
-				if(minus) {
-					minus = false;
-					zero = true;
-				}
-				digit = true;
-				break;
-			case 49:case 50:case 51:case 52:case 53:case 54:case 55:case 56:case 57:
-				if(zero && !point) this.invalidNumber(start);
-				if(minus) minus = false;
-				digit = true;
-				zero = false;
-				break;
-			case 46:
-				if(minus || point) this.invalidNumber(start);
-				digit = false;
-				point = true;
-				break;
-			case 101:case 69:
-				if(minus || zero || e) this.invalidNumber(start);
-				digit = false;
-				e = true;
-				break;
-			case 43:case 45:
-				if(!e || pm) this.invalidNumber(start);
-				digit = false;
-				pm = true;
-				break;
-			default:
-				if(!digit) this.invalidNumber(start);
-				this.pos--;
-				end = true;
+	,unserializeEnum: function(edecl,tag) {
+		if(this.get(this.pos++) != 58) throw "Invalid enum format";
+		var nargs = this.readDigits();
+		if(nargs == 0) return Type.createEnum(edecl,tag);
+		var args = new Array();
+		while(nargs-- > 0) args.push(this.unserialize());
+		return Type.createEnum(edecl,tag,args);
+	}
+	,unserialize: function() {
+		var _g = this.get(this.pos++);
+		switch(_g) {
+		case 110:
+			return null;
+		case 116:
+			return true;
+		case 102:
+			return false;
+		case 122:
+			return 0;
+		case 105:
+			return this.readDigits();
+		case 100:
+			var p1 = this.pos;
+			while(true) {
+				var c = this.buf.charCodeAt(this.pos);
+				if(c >= 43 && c < 58 || c == 101 || c == 69) this.pos++; else break;
 			}
-			if(end) break;
+			return Std.parseFloat(HxOverrides.substr(this.buf,p1,this.pos - p1));
+		case 121:
+			var len = this.readDigits();
+			if(this.get(this.pos++) != 58 || this.length - this.pos < len) throw "Invalid string length";
+			var s = HxOverrides.substr(this.buf,this.pos,len);
+			this.pos += len;
+			s = decodeURIComponent(s.split("+").join(" "));
+			this.scache.push(s);
+			return s;
+		case 107:
+			return Math.NaN;
+		case 109:
+			return Math.NEGATIVE_INFINITY;
+		case 112:
+			return Math.POSITIVE_INFINITY;
+		case 97:
+			var buf = this.buf;
+			var a = new Array();
+			this.cache.push(a);
+			while(true) {
+				var c1 = this.buf.charCodeAt(this.pos);
+				if(c1 == 104) {
+					this.pos++;
+					break;
+				}
+				if(c1 == 117) {
+					this.pos++;
+					var n = this.readDigits();
+					a[a.length + n - 1] = null;
+				} else a.push(this.unserialize());
+			}
+			return a;
+		case 111:
+			var o = { };
+			this.cache.push(o);
+			this.unserializeObject(o);
+			return o;
+		case 114:
+			var n1 = this.readDigits();
+			if(n1 < 0 || n1 >= this.cache.length) throw "Invalid reference";
+			return this.cache[n1];
+		case 82:
+			var n2 = this.readDigits();
+			if(n2 < 0 || n2 >= this.scache.length) throw "Invalid string reference";
+			return this.scache[n2];
+		case 120:
+			throw this.unserialize();
+			break;
+		case 99:
+			var name = this.unserialize();
+			var cl = this.resolver.resolveClass(name);
+			if(cl == null) throw "Class not found " + name;
+			var o1 = Type.createEmptyInstance(cl);
+			this.cache.push(o1);
+			this.unserializeObject(o1);
+			return o1;
+		case 119:
+			var name1 = this.unserialize();
+			var edecl = this.resolver.resolveEnum(name1);
+			if(edecl == null) throw "Enum not found " + name1;
+			var e = this.unserializeEnum(edecl,this.unserialize());
+			this.cache.push(e);
+			return e;
+		case 106:
+			var name2 = this.unserialize();
+			var edecl1 = this.resolver.resolveEnum(name2);
+			if(edecl1 == null) throw "Enum not found " + name2;
+			this.pos++;
+			var index = this.readDigits();
+			var tag = Type.getEnumConstructs(edecl1)[index];
+			if(tag == null) throw "Unknown enum index " + name2 + "@" + index;
+			var e1 = this.unserializeEnum(edecl1,tag);
+			this.cache.push(e1);
+			return e1;
+		case 108:
+			var l = new List();
+			this.cache.push(l);
+			var buf1 = this.buf;
+			while(this.buf.charCodeAt(this.pos) != 104) l.add(this.unserialize());
+			this.pos++;
+			return l;
+		case 98:
+			var h = new haxe.ds.StringMap();
+			this.cache.push(h);
+			var buf2 = this.buf;
+			while(this.buf.charCodeAt(this.pos) != 104) {
+				var s1 = this.unserialize();
+				h.set(s1,this.unserialize());
+			}
+			this.pos++;
+			return h;
+		case 113:
+			var h1 = new haxe.ds.IntMap();
+			this.cache.push(h1);
+			var buf3 = this.buf;
+			var c2 = this.get(this.pos++);
+			while(c2 == 58) {
+				var i = this.readDigits();
+				h1.set(i,this.unserialize());
+				c2 = this.get(this.pos++);
+			}
+			if(c2 != 104) throw "Invalid IntMap format";
+			return h1;
+		case 77:
+			var h2 = new haxe.ds.ObjectMap();
+			this.cache.push(h2);
+			var buf4 = this.buf;
+			while(this.buf.charCodeAt(this.pos) != 104) {
+				var s2 = this.unserialize();
+				h2.set(s2,this.unserialize());
+			}
+			this.pos++;
+			return h2;
+		case 118:
+			var d;
+			var s3 = HxOverrides.substr(this.buf,this.pos,19);
+			d = HxOverrides.strDate(s3);
+			this.cache.push(d);
+			this.pos += 19;
+			return d;
+		case 115:
+			var len1 = this.readDigits();
+			var buf5 = this.buf;
+			if(this.get(this.pos++) != 58 || this.length - this.pos < len1) throw "Invalid bytes length";
+			var codes = haxe.Unserializer.CODES;
+			if(codes == null) {
+				codes = haxe.Unserializer.initCodes();
+				haxe.Unserializer.CODES = codes;
+			}
+			var i1 = this.pos;
+			var rest = len1 & 3;
+			var size;
+			size = (len1 >> 2) * 3 + (rest >= 2?rest - 1:0);
+			var max = i1 + (len1 - rest);
+			var bytes = haxe.io.Bytes.alloc(size);
+			var bpos = 0;
+			while(i1 < max) {
+				var c11 = codes[StringTools.fastCodeAt(buf5,i1++)];
+				var c21 = codes[StringTools.fastCodeAt(buf5,i1++)];
+				bytes.set(bpos++,c11 << 2 | c21 >> 4);
+				var c3 = codes[StringTools.fastCodeAt(buf5,i1++)];
+				bytes.set(bpos++,c21 << 4 | c3 >> 2);
+				var c4 = codes[StringTools.fastCodeAt(buf5,i1++)];
+				bytes.set(bpos++,c3 << 6 | c4);
+			}
+			if(rest >= 2) {
+				var c12 = codes[StringTools.fastCodeAt(buf5,i1++)];
+				var c22 = codes[StringTools.fastCodeAt(buf5,i1++)];
+				bytes.set(bpos++,c12 << 2 | c22 >> 4);
+				if(rest == 3) {
+					var c31 = codes[StringTools.fastCodeAt(buf5,i1++)];
+					bytes.set(bpos++,c22 << 4 | c31 >> 2);
+				}
+			}
+			this.pos += len1;
+			this.cache.push(bytes);
+			return bytes;
+		case 67:
+			var name3 = this.unserialize();
+			var cl1 = this.resolver.resolveClass(name3);
+			if(cl1 == null) throw "Class not found " + name3;
+			var o2 = Type.createEmptyInstance(cl1);
+			this.cache.push(o2);
+			o2.hxUnserialize(this);
+			if(this.get(this.pos++) != 103) throw "Invalid custom data";
+			return o2;
+		default:
 		}
-		var f = Std.parseFloat(HxOverrides.substr(this.str,start,this.pos - start));
-		var i = f | 0;
-		if(i == f) return i; else return f;
-	}
-	,invalidChar: function() {
 		this.pos--;
-		throw "Invalid char " + this.str.charCodeAt(this.pos) + " at position " + this.pos;
+		throw "Invalid char " + this.buf.charAt(this.pos) + " at position " + this.pos;
 	}
-	,invalidNumber: function(start) {
-		throw "Invalid number at position " + start + ": " + HxOverrides.substr(this.str,start,this.pos - start);
+	,__class__: haxe.Unserializer
+};
+haxe.ds = {};
+haxe.ds.IntMap = function() {
+	this.h = { };
+};
+$hxClasses["haxe.ds.IntMap"] = haxe.ds.IntMap;
+haxe.ds.IntMap.__name__ = true;
+haxe.ds.IntMap.__interfaces__ = [IMap];
+haxe.ds.IntMap.prototype = {
+	set: function(key,value) {
+		this.h[key] = value;
 	}
-	,__class__: haxe.format.JsonParser
+	,__class__: haxe.ds.IntMap
+};
+haxe.ds.ObjectMap = function() {
+	this.h = { };
+	this.h.__keys__ = { };
+};
+$hxClasses["haxe.ds.ObjectMap"] = haxe.ds.ObjectMap;
+haxe.ds.ObjectMap.__name__ = true;
+haxe.ds.ObjectMap.__interfaces__ = [IMap];
+haxe.ds.ObjectMap.prototype = {
+	set: function(key,value) {
+		var id = key.__id__ || (key.__id__ = ++haxe.ds.ObjectMap.count);
+		this.h[id] = value;
+		this.h.__keys__[id] = key;
+	}
+	,__class__: haxe.ds.ObjectMap
+};
+haxe.ds.StringMap = function() {
+	this.h = { };
+};
+$hxClasses["haxe.ds.StringMap"] = haxe.ds.StringMap;
+haxe.ds.StringMap.__name__ = true;
+haxe.ds.StringMap.__interfaces__ = [IMap];
+haxe.ds.StringMap.prototype = {
+	set: function(key,value) {
+		this.h["$" + key] = value;
+	}
+	,__class__: haxe.ds.StringMap
+};
+haxe.io = {};
+haxe.io.Bytes = function(length,b) {
+	this.length = length;
+	this.b = b;
+};
+$hxClasses["haxe.io.Bytes"] = haxe.io.Bytes;
+haxe.io.Bytes.__name__ = true;
+haxe.io.Bytes.alloc = function(length) {
+	var a = new Array();
+	var _g = 0;
+	while(_g < length) {
+		var i = _g++;
+		a.push(0);
+	}
+	return new haxe.io.Bytes(length,a);
+};
+haxe.io.Bytes.prototype = {
+	set: function(pos,v) {
+		this.b[pos] = v & 255;
+	}
+	,__class__: haxe.io.Bytes
+};
+haxe.io.Eof = function() { };
+$hxClasses["haxe.io.Eof"] = haxe.io.Eof;
+haxe.io.Eof.__name__ = true;
+haxe.io.Eof.prototype = {
+	toString: function() {
+		return "Eof";
+	}
+	,__class__: haxe.io.Eof
 };
 var js = {};
 js.Boot = function() { };
+$hxClasses["js.Boot"] = js.Boot;
 js.Boot.__name__ = true;
 js.Boot.getClass = function(o) {
 	if((o instanceof Array) && o.__enum__ == null) return Array; else return o.__class__;
@@ -364,13 +573,15 @@ js.Boot.__instanceof = function(o,cl) {
 	}
 };
 js.Lib = function() { };
+$hxClasses["js.Lib"] = js.Lib;
 js.Lib.__name__ = true;
 js.Lib.alert = function(v) {
 	alert(js.Boot.__string_rec(v,""));
 };
 var jsx = {};
-jsx.Converter = function() {
-	if(jsx.PaletteInfo.instance == null) this.palletInfo = jsx.PaletteInfo.instance = new jsx.PaletteInfo(); else this.palletInfo = jsx.PaletteInfo.instance;
+jsx.palette_change = {};
+jsx.palette_change.Converter = function() {
+	if(jsx.palette_change.PaletteInfo.instance == null) this.palletInfo = jsx.palette_change.PaletteInfo.instance = new jsx.palette_change.PaletteInfo(); else this.palletInfo = jsx.palette_change.PaletteInfo.instance;
 	this.application = app;
 	this.activeDocument = this.application.activeDocument;
 	this.layers = this.activeDocument.layers;
@@ -379,8 +590,9 @@ jsx.Converter = function() {
 	this.execute();
 	this.layersDisplay.restore();
 };
-jsx.Converter.__name__ = true;
-jsx.Converter.prototype = {
+$hxClasses["jsx.palette_change.Converter"] = jsx.palette_change.Converter;
+jsx.palette_change.Converter.__name__ = true;
+jsx.palette_change.Converter.prototype = {
 	selectPixel: function(x,y) {
 		this.activeDocument.selection.select([[x,y],[x + 1,y],[x + 1,y + 1],[x,y + 1]]);
 	}
@@ -418,7 +630,7 @@ jsx.Converter.prototype = {
 					break;
 				case 1:
 					var index = palletColorPosition[2];
-					var conversionData = new jsx.ConversionData(new Point(x,y),this.palletInfo.after.rgbHexValueSet[index]);
+					var conversionData = new jsx.palette_change.ConversionData(new Point(x,y),this.palletInfo.after.rgbHexValueSet[index]);
 					conversionDataSet.push(conversionData);
 					break;
 				}
@@ -445,45 +657,48 @@ jsx.Converter.prototype = {
 		var duplicatedArtLayer = this.activeDocument.artLayers.getByName(duplicatedLayer.name);
 		duplicatedArtLayer.merge();
 	}
-	,__class__: jsx.Converter
+	,__class__: jsx.palette_change.Converter
 };
-jsx.ConversionData = function(pixel,rgbHexValue) {
+jsx.palette_change.ConversionData = function(pixel,rgbHexValue) {
 	this.pixel = pixel;
 	this.rgbHexValue = rgbHexValue;
 };
-jsx.ConversionData.__name__ = true;
-jsx.ConversionData.prototype = {
-	__class__: jsx.ConversionData
+$hxClasses["jsx.palette_change.ConversionData"] = jsx.palette_change.ConversionData;
+jsx.palette_change.ConversionData.__name__ = true;
+jsx.palette_change.ConversionData.prototype = {
+	__class__: jsx.palette_change.ConversionData
 };
-jsx.PaletteChange = function(code) {
+jsx.palette_change.PaletteChange = function(code) {
 	this.application = app;
-	if(jsx.PaletteInfo.instance == null) this.palletInfo = jsx.PaletteInfo.instance = new jsx.PaletteInfo(); else this.palletInfo = jsx.PaletteInfo.instance;
+	if(jsx.palette_change.PaletteInfo.instance == null) this.palletInfo = jsx.palette_change.PaletteInfo.instance = new jsx.palette_change.PaletteInfo(); else this.palletInfo = jsx.palette_change.PaletteInfo.instance;
 	this.palletInfo.convert(code);
 	if(!this.palletInfo.parsedResult) {
 		js.Lib.alert("code error");
 		return;
 	}
-	new jsx.Converter();
+	new jsx.palette_change.Converter();
 	js.Lib.alert("completed");
 };
-jsx.PaletteChange.__name__ = true;
-jsx.PaletteChange.main = function() {
+$hxClasses["jsx.palette_change.PaletteChange"] = jsx.palette_change.PaletteChange;
+jsx.palette_change.PaletteChange.__name__ = true;
+jsx.palette_change.PaletteChange.main = function() {
 };
-jsx.PaletteChange.prototype = {
-	__class__: jsx.PaletteChange
+jsx.palette_change.PaletteChange.prototype = {
+	__class__: jsx.palette_change.PaletteChange
 };
-jsx.PaletteInfo = function() {
+jsx.palette_change.PaletteInfo = function() {
 };
-jsx.PaletteInfo.__name__ = true;
-jsx.PaletteInfo.get_instance = function() {
-	if(jsx.PaletteInfo.instance == null) return jsx.PaletteInfo.instance = new jsx.PaletteInfo(); else return jsx.PaletteInfo.instance;
+$hxClasses["jsx.palette_change.PaletteInfo"] = jsx.palette_change.PaletteInfo;
+jsx.palette_change.PaletteInfo.__name__ = true;
+jsx.palette_change.PaletteInfo.get_instance = function() {
+	if(jsx.palette_change.PaletteInfo.instance == null) return jsx.palette_change.PaletteInfo.instance = new jsx.palette_change.PaletteInfo(); else return jsx.palette_change.PaletteInfo.instance;
 };
-jsx.PaletteInfo.prototype = {
+jsx.palette_change.PaletteInfo.prototype = {
 	convert: function(code) {
 		try {
-			var json = new haxe.format.JsonParser(code).parseRec();
-			this.before = new jsx.Palette(json[0]);
-			this.after = new jsx.Palette(json[1]);
+			var rgbHexValueSets = haxe.Unserializer.run(code);
+			this.before = new jsx.palette_change.Palette(rgbHexValueSets[0]);
+			this.after = new jsx.palette_change.Palette(rgbHexValueSets[1]);
 			this.parsedResult = true;
 		} catch( error ) {
 			if( js.Boot.__instanceof(error,String) ) {
@@ -491,28 +706,29 @@ jsx.PaletteInfo.prototype = {
 			} else throw(error);
 		}
 	}
-	,__class__: jsx.PaletteInfo
+	,__class__: jsx.palette_change.PaletteInfo
 };
-jsx.Palette = function(rgbHexValueCsv) {
-	this.rgbHexValueSet = rgbHexValueCsv.split(",");
+jsx.palette_change.Palette = function(rgbHexValueSet) {
+	this.rgbHexValueSet = rgbHexValueSet;
 };
-jsx.Palette.__name__ = true;
-jsx.Palette.prototype = {
+$hxClasses["jsx.palette_change.Palette"] = jsx.palette_change.Palette;
+jsx.palette_change.Palette.__name__ = true;
+jsx.palette_change.Palette.prototype = {
 	indexOf: function(checkedRgbHexValue) {
 		var _g1 = 0;
 		var _g = this.rgbHexValueSet.length;
 		while(_g1 < _g) {
 			var i = _g1++;
-			if(this.rgbHexValueSet[i] == checkedRgbHexValue) return jsx.PaletteColorPosition.EXSITS(i);
+			if(this.rgbHexValueSet[i] == checkedRgbHexValue) return jsx.palette_change.PaletteColorPosition.EXSITS(i);
 		}
-		return jsx.PaletteColorPosition.NONE;
+		return jsx.palette_change.PaletteColorPosition.NONE;
 	}
-	,__class__: jsx.Palette
+	,__class__: jsx.palette_change.Palette
 };
-jsx.PaletteColorPosition = { __ename__ : true, __constructs__ : ["NONE","EXSITS"] };
-jsx.PaletteColorPosition.NONE = ["NONE",0];
-jsx.PaletteColorPosition.NONE.__enum__ = jsx.PaletteColorPosition;
-jsx.PaletteColorPosition.EXSITS = function(index) { var $x = ["EXSITS",1,index]; $x.__enum__ = jsx.PaletteColorPosition; return $x; };
+jsx.palette_change.PaletteColorPosition = $hxClasses["jsx.palette_change.PaletteColorPosition"] = { __ename__ : true, __constructs__ : ["NONE","EXSITS"] };
+jsx.palette_change.PaletteColorPosition.NONE = ["NONE",0];
+jsx.palette_change.PaletteColorPosition.NONE.__enum__ = jsx.palette_change.PaletteColorPosition;
+jsx.palette_change.PaletteColorPosition.EXSITS = function(index) { var $x = ["EXSITS",1,index]; $x.__enum__ = jsx.palette_change.PaletteColorPosition; return $x; };
 jsx.util = {};
 jsx.util.Bounds = function(left,top,right,bottom) {
 	this.left = left;
@@ -520,6 +736,7 @@ jsx.util.Bounds = function(left,top,right,bottom) {
 	this.right = right;
 	this.bottom = bottom;
 };
+$hxClasses["jsx.util.Bounds"] = jsx.util.Bounds;
 jsx.util.Bounds.__name__ = true;
 jsx.util.Bounds.convert = function(bounds) {
 	return new jsx.util.Bounds(bounds[0].value,bounds[1].value,bounds[2].value,bounds[3].value);
@@ -534,6 +751,7 @@ jsx.util.LayersDisplay = function(layers) {
 	this.layers = layers;
 	this.defaultLayerVisibleSet = [];
 };
+$hxClasses["jsx.util.LayersDisplay"] = jsx.util.LayersDisplay;
 jsx.util.LayersDisplay.__name__ = true;
 jsx.util.LayersDisplay.prototype = {
 	hide: function() {
@@ -557,19 +775,34 @@ jsx.util.LayersDisplay.prototype = {
 	}
 	,__class__: jsx.util.LayersDisplay
 };
-String.prototype.__class__ = String;
+Math.NaN = Number.NaN;
+Math.NEGATIVE_INFINITY = Number.NEGATIVE_INFINITY;
+Math.POSITIVE_INFINITY = Number.POSITIVE_INFINITY;
+$hxClasses.Math = Math;
+Math.isFinite = function(i) {
+	return isFinite(i);
+};
+Math.isNaN = function(i1) {
+	return isNaN(i1);
+};
+String.prototype.__class__ = $hxClasses.String = String;
 String.__name__ = true;
+$hxClasses.Array = Array;
 Array.__name__ = true;
-var Int = { __name__ : ["Int"]};
-var Dynamic = { __name__ : ["Dynamic"]};
-var Float = Number;
+Date.prototype.__class__ = $hxClasses.Date = Date;
+Date.__name__ = ["Date"];
+var Int = $hxClasses.Int = { __name__ : ["Int"]};
+var Dynamic = $hxClasses.Dynamic = { __name__ : ["Dynamic"]};
+var Float = $hxClasses.Float = Number;
 Float.__name__ = ["Float"];
-var Bool = Boolean;
+var Bool = $hxClasses.Bool = Boolean;
 Bool.__ename__ = ["Bool"];
-var Class = { __name__ : ["Class"]};
+var Class = $hxClasses.Class = { __name__ : ["Class"]};
 var Enum = { };
-common.CSV.RGB_HAX_VALUE_DELIMITER = ",";
-jsx.PaletteChange.ATTENTION_WIDTH = 400;
-jsx.PaletteChange.ATTENTION_HEIGHT = 400;
-jsx.PaletteChange.main();
+haxe.Unserializer.DEFAULT_RESOLVER = Type;
+haxe.Unserializer.BASE64 = "ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz0123456789%:";
+haxe.ds.ObjectMap.count = 0;
+jsx.palette_change.PaletteChange.ATTENTION_WIDTH = 400;
+jsx.palette_change.PaletteChange.ATTENTION_HEIGHT = 400;
+jsx.palette_change.PaletteChange.main();
 })();

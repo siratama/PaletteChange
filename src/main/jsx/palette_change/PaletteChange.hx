@@ -1,4 +1,4 @@
-package jsx;
+package jsx.palette_change;
 
 import psd.Application;
 
@@ -16,7 +16,7 @@ class PaletteChange
 	}
 
 	/**
-	 * @code: ["000000,000000,000000, ...", "000000,000000,000000, ..."]
+	 * @code serialized: [[000000,000000,000000, ...], [000000,000000,000000, ...]]
 	 */
 	public function new(code:String)
 	{
