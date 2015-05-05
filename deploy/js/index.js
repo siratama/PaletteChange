@@ -112,6 +112,11 @@ Reflect.fields = function(o) {
 Reflect.isFunction = function(f) {
 	return typeof(f) == "function" && !(f.__name__ || f.__ename__);
 };
+Reflect.compareMethods = function(f1,f2) {
+	if(f1 == f2) return true;
+	if(!Reflect.isFunction(f1) || !Reflect.isFunction(f2)) return false;
+	return f1.scope == f2.scope && f1.method == f2.method && f1.method != null;
+};
 Reflect.deleteField = function(o,field) {
 	if(!Object.prototype.hasOwnProperty.call(o,field)) return false;
 	delete(o[field]);
@@ -231,14 +236,19 @@ common.CanvasColorSamplerEvent = $hxClasses["common.CanvasColorSamplerEvent"] = 
 common.CanvasColorSamplerEvent.NONE = ["NONE",0];
 common.CanvasColorSamplerEvent.NONE.__enum__ = common.CanvasColorSamplerEvent;
 common.CanvasColorSamplerEvent.RESULT = function(rgbHexColorSet) { var $x = ["RESULT",1,rgbHexColorSet]; $x.__enum__ = common.CanvasColorSamplerEvent; return $x; };
+common.InitialErrorEvent = $hxClasses["common.InitialErrorEvent"] = { __ename__ : ["common","InitialErrorEvent"], __constructs__ : ["NONE","ERROR"] };
+common.InitialErrorEvent.NONE = ["NONE",0];
+common.InitialErrorEvent.NONE.__enum__ = common.InitialErrorEvent;
+common.InitialErrorEvent.ERROR = function(message) { var $x = ["ERROR",1,message]; $x.__enum__ = common.InitialErrorEvent; return $x; };
 common.ClassName = function() { };
 $hxClasses["common.ClassName"] = common.ClassName;
 common.ClassName.__name__ = ["common","ClassName"];
-common.PalletChangeEvent = $hxClasses["common.PalletChangeEvent"] = { __ename__ : ["common","PalletChangeEvent"], __constructs__ : ["NONE","RESULT"] };
+common.PalletChangeEvent = $hxClasses["common.PalletChangeEvent"] = { __ename__ : ["common","PalletChangeEvent"], __constructs__ : ["NONE","SUCCESS","ERROR"] };
 common.PalletChangeEvent.NONE = ["NONE",0];
 common.PalletChangeEvent.NONE.__enum__ = common.PalletChangeEvent;
-common.PalletChangeEvent.RESULT = ["RESULT",1];
-common.PalletChangeEvent.RESULT.__enum__ = common.PalletChangeEvent;
+common.PalletChangeEvent.SUCCESS = ["SUCCESS",1];
+common.PalletChangeEvent.SUCCESS.__enum__ = common.PalletChangeEvent;
+common.PalletChangeEvent.ERROR = function(message) { var $x = ["ERROR",2,message]; $x.__enum__ = common.PalletChangeEvent; return $x; };
 var csinterface = {};
 csinterface.AbstractCSInterface = function(csInterface) {
 	this.csInterface = csInterface;
@@ -252,12 +262,171 @@ csinterface.AbstractCSInterface.prototype = {
 	getExtensionUri: function() {
 		return "file:///" + this.csInterface.getSystemPath(SystemPath.EXTENSION);
 	}
+	,getExtensionSystemPath: function() {
+		return this.csInterface.getSystemPath(SystemPath.EXTENSION);
+	}
 	,evalScript: function(script,callback) {
 		this.csInterface.evalScript(script,callback);
+	}
+	,evalFile: function(filePath,callback) {
+		this.csInterface.evalScript("$.evalFile(\"" + filePath + "\");",callback);
 	}
 	,__class__: csinterface.AbstractCSInterface
 };
 var extension = {};
+extension.JsxEvent = $hxClasses["extension.JsxEvent"] = { __ename__ : ["extension","JsxEvent"], __constructs__ : ["NONE","GOTTEN"] };
+extension.JsxEvent.NONE = ["NONE",0];
+extension.JsxEvent.NONE.__enum__ = extension.JsxEvent;
+extension.JsxEvent.GOTTEN = function(serializedEvent) { var $x = ["GOTTEN",1,serializedEvent]; $x.__enum__ = extension.JsxEvent; return $x; };
+extension.CanvasColorSamplerRunner = function() {
+	this.csInterface = csinterface.AbstractCSInterface.create();
+	if(extension.color_sampler.CanvasColorSampler.instance == null) this.canvasColorSampler = extension.color_sampler.CanvasColorSampler.instance = new extension.color_sampler.CanvasColorSampler(); else this.canvasColorSampler = extension.color_sampler.CanvasColorSampler.instance;
+	if(extension.overlay.OverlayWindow.instance == null) this.overlayWindow = extension.overlay.OverlayWindow.instance = new extension.overlay.OverlayWindow(); else this.overlayWindow = extension.overlay.OverlayWindow.instance;
+};
+$hxClasses["extension.CanvasColorSamplerRunner"] = extension.CanvasColorSamplerRunner;
+extension.CanvasColorSamplerRunner.__name__ = ["extension","CanvasColorSamplerRunner"];
+extension.CanvasColorSamplerRunner.prototype = {
+	run: function() {
+		this.mainFunction();
+	}
+	,call: function(clickedPaletteKind) {
+		var _g = this;
+		this.clickedPaletteKind = clickedPaletteKind;
+		this.overlayWindow.showCanvasColorSamplerRunning();
+		this.jsxEvent = extension.JsxEvent.NONE;
+		this.csInterface.evalScript("var " + "canvasColorSampler" + " = new " + "CanvasColorSampler" + "();");
+		this.csInterface.evalScript("" + "canvasColorSampler" + ".getInitialErrorEvent();",function(result) {
+			_g.jsxEvent = extension.JsxEvent.GOTTEN(result);
+		});
+		this.mainFunction = $bind(this,this.observeToRecieveInitialErrorEvent);
+	}
+	,observeToRecieveInitialErrorEvent: function() {
+		{
+			var _g = this.recieveJsxEvent();
+			switch(_g[1]) {
+			case 0:
+				return;
+			case 1:
+				var serializedEvent = _g[2];
+				var initialErrorEvent = haxe.Unserializer.run(serializedEvent);
+				switch(initialErrorEvent[1]) {
+				case 1:
+					var message = initialErrorEvent[2];
+					js.Lib.alert(message);
+					this.destroy();
+					break;
+				case 0:
+					this.csInterface.evalScript("" + "canvasColorSampler" + ".initialize();");
+					this.mainFunction = $bind(this,this.sampleCanvasColor);
+					break;
+				}
+				break;
+			}
+		}
+	}
+	,sampleCanvasColor: function() {
+		var _g = this;
+		if(this.overlayWindow.cancelButton.isClicked()) this.destroy(); else {
+			this.jsxEvent = extension.JsxEvent.NONE;
+			this.csInterface.evalScript("" + "canvasColorSampler" + ".run();");
+			this.csInterface.evalScript("" + "canvasColorSampler" + ".getSerializedEvent();",function(result) {
+				_g.jsxEvent = extension.JsxEvent.GOTTEN(result);
+			});
+			this.mainFunction = $bind(this,this.observeToSampleCanvasColor);
+		}
+	}
+	,observeToSampleCanvasColor: function() {
+		{
+			var _g = this.recieveJsxEvent();
+			switch(_g[1]) {
+			case 0:
+				return;
+			case 1:
+				var serializedEvent = _g[2];
+				var canvasColorSamplerEvent = haxe.Unserializer.run(serializedEvent);
+				switch(canvasColorSamplerEvent[1]) {
+				case 0:
+					this.mainFunction = $bind(this,this.sampleCanvasColor);
+					break;
+				case 1:
+					var rgbHexColorSet = canvasColorSamplerEvent[2];
+					var _g1 = this.clickedPaletteKind;
+					switch(_g1[1]) {
+					case 0:
+						this.canvasColorSampler.palletContainer.before.palette.updateRgbHexColorSet(rgbHexColorSet);
+						break;
+					case 1:
+						this.canvasColorSampler.palletContainer.after.palette.updateRgbHexColorSet(rgbHexColorSet);
+						break;
+					}
+					this.canvasColorSampler.updatePageIndex();
+					this.destroy();
+					break;
+				}
+				break;
+			}
+		}
+	}
+	,recieveJsxEvent: function() {
+		var n = this.jsxEvent;
+		this.jsxEvent = extension.JsxEvent.NONE;
+		return n;
+	}
+	,destroy: function() {
+		this.overlayWindow.hide();
+		this.mainFunction = $bind(this,this.finish);
+	}
+	,finish: function() {
+	}
+	,isFinished: function() {
+		return Reflect.compareMethods(this.mainFunction,$bind(this,this.finish));
+	}
+	,__class__: extension.CanvasColorSamplerRunner
+};
+extension.JsxLoader = function() {
+	this.csInterface = csinterface.AbstractCSInterface.create();
+	this.loadCanvasColorSampler();
+};
+$hxClasses["extension.JsxLoader"] = extension.JsxLoader;
+extension.JsxLoader.__name__ = ["extension","JsxLoader"];
+extension.JsxLoader.prototype = {
+	getJsxPath: function(fileName) {
+		return this.csInterface.getExtensionSystemPath() + "/jsx/" + fileName + ".jsx";
+	}
+	,run: function() {
+		this.mainFunction();
+	}
+	,loadCanvasColorSampler: function() {
+		var _g = this;
+		this.loaded = false;
+		var filePath = this.getJsxPath("CanvasColorSampler");
+		this.csInterface.evalFile(filePath,function(result) {
+			_g.loaded = true;
+		});
+		this.mainFunction = $bind(this,this.observeToLoadCanvasColorSampler);
+	}
+	,observeToLoadCanvasColorSampler: function() {
+		if(this.loaded) this.loadPaletteChange();
+	}
+	,loadPaletteChange: function() {
+		var _g = this;
+		this.loaded = false;
+		var filePath = this.getJsxPath("PaletteChange");
+		this.csInterface.evalFile(filePath,function(result) {
+			_g.loaded = true;
+		});
+		this.mainFunction = $bind(this,this.observeToLoadPaletteChange);
+	}
+	,observeToLoadPaletteChange: function() {
+		if(this.loaded) this.mainFunction = $bind(this,this.finish);
+	}
+	,finish: function() {
+	}
+	,isFinished: function() {
+		return Reflect.compareMethods(this.mainFunction,$bind(this,this.finish));
+	}
+	,__class__: extension.JsxLoader
+};
 extension.Panel = function() {
 	window.addEventListener("load",$bind(this,this.initialize));
 };
@@ -268,57 +437,44 @@ extension.Panel.main = function() {
 };
 extension.Panel.prototype = {
 	initialize: function(event) {
-		this.canvasColorSampler = new extension.color_sampler.CanvasColorSampler();
+		this.csInterface = csinterface.AbstractCSInterface.create();
+		this.jsxLoader = new extension.JsxLoader();
+		if(extension.color_sampler.CanvasColorSampler.instance == null) this.canvasColorSampler = extension.color_sampler.CanvasColorSampler.instance = new extension.color_sampler.CanvasColorSampler(); else this.canvasColorSampler = extension.color_sampler.CanvasColorSampler.instance;
 		this.paletteChange = new extension.palette_change.PaletteChange();
-		this.mainFunction = $bind(this,this.observeToClickUI);
+		if(extension.option.Setting.instance == null) extension.option.Setting.instance = new extension.option.Setting(); else extension.option.Setting.instance;
+		if(extension.overlay.OverlayWindow.instance == null) this.overlayWindow = extension.overlay.OverlayWindow.instance = new extension.overlay.OverlayWindow(); else this.overlayWindow = extension.overlay.OverlayWindow.instance;
+		this.canvasColorSamplerRunner = new extension.CanvasColorSamplerRunner();
+		this.mainFunction = $bind(this,this.loadJsx);
 		this.timer = new haxe.Timer(100);
 		this.timer.run = $bind(this,this.run);
 	}
 	,run: function() {
 		this.mainFunction();
 	}
+	,loadJsx: function() {
+		this.jsxLoader.run();
+		if(this.jsxLoader.isFinished()) this.mainFunction = $bind(this,this.observeToClickUI);
+	}
 	,observeToClickUI: function() {
 		this.canvasColorSampler.run();
-		if(this.canvasColorSampler.palletContainer.before.scanButton.isClicked()) this.callCanvasColorSampler(extension.color_sampler.palette.PaletteKind.BEFORE); else if(this.canvasColorSampler.palletContainer.after.scanButton.isClicked()) this.callCanvasColorSampler(extension.color_sampler.palette.PaletteKind.AFTER); else if(this.paletteChange.runButton.isClicked()) this.callPaletteChange(this.canvasColorSampler.palletContainer.getRgbHexValueSets());
+		if(this.canvasColorSampler.palletContainer.before.scanButton.isClicked()) this.initializeToCallCanvasColorSampler(extension.color_sampler.palette.PaletteKind.BEFORE); else if(this.canvasColorSampler.palletContainer.after.scanButton.isClicked()) this.initializeToCallCanvasColorSampler(extension.color_sampler.palette.PaletteKind.AFTER); else if(this.paletteChange.runButton.isClicked()) this.callPaletteChange();
 	}
-	,callCanvasColorSampler: function(clickedPaletteKind) {
-		this.clickedPaletteKind = clickedPaletteKind;
-		var test = ["ff0000","00ff00","0000ff"];
-		var data = haxe.Serializer.run(test);
-		this.canvasColorSamplerEvent = haxe.Unserializer.run(data);
-		this.mainFunction = $bind(this,this.sampleCanvasColor);
+	,initializeToCallCanvasColorSampler: function(paletteKind) {
+		this.canvasColorSamplerRunner.call(paletteKind);
+		this.mainFunction = $bind(this,this.callCanvasColorSampler);
 	}
-	,getCanvasColorSamplerEvent: function() {
-		var n = this.canvasColorSamplerEvent;
-		this.canvasColorSamplerEvent = common.CanvasColorSamplerEvent.NONE;
-		return n;
+	,callCanvasColorSampler: function() {
+		this.canvasColorSamplerRunner.run();
+		if(this.canvasColorSamplerRunner.isFinished()) this.mainFunction = $bind(this,this.observeToClickUI);
 	}
-	,sampleCanvasColor: function() {
-		var event = this.getCanvasColorSamplerEvent();
-		switch(event[1]) {
-		case 0:
-			return;
-		case 1:
-			var rgbHexColorSet = event[2];
-			var _g = this.clickedPaletteKind;
-			switch(_g[1]) {
-			case 0:
-				this.canvasColorSampler.palletContainer.before.palette.addRgbHexColorSet(rgbHexColorSet);
-				break;
-			case 1:
-				this.canvasColorSampler.palletContainer.after.palette.addRgbHexColorSet(rgbHexColorSet);
-				break;
-			}
-			break;
-		}
-		this.canvasColorSampler.updatePageIndex();
-		this.mainFunction = $bind(this,this.observeToClickUI);
-	}
-	,callPaletteChange: function(rgbHexValueSets) {
+	,callPaletteChange: function() {
 		var _g = this;
+		var rgbHexValueSets = this.canvasColorSampler.palletContainer.getRgbHexValueSets();
 		var data = haxe.Serializer.run(rgbHexValueSets);
-		this.csInterface.evalScript("new " + "PalletChange" + "(" + data + ");",function(data1) {
-			_g.paletteChangeEvent = haxe.Unserializer.run(data1);
+		this.paletteChangeEvent = common.PalletChangeEvent.NONE;
+		this.csInterface.evalScript("var " + "paletteChange" + " = new " + "PaletteChange" + "(" + data + ");");
+		this.csInterface.evalScript("" + "paletteChange" + ".execute(" + data + ");",function(result) {
+			_g.paletteChangeEvent = haxe.Unserializer.run(result);
 		});
 		this.mainFunction = $bind(this,this.changePalette);
 	}
@@ -332,6 +488,11 @@ extension.Panel.prototype = {
 		switch(event[1]) {
 		case 0:
 			return;
+		case 2:
+			var message = event[2];
+			js.Lib.alert(message);
+			this.mainFunction = $bind(this,this.observeToClickUI);
+			break;
 		case 1:
 			this.mainFunction = $bind(this,this.observeToClickUI);
 			break;
@@ -344,11 +505,19 @@ extension.color_sampler.CanvasColorSampler = function() {
 	this.element = new $("#canvas_color_sampler");
 	this.palletContainer = new extension.color_sampler.PaletteContainer(this.element);
 	if(extension.color_sampler.PageUI.instance == null) this.pageUI = extension.color_sampler.PageUI.instance = new extension.color_sampler.PageUI(); else this.pageUI = extension.color_sampler.PageUI.instance;
+	new extension.parts.TitleBar("title_canvas_color_sampler",this.element);
 };
 $hxClasses["extension.color_sampler.CanvasColorSampler"] = extension.color_sampler.CanvasColorSampler;
 extension.color_sampler.CanvasColorSampler.__name__ = ["extension","color_sampler","CanvasColorSampler"];
+extension.color_sampler.CanvasColorSampler.get_instance = function() {
+	if(extension.color_sampler.CanvasColorSampler.instance == null) return extension.color_sampler.CanvasColorSampler.instance = new extension.color_sampler.CanvasColorSampler(); else return extension.color_sampler.CanvasColorSampler.instance;
+};
 extension.color_sampler.CanvasColorSampler.prototype = {
 	run: function() {
+		this.ovservePageUI();
+		this.ovserveClearButton();
+	}
+	,ovservePageUI: function() {
 		this.pageUI.run();
 		var pageUIEvent = this.pageUI.getEvent();
 		switch(pageUIEvent[1]) {
@@ -358,6 +527,8 @@ extension.color_sampler.CanvasColorSampler.prototype = {
 			this.palletContainer.changePage();
 			break;
 		}
+	}
+	,ovserveClearButton: function() {
 		if(this.palletContainer.before.clearButton.isClicked()) {
 			this.palletContainer.before.palette.clear();
 			this.updatePageIndex();
@@ -419,9 +590,11 @@ extension.color_sampler.PageUI.prototype = {
 		var beforeMaximumIndex = this.pageNumber.maximumIndex;
 		var wasMaximum = this.pageNumber.isMaximum();
 		var wasMinimum = this.pageNumber.isMinimum();
-		this.pageNumber.changeMaximumIndex(maximumIndex);
+		this.pageNumber.setMaximumIndex(maximumIndex);
+		if(beforeMaximumIndex < maximumIndex && this.nextButton.isDisabled()) this.nextButton.removeDisabled(); else if(beforeMaximumIndex > maximumIndex) this.pageNumber.setIndex(maximumIndex);
 		if(this.pageNumber.isMaximum()) this.nextButton.disable();
 		if(this.pageNumber.isMinimum()) this.prevButton.disable();
+		this.pageNumber.draw();
 		if(beforeMaximumIndex == maximumIndex) return extension.color_sampler.PageMaximumChangeEvent.NONE; else if(beforeMaximumIndex > maximumIndex) return extension.color_sampler.PageMaximumChangeEvent.DOWN; else return extension.color_sampler.PageMaximumChangeEvent.UP;
 	}
 	,run: function() {
@@ -464,9 +637,11 @@ extension.color_sampler.PageNumber.prototype = {
 	,isMaximum: function() {
 		return this.index == this.maximumIndex;
 	}
-	,changeMaximumIndex: function(maximumIndex) {
+	,setMaximumIndex: function(maximumIndex) {
 		this.maximumIndex = maximumIndex;
-		this.index = maximumIndex;
+	}
+	,setIndex: function(index) {
+		this.index = index;
 	}
 	,draw: function() {
 		this.element.text(this.index + 1);
@@ -477,7 +652,7 @@ extension.parts = {};
 extension.parts.Button = function(parentElement,className) {
 	var _g = this;
 	this.element = new $("." + className,parentElement);
-	this.element.click(function(event) {
+	this.element.mousedown(function(event) {
 		_g.clicked = true;
 	});
 };
@@ -494,6 +669,9 @@ extension.parts.Button.prototype = {
 	}
 	,removeDisabled: function() {
 		this.element.removeAttr("disabled");
+	}
+	,isDisabled: function() {
+		return this.element.attr("disabled") != null;
 	}
 	,__class__: extension.parts.Button
 };
@@ -527,7 +705,12 @@ extension.color_sampler.PaletteContainer.prototype = {
 		if(beforeMaximumIndex >= afterMaximumIndex) return beforeMaximumIndex; else return afterMaximumIndex;
 	}
 	,getRgbHexValueSets: function() {
-		return [this.before.palette.rgbHexColorSet,this.after.palette.rgbHexColorSet];
+		var beforePalette = this.before.palette.rgbHexColorSet.slice();
+		var afterPalette = this.after.palette.rgbHexColorSet.slice();
+		var beforeLength = beforePalette.length;
+		var afterLength = afterPalette.length;
+		if(beforeLength > afterLength) beforePalette.splice(0,afterLength); else if(afterLength > beforeLength) afterPalette.splice(0,beforeLength);
+		return [beforePalette,afterPalette];
 	}
 	,__class__: extension.color_sampler.PaletteContainer
 };
@@ -541,9 +724,11 @@ extension.color_sampler.palette.ClearButton.__super__ = extension.parts.Button;
 extension.color_sampler.palette.ClearButton.prototype = $extend(extension.parts.Button.prototype,{
 	__class__: extension.color_sampler.palette.ClearButton
 });
-extension.color_sampler.palette.Palette = function(parentElement) {
+extension.color_sampler.palette.Palette = function(parentElement,kind) {
+	this.kind = kind;
 	this.PAGE_CELL_TOTAL = 50;
 	this.element = new $(".palette",parentElement);
+	this.rgbHexColorMap = new haxe.ds.StringMap();
 	this.rgbHexColorSet = [];
 	this.lines = [];
 	var _g = 0;
@@ -556,16 +741,45 @@ extension.color_sampler.palette.Palette = function(parentElement) {
 $hxClasses["extension.color_sampler.palette.Palette"] = extension.color_sampler.palette.Palette;
 extension.color_sampler.palette.Palette.__name__ = ["extension","color_sampler","palette","Palette"];
 extension.color_sampler.palette.Palette.prototype = {
-	addRgbHexColor: function(rgbHexColor) {
-		this.rgbHexColorSet.push(rgbHexColor);
+	updateRgbHexColor: function(addedRgbHexColor) {
+		this.updateAllowDuplicateColor();
+		this.addRgbHexColor(addedRgbHexColor);
 		this.update();
 	}
-	,addRgbHexColorSet: function(rgbHexColorSet) {
-		this.rgbHexColorSet = this.rgbHexColorSet.concat(rgbHexColorSet);
+	,updateRgbHexColorSet: function(addedRgbHexColorSet) {
+		this.updateAllowDuplicateColor();
+		this.addRgbHexColorSet(addedRgbHexColorSet);
 		this.update();
+	}
+	,updateAllowDuplicateColor: function() {
+		var _g = this.kind;
+		switch(_g[1]) {
+		case 0:
+			this.allowDuplicateColor = false;
+			break;
+		case 1:
+			this.allowDuplicateColor = (extension.option.Setting.instance == null?extension.option.Setting.instance = new extension.option.Setting():extension.option.Setting.instance).isAllowedDuplucatePalletColorInPalletAfter();
+			break;
+		}
+		console.log(this.allowDuplicateColor);
+	}
+	,addRgbHexColorSet: function(addedRgbHexColorSet) {
+		var _g1 = 0;
+		var _g = addedRgbHexColorSet.length;
+		while(_g1 < _g) {
+			var i = _g1++;
+			this.addRgbHexColor(addedRgbHexColorSet[i]);
+		}
+	}
+	,addRgbHexColor: function(addedRgbHexColor) {
+		var exists = this.rgbHexColorMap.exists(addedRgbHexColor);
+		if(exists && !this.allowDuplicateColor) return;
+		this.rgbHexColorMap.set(addedRgbHexColor,true);
+		this.rgbHexColorSet.push(addedRgbHexColor);
 	}
 	,clear: function() {
 		this.rgbHexColorSet = [];
+		this.rgbHexColorMap = new haxe.ds.StringMap();
 		this.update();
 	}
 	,getMaximumIndex: function() {
@@ -580,10 +794,10 @@ extension.color_sampler.palette.Palette.prototype = {
 		var _g = 0;
 		while(_g < 5) {
 			var i = _g++;
-			var splicedStartPosition = displayedFirstCellIndex + i * 5;
-			var line = this.lines[i];
+			var splicedStartPosition = displayedFirstCellIndex + i * 10;
 			var lineRgbHexColorSet;
-			if(splicedStartPosition > this.rgbHexColorSet.length) lineRgbHexColorSet = []; else if(splicedStartPosition + 5 < this.rgbHexColorSet.length) lineRgbHexColorSet = this.rgbHexColorSet.splice(splicedStartPosition,5); else lineRgbHexColorSet = this.rgbHexColorSet.splice(splicedStartPosition,this.rgbHexColorSet.length - splicedStartPosition);
+			if(splicedStartPosition > this.rgbHexColorSet.length) lineRgbHexColorSet = []; else if(splicedStartPosition + 10 < this.rgbHexColorSet.length) lineRgbHexColorSet = this.rgbHexColorSet.slice(splicedStartPosition,splicedStartPosition + 10); else lineRgbHexColorSet = this.rgbHexColorSet.slice(splicedStartPosition);
+			var line = this.lines[i];
 			line.update(lineRgbHexColorSet);
 		}
 	}
@@ -602,7 +816,7 @@ extension.color_sampler.palette.Palette.prototype = {
 	,getLastFilledLineIndex: function() {
 		var startPosition = (extension.color_sampler.PageUI.instance == null?extension.color_sampler.PageUI.instance = new extension.color_sampler.PageUI():extension.color_sampler.PageUI.instance).pageNumber.index * this.PAGE_CELL_TOTAL;
 		var coloringCellTotal = this.rgbHexColorSet.length - startPosition;
-		if(coloringCellTotal >= this.PAGE_CELL_TOTAL) return extension.color_sampler.palette.LastFilledLine.ANOTHER_PAGE; else return extension.color_sampler.palette.LastFilledLine.INDEX(Math.floor(coloringCellTotal / 5));
+		if(coloringCellTotal >= this.PAGE_CELL_TOTAL || coloringCellTotal < 0) return extension.color_sampler.palette.LastFilledLine.ANOTHER_PAGE; else return extension.color_sampler.palette.LastFilledLine.INDEX(Math.floor(coloringCellTotal / 10));
 	}
 	,__class__: extension.color_sampler.palette.Palette
 };
@@ -683,7 +897,7 @@ extension.color_sampler.palette.PaletteArea = function(parentElement,kind) {
 		break;
 	}
 	this.element = new $("." + idName,parentElement);
-	this.palette = new extension.color_sampler.palette.Palette(this.element);
+	this.palette = new extension.color_sampler.palette.Palette(this.element,kind);
 	this.scanButton = new extension.color_sampler.palette.ScanButton(this.element,"scan_button");
 	this.clearButton = new extension.color_sampler.palette.ClearButton(this.element,"clear_button");
 };
@@ -706,6 +920,52 @@ extension.color_sampler.palette.ScanButton.__super__ = extension.parts.Button;
 extension.color_sampler.palette.ScanButton.prototype = $extend(extension.parts.Button.prototype,{
 	__class__: extension.color_sampler.palette.ScanButton
 });
+extension.option = {};
+extension.option.Setting = function() {
+	this.element = new $("#setting");
+	new extension.parts.TitleBar("title_option",this.element);
+};
+$hxClasses["extension.option.Setting"] = extension.option.Setting;
+extension.option.Setting.__name__ = ["extension","option","Setting"];
+extension.option.Setting.get_instance = function() {
+	if(extension.option.Setting.instance == null) return extension.option.Setting.instance = new extension.option.Setting(); else return extension.option.Setting.instance;
+};
+extension.option.Setting.prototype = {
+	isAllowedDuplucatePalletColorInPalletAfter: function() {
+		return this.isChecked("duplicate_color");
+	}
+	,isIgnoredLockedLayerPaint: function() {
+		return this.isChecked("ignore_locked");
+	}
+	,isChecked: function(className) {
+		return new $("." + className,this.element)["is"](":checked");
+	}
+	,__class__: extension.option.Setting
+};
+extension.overlay = {};
+extension.overlay.OverlayWindow = function() {
+	this.element = new $("#overlay");
+	this.cancelButton = new extension.parts.Button(this.element,"cancel_button");
+	this.messageElement = new $(".message",this.element);
+};
+$hxClasses["extension.overlay.OverlayWindow"] = extension.overlay.OverlayWindow;
+extension.overlay.OverlayWindow.__name__ = ["extension","overlay","OverlayWindow"];
+extension.overlay.OverlayWindow.get_instance = function() {
+	if(extension.overlay.OverlayWindow.instance == null) return extension.overlay.OverlayWindow.instance = new extension.overlay.OverlayWindow(); else return extension.overlay.OverlayWindow.instance;
+};
+extension.overlay.OverlayWindow.prototype = {
+	showCanvasColorSamplerRunning: function() {
+		this.show("Color sampling...");
+	}
+	,show: function(message) {
+		this.messageElement.text(message);
+		this.element.fadeIn("fast");
+	}
+	,hide: function() {
+		this.element.fadeOut("fast");
+	}
+	,__class__: extension.overlay.OverlayWindow
+};
 extension.palette_change = {};
 extension.palette_change.PaletteChange = function() {
 	this.element = new $("#palette_changer");
@@ -725,6 +985,17 @@ extension.palette_change.RunButton.__super__ = extension.parts.Button;
 extension.palette_change.RunButton.prototype = $extend(extension.parts.Button.prototype,{
 	__class__: extension.palette_change.RunButton
 });
+extension.parts.TitleBar = function(titleBarId,slideElement) {
+	var titleElement = new $("#" + titleBarId);
+	titleElement.mousedown(function(event) {
+		if(slideElement["is"](":hidden")) slideElement.slideDown("fast"); else slideElement.slideUp("fast");
+	});
+};
+$hxClasses["extension.parts.TitleBar"] = extension.parts.TitleBar;
+extension.parts.TitleBar.__name__ = ["extension","parts","TitleBar"];
+extension.parts.TitleBar.prototype = {
+	__class__: extension.parts.TitleBar
+};
 var haxe = {};
 haxe.Serializer = function() {
 	this.buf = new StringBuf();
@@ -1324,6 +1595,9 @@ haxe.ds.StringMap.prototype = {
 	,get: function(key) {
 		return this.h["$" + key];
 	}
+	,exists: function(key) {
+		return this.h.hasOwnProperty("$" + key);
+	}
 	,keys: function() {
 		var a = [];
 		for( var key in this.h ) {
@@ -1438,6 +1712,12 @@ js.Boot.__string_rec = function(o,s) {
 		return String(o);
 	}
 };
+js.Lib = function() { };
+$hxClasses["js.Lib"] = js.Lib;
+js.Lib.__name__ = ["js","Lib"];
+js.Lib.alert = function(v) {
+	alert(js.Boot.__string_rec(v,""));
+};
 var $_, $fid = 0;
 function $bind(o,m) { if( m == null ) return null; if( m.__id__ == null ) m.__id__ = $fid++; var f; if( o.hx__closures__ == null ) o.hx__closures__ = {}; else f = o.hx__closures__[m.__id__]; if( f == null ) { f = function(){ return f.method.apply(f.scope, arguments); }; f.scope = o; f.method = m; o.hx__closures__[m.__id__] = f; } return f; }
 Math.NaN = Number.NaN;
@@ -1457,10 +1737,17 @@ Array.__name__ = ["Array"];
 Date.prototype.__class__ = $hxClasses.Date = Date;
 Date.__name__ = ["Date"];
 common.ClassName.CANVAS_COLOR_SAMPLER = "CanvasColorSampler";
-common.ClassName.PALETTE_CHANGE = "PalletChange";
+common.ClassName.PALETTE_CHANGE = "PaletteChange";
+common.ClassName.INITIAL_ERROR_CHECK = "InitialErrorCheck";
+extension.CanvasColorSamplerRunner.CANVAS_COLOR_SAMPLER_INSTANCE_NAME = "canvasColorSampler";
+extension.JsxLoader.JSX_DIRECTORY = "/jsx/";
+extension.JsxLoader.JSX_EXTENSION = ".jsx";
+extension.Panel.PALETTE_CHANGE_INSTANCE_NAME = "paletteChange";
 extension.color_sampler.PageNumber.DEFAULT_INDEX = 0;
 extension.color_sampler.palette.Palette.LINE_TOTAL = 5;
 extension.color_sampler.palette.Line.CELL_TOTAL = 10;
+extension.overlay.OverlayWindow.FACE_SPEED = "fast";
+extension.parts.TitleBar.SLIDE_SPEED = "fast";
 haxe.Serializer.USE_CACHE = false;
 haxe.Serializer.USE_ENUM_INDEX = false;
 haxe.Serializer.BASE64 = "ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz0123456789%:";

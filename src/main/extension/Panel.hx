@@ -1,7 +1,8 @@
 package extension;
 
+import extension.overlay.OverlayWindow;
+import extension.option.Setting;
 import common.PalletChangeEvent;
-import common.CanvasColorSamplerEvent;
 import common.ClassName;
 import extension.color_sampler.palette.PaletteKind;
 import extension.palette_change.PaletteChange;
@@ -17,13 +18,17 @@ class Panel
 	private var csInterface:AbstractCSInterface;
 	private var timer:Timer;
 	private var mainFunction:Void->Void;
+	private var jsxLoader:JsxLoader;
+	private var overlayWindow:OverlayWindow;
+	private var canvasColorSamplerRunner:CanvasColorSamplerRunner;
 
 	private var canvasColorSampler:CanvasColorSampler;
-	private var canvasColorSamplerEvent:CanvasColorSamplerEvent;
-	private var clickedPaletteKind:PaletteKind;
 
 	private var paletteChange:PaletteChange;
 	private var paletteChangeEvent:PalletChangeEvent;
+
+	private static inline var PALETTE_CHANGE_INSTANCE_NAME = "paletteChange";
+
 
 	public static function main(){
 		new Panel();
@@ -33,12 +38,17 @@ class Panel
 	}
 	private function initialize(event)
 	{
-		//csInterface = AbstractCSInterface.create();
+		csInterface = AbstractCSInterface.create();
 
-		canvasColorSampler = new CanvasColorSampler();
+		jsxLoader = new JsxLoader();
+
+		canvasColorSampler = CanvasColorSampler.instance;
 		paletteChange = new PaletteChange();
+		Setting.instance;
+		overlayWindow = OverlayWindow.instance;
+		canvasColorSamplerRunner = new CanvasColorSamplerRunner();
 
-		mainFunction = observeToClickUI;
+		mainFunction = loadJsx;
 		timer = new Timer(100);
 		timer.run = run;
 	}
@@ -46,73 +56,55 @@ class Panel
 	{
 		mainFunction();
 	}
+	private function loadJsx()
+	{
+		jsxLoader.run();
+		if(jsxLoader.isFinished()){
+			mainFunction = observeToClickUI;
+		}
+	}
 
 	//
 	private function observeToClickUI()
 	{
 		canvasColorSampler.run();
 		if(canvasColorSampler.palletContainer.before.scanButton.isClicked()){
-			callCanvasColorSampler(PaletteKind.BEFORE);
+			initializeToCallCanvasColorSampler(PaletteKind.BEFORE);
 		}
 		else if(canvasColorSampler.palletContainer.after.scanButton.isClicked()){
-			callCanvasColorSampler(PaletteKind.AFTER);
+			initializeToCallCanvasColorSampler(PaletteKind.AFTER);
 		}
-
 		else if(paletteChange.runButton.isClicked())
 		{
-			callPaletteChange(canvasColorSampler.palletContainer.getRgbHexValueSets());
+			callPaletteChange();
 		}
 	}
 
 	//
-	private function callCanvasColorSampler(clickedPaletteKind:PaletteKind)
+	private function initializeToCallCanvasColorSampler(paletteKind:PaletteKind)
 	{
-		this.clickedPaletteKind = clickedPaletteKind;
-
-		/*
-		csInterface.evalScript('new ${ClassName.CANVAS_COLOR_SAMPLER}();', function(data){
-			canvasColorSamplerEvent = Unserializer.run(data);
-		});
-		*/
-
-		//test
-		var test = ["ff0000", "00ff00", "0000ff"];
-		var data = Serializer.run(test);
-		canvasColorSamplerEvent = Unserializer.run(data);
-
-		mainFunction = sampleCanvasColor;
+		canvasColorSamplerRunner.call(paletteKind);
+		mainFunction = callCanvasColorSampler;
 	}
-	private function getCanvasColorSamplerEvent():CanvasColorSamplerEvent
+	private function callCanvasColorSampler()
 	{
-		var n = canvasColorSamplerEvent;
-		canvasColorSamplerEvent = CanvasColorSamplerEvent.NONE;
-		return n;
-	}
-	private function sampleCanvasColor()
-	{
-		var event = getCanvasColorSamplerEvent();
-		switch(event)
-		{
-			case CanvasColorSamplerEvent.NONE: return;
-			case CanvasColorSamplerEvent.RESULT(rgbHexColorSet):
-				switch(clickedPaletteKind){
-					case PaletteKind.BEFORE:
-						canvasColorSampler.palletContainer.before.palette.addRgbHexColorSet(rgbHexColorSet);
-					case PaletteKind.AFTER:
-						canvasColorSampler.palletContainer.after.palette.addRgbHexColorSet(rgbHexColorSet);
-				}
+		canvasColorSamplerRunner.run();
+		if(canvasColorSamplerRunner.isFinished()){
+			mainFunction = observeToClickUI;
 		}
-		canvasColorSampler.updatePageIndex();
-		mainFunction = observeToClickUI;
 	}
+
 
 	//
-	private function callPaletteChange(rgbHexValueSets:Array<Array<String>>)
+	private function callPaletteChange()
 	{
+		var rgbHexValueSets:Array<Array<String>> = canvasColorSampler.palletContainer.getRgbHexValueSets();
 		var data = Serializer.run(rgbHexValueSets);
 
-		csInterface.evalScript('new ${ClassName.PALETTE_CHANGE}($data);', function(data){
-			paletteChangeEvent = Unserializer.run(data);
+		paletteChangeEvent = PalletChangeEvent.NONE;
+		csInterface.evalScript('var $PALETTE_CHANGE_INSTANCE_NAME = new ${ClassName.PALETTE_CHANGE}($data);');
+		csInterface.evalScript('$PALETTE_CHANGE_INSTANCE_NAME.execute($data);', function(result){
+			paletteChangeEvent = Unserializer.run(result);
 		});
 
 		mainFunction = changePalette;
@@ -129,8 +121,12 @@ class Panel
 		switch(event)
 		{
 			case PalletChangeEvent.NONE: return;
-			case PalletChangeEvent.RESULT:
+			case PalletChangeEvent.ERROR(message):
+				js.Lib.alert(message);
+				mainFunction = observeToClickUI;
+			case PalletChangeEvent.SUCCESS:
 				mainFunction = observeToClickUI;
 		}
 	}
 }
+

@@ -27,6 +27,17 @@ class PaletteContainer
 	}
 	public function getRgbHexValueSets():Array<Array<String>>
 	{
-		return [before.palette.rgbHexColorSet, after.palette.rgbHexColorSet];
+		var beforePalette = before.palette.rgbHexColorSet.copy();
+		var afterPalette = after.palette.rgbHexColorSet.copy();
+		var beforeLength = beforePalette.length;
+		var afterLength = afterPalette.length;
+		if(beforeLength > afterLength){
+			beforePalette.splice(0, afterLength);
+		}
+		else if(afterLength > beforeLength){
+			afterPalette.splice(0, beforeLength);
+		}
+
+		return [beforePalette, afterPalette];
 	}
 }

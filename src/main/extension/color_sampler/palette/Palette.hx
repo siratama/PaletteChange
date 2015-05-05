@@ -1,4 +1,5 @@
 package extension.color_sampler.palette;
+import extension.option.Setting;
 import extension.color_sampler.palette.Palette.LastFilledLine;
 import jQuery.JQuery;
 class Palette
@@ -6,15 +7,20 @@ class Palette
 	private static inline var LINE_TOTAL = 5;
 	private var PAGE_CELL_TOTAL:Int;
 
+	private var kind:PaletteKind;
 	private var lines:Array<Line>;
 	public var rgbHexColorSet(default, null):Array<String>;
+	private var rgbHexColorMap:Map<String, Bool>;
+	private var allowDuplicateColor:Bool;
 
 	private var element:JQuery;
-	public function new(parentElement:JQuery)
+	public function new(parentElement:JQuery, kind:PaletteKind)
 	{
+		this.kind = kind;
 		PAGE_CELL_TOTAL = LINE_TOTAL * Line.CELL_TOTAL;
 		element = new JQuery(".palette", parentElement);
 
+		rgbHexColorMap = new Map();
 		rgbHexColorSet = [];
 		lines = [];
 		for (i in 0...LINE_TOTAL) lines.push(new Line(element));
@@ -22,19 +28,46 @@ class Palette
 	}
 
 	//
-	public function addRgbHexColor(rgbHexColor:String)
+	public function updateRgbHexColor(addedRgbHexColor:String)
 	{
-		rgbHexColorSet.push(rgbHexColor);
+		updateAllowDuplicateColor();
+		addRgbHexColor(addedRgbHexColor);
 		update();
 	}
-	public function addRgbHexColorSet(rgbHexColorSet:Array<String>)
+	public function updateRgbHexColorSet(addedRgbHexColorSet:Array<String>)
 	{
-		this.rgbHexColorSet = this.rgbHexColorSet.concat(rgbHexColorSet);
+		updateAllowDuplicateColor();
+		addRgbHexColorSet(addedRgbHexColorSet);
 		update();
 	}
+	private function updateAllowDuplicateColor()
+	{
+		allowDuplicateColor = switch(kind)
+		{
+			case PaletteKind.BEFORE: false;
+			case PaletteKind.AFTER:
+				Setting.instance.isAllowedDuplucatePalletColorInPalletAfter();
+		}
+		trace(allowDuplicateColor);
+	}
+	private function addRgbHexColorSet(addedRgbHexColorSet:Array<String>)
+	{
+		for (i in 0...addedRgbHexColorSet.length)
+			addRgbHexColor(addedRgbHexColorSet[i]);
+	}
+	private function addRgbHexColor(addedRgbHexColor:String)
+	{
+		var exists = rgbHexColorMap.exists(addedRgbHexColor);
+		if(exists && !allowDuplicateColor) return;
+
+		rgbHexColorMap.set(addedRgbHexColor, true);
+		rgbHexColorSet.push(addedRgbHexColor);
+	}
+
 	public function clear()
 	{
 		rgbHexColorSet = [];
+		rgbHexColorMap = new Map();
 		update();
 	}
 	public function getMaximumIndex():Int
@@ -55,16 +88,16 @@ class Palette
 
 		for (i in 0...LINE_TOTAL)
 		{
-			var splicedStartPosition = displayedFirstCellIndex + (i * LINE_TOTAL);
-			var line = lines[i];
+			var splicedStartPosition = displayedFirstCellIndex + (i * Line.CELL_TOTAL);
 
 			var lineRgbHexColorSet =
 				(splicedStartPosition > rgbHexColorSet.length) ? []:
 
-				(splicedStartPosition + LINE_TOTAL < rgbHexColorSet.length) ?
-					rgbHexColorSet.splice(splicedStartPosition, LINE_TOTAL):
-					rgbHexColorSet.splice(splicedStartPosition, rgbHexColorSet.length - splicedStartPosition);
+				(splicedStartPosition + Line.CELL_TOTAL < rgbHexColorSet.length) ?
+					rgbHexColorSet.slice(splicedStartPosition, splicedStartPosition + Line.CELL_TOTAL):
+					rgbHexColorSet.slice(splicedStartPosition);
 
+			var line = lines[i];
 			line.update(lineRgbHexColorSet);
 		}
 	}
@@ -86,13 +119,13 @@ class Palette
 		var coloringCellTotal = rgbHexColorSet.length - startPosition;
 
 		//editable cell of another page
-		if(coloringCellTotal >= PAGE_CELL_TOTAL)
+		if(coloringCellTotal >= PAGE_CELL_TOTAL || coloringCellTotal < 0)
 		{
 			return LastFilledLine.ANOTHER_PAGE;
 		}
 		else
 		{
-			return LastFilledLine.INDEX(Math.floor(coloringCellTotal / LINE_TOTAL));
+			return LastFilledLine.INDEX(Math.floor(coloringCellTotal / Line.CELL_TOTAL));
 		}
 	}
 }

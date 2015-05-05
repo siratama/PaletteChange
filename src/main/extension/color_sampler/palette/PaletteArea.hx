@@ -16,7 +16,7 @@ class PaletteArea
 		}
 		element = new JQuery('.$idName', parentElement);
 
-		palette = new Palette(element);
+		palette = new Palette(element, kind);
 		scanButton = new ScanButton(element, "scan_button");
 		clearButton = new ClearButton(element, "clear_button");
 	}

@@ -24,7 +24,13 @@ class AbstractCSInterface
 	public function getExtensionUri():String{
 		return "file:///" + csInterface.getSystemPath(SystemPath.EXTENSION);
 	}
+	public function getExtensionSystemPath():String{
+		return csInterface.getSystemPath(SystemPath.EXTENSION);
+	}
 	public function evalScript(script:Dynamic, ?callback:Dynamic->Void){
 		csInterface.evalScript(script, callback);
+	}
+	public function evalFile(filePath:String, ?callback:Dynamic->Void){
+		csInterface.evalScript('$.evalFile("$filePath");', callback);
 	}
 }

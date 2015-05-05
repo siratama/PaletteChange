@@ -12,6 +12,7 @@
 -main jsx.color_sampler.CanvasColorSampler
 -cp src/main
 -cp src/extern
+-D js-classic
 
 --next
 
@@ -19,4 +20,6 @@
 -main jsx.palette_change.PaletteChange
 -cp src/main
 -cp src/extern
+-D js-classic
+
 

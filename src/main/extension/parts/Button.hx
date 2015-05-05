@@ -16,7 +16,7 @@ class Button
 	public function new(parentElement:JQuery, className:String)
 	{
 		element = new JQuery('.$className', parentElement);
-		element.click(function(event){
+		element.mousedown(function(event){
 			clicked = true;
 		});
 	}
@@ -27,5 +27,10 @@ class Button
 	public function removeDisabled()
 	{
 		element.removeAttr("disabled");
+	}
+
+	public function isDisabled():Bool
+	{
+		return element.attr("disabled") != null;
 	}
 }

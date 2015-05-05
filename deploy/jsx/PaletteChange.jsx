@@ -1,8 +1,14 @@
-(function () { "use strict";
-var $hxClasses = {};
-var HxOverrides = function() { };
-$hxClasses["HxOverrides"] = HxOverrides;
-HxOverrides.__name__ = true;
+var $hxClasses = $hxClasses || {},$estr = function() { return js.Boot.__string_rec(this,''); };
+var HxOverrides = $hxClasses["HxOverrides"] = function() { };
+HxOverrides.__name__ = ["HxOverrides"];
+HxOverrides.dateStr = function(date) {
+	var m = date.getMonth() + 1;
+	var d = date.getDate();
+	var h = date.getHours();
+	var mi = date.getMinutes();
+	var s = date.getSeconds();
+	return date.getFullYear() + "-" + (m < 10?"0" + m:"" + m) + "-" + (d < 10?"0" + d:"" + d) + " " + (h < 10?"0" + h:"" + h) + ":" + (mi < 10?"0" + mi:"" + mi) + ":" + (s < 10?"0" + s:"" + s);
+};
 HxOverrides.strDate = function(s) {
 	var _g = s.length;
 	switch(_g) {
@@ -40,11 +46,17 @@ HxOverrides.substr = function(s,pos,len) {
 	} else if(len < 0) len = s.length + len - pos;
 	return s.substr(pos,len);
 };
-var List = function() {
+HxOverrides.iter = function(a) {
+	return { cur : 0, arr : a, hasNext : function() {
+		return this.cur < this.arr.length;
+	}, next : function() {
+		return this.arr[this.cur++];
+	}};
+};
+var List = $hxClasses["List"] = function() {
 	this.length = 0;
 };
-$hxClasses["List"] = List;
-List.__name__ = true;
+List.__name__ = ["List"];
 List.prototype = {
 	add: function(item) {
 		var x = [item];
@@ -52,15 +64,23 @@ List.prototype = {
 		this.q = x;
 		this.length++;
 	}
+	,iterator: function() {
+		return { h : this.h, hasNext : function() {
+			return this.h != null;
+		}, next : function() {
+			if(this.h == null) return null;
+			var x = this.h[0];
+			this.h = this.h[1];
+			return x;
+		}};
+	}
 	,__class__: List
 };
-var IMap = function() { };
-$hxClasses["IMap"] = IMap;
-IMap.__name__ = true;
-Math.__name__ = true;
-var Reflect = function() { };
-$hxClasses["Reflect"] = Reflect;
-Reflect.__name__ = true;
+var IMap = $hxClasses["IMap"] = function() { };
+IMap.__name__ = ["IMap"];
+Math.__name__ = ["Math"];
+var Reflect = $hxClasses["Reflect"] = function() { };
+Reflect.__name__ = ["Reflect"];
 Reflect.field = function(o,field) {
 	try {
 		return o[field];
@@ -68,24 +88,81 @@ Reflect.field = function(o,field) {
 		return null;
 	}
 };
+Reflect.fields = function(o) {
+	var a = [];
+	if(o != null) {
+		var hasOwnProperty = Object.prototype.hasOwnProperty;
+		for( var f in o ) {
+		if(f != "__id__" && f != "hx__closures__" && hasOwnProperty.call(o,f)) a.push(f);
+		}
+	}
+	return a;
+};
 Reflect.isFunction = function(f) {
 	return typeof(f) == "function" && !(f.__name__ || f.__ename__);
 };
-var Std = function() { };
-$hxClasses["Std"] = Std;
-Std.__name__ = true;
+Reflect.deleteField = function(o,field) {
+	if(!Object.prototype.hasOwnProperty.call(o,field)) return false;
+	delete(o[field]);
+	return true;
+};
+var Std = $hxClasses["Std"] = function() { };
+Std.__name__ = ["Std"];
+Std.string = function(s) {
+	return js.Boot.__string_rec(s,"");
+};
 Std.parseFloat = function(x) {
 	return parseFloat(x);
 };
-var StringTools = function() { };
-$hxClasses["StringTools"] = StringTools;
-StringTools.__name__ = true;
+var StringBuf = $hxClasses["StringBuf"] = function() {
+	this.b = "";
+};
+StringBuf.__name__ = ["StringBuf"];
+StringBuf.prototype = {
+	add: function(x) {
+		this.b += Std.string(x);
+	}
+	,__class__: StringBuf
+};
+var StringTools = $hxClasses["StringTools"] = function() { };
+StringTools.__name__ = ["StringTools"];
 StringTools.fastCodeAt = function(s,index) {
 	return s.charCodeAt(index);
 };
-var Type = function() { };
-$hxClasses["Type"] = Type;
-Type.__name__ = true;
+var ValueType = $hxClasses["ValueType"] = { __ename__ : ["ValueType"], __constructs__ : ["TNull","TInt","TFloat","TBool","TObject","TFunction","TClass","TEnum","TUnknown"] };
+ValueType.TNull = ["TNull",0];
+ValueType.TNull.toString = $estr;
+ValueType.TNull.__enum__ = ValueType;
+ValueType.TInt = ["TInt",1];
+ValueType.TInt.toString = $estr;
+ValueType.TInt.__enum__ = ValueType;
+ValueType.TFloat = ["TFloat",2];
+ValueType.TFloat.toString = $estr;
+ValueType.TFloat.__enum__ = ValueType;
+ValueType.TBool = ["TBool",3];
+ValueType.TBool.toString = $estr;
+ValueType.TBool.__enum__ = ValueType;
+ValueType.TObject = ["TObject",4];
+ValueType.TObject.toString = $estr;
+ValueType.TObject.__enum__ = ValueType;
+ValueType.TFunction = ["TFunction",5];
+ValueType.TFunction.toString = $estr;
+ValueType.TFunction.__enum__ = ValueType;
+ValueType.TClass = function(c) { var $x = ["TClass",6,c]; $x.__enum__ = ValueType; $x.toString = $estr; return $x; };
+ValueType.TEnum = function(e) { var $x = ["TEnum",7,e]; $x.__enum__ = ValueType; $x.toString = $estr; return $x; };
+ValueType.TUnknown = ["TUnknown",8];
+ValueType.TUnknown.toString = $estr;
+ValueType.TUnknown.__enum__ = ValueType;
+var Type = $hxClasses["Type"] = function() { };
+Type.__name__ = ["Type"];
+Type.getClassName = function(c) {
+	var a = c.__name__;
+	return a.join(".");
+};
+Type.getEnumName = function(e) {
+	var a = e.__ename__;
+	return a.join(".");
+};
 Type.resolveClass = function(name) {
 	var cl = $hxClasses[name];
 	if(cl == null || !cl.__name__) return null;
@@ -114,8 +191,300 @@ Type.getEnumConstructs = function(e) {
 	var a = e.__constructs__;
 	return a.slice();
 };
-var haxe = {};
-haxe.Unserializer = function(buf) {
+Type["typeof"] = function(v) {
+	var _g = typeof(v);
+	switch(_g) {
+	case "boolean":
+		return ValueType.TBool;
+	case "string":
+		return ValueType.TClass(String);
+	case "number":
+		if(Math.ceil(v) == v % 2147483648.0) return ValueType.TInt;
+		return ValueType.TFloat;
+	case "object":
+		if(v == null) return ValueType.TNull;
+		var e = v.__enum__;
+		if(e != null) return ValueType.TEnum(e);
+		var c;
+		if((v instanceof Array) && v.__enum__ == null) c = Array; else c = v.__class__;
+		if(c != null) return ValueType.TClass(c);
+		return ValueType.TObject;
+	case "function":
+		if(v.__name__ || v.__ename__) return ValueType.TObject;
+		return ValueType.TFunction;
+	case "undefined":
+		return ValueType.TNull;
+	default:
+		return ValueType.TUnknown;
+	}
+};
+var common = common || {};
+common.PalletChangeEvent = $hxClasses["common.PalletChangeEvent"] = { __ename__ : ["common","PalletChangeEvent"], __constructs__ : ["NONE","SUCCESS","ERROR"] };
+common.PalletChangeEvent.NONE = ["NONE",0];
+common.PalletChangeEvent.NONE.toString = $estr;
+common.PalletChangeEvent.NONE.__enum__ = common.PalletChangeEvent;
+common.PalletChangeEvent.SUCCESS = ["SUCCESS",1];
+common.PalletChangeEvent.SUCCESS.toString = $estr;
+common.PalletChangeEvent.SUCCESS.__enum__ = common.PalletChangeEvent;
+common.PalletChangeEvent.ERROR = function(message) { var $x = ["ERROR",2,message]; $x.__enum__ = common.PalletChangeEvent; $x.toString = $estr; return $x; };
+var haxe = haxe || {};
+haxe.Serializer = $hxClasses["haxe.Serializer"] = function() {
+	this.buf = new StringBuf();
+	this.cache = new Array();
+	this.useCache = haxe.Serializer.USE_CACHE;
+	this.useEnumIndex = haxe.Serializer.USE_ENUM_INDEX;
+	this.shash = new haxe.ds.StringMap();
+	this.scount = 0;
+};
+haxe.Serializer.__name__ = ["haxe","Serializer"];
+haxe.Serializer.run = function(v) {
+	var s = new haxe.Serializer();
+	s.serialize(v);
+	return s.toString();
+};
+haxe.Serializer.prototype = {
+	toString: function() {
+		return this.buf.b;
+	}
+	,serializeString: function(s) {
+		var x = this.shash.get(s);
+		if(x != null) {
+			this.buf.b += "R";
+			if(x == null) this.buf.b += "null"; else this.buf.b += "" + x;
+			return;
+		}
+		this.shash.set(s,this.scount++);
+		this.buf.b += "y";
+		s = encodeURIComponent(s);
+		if(s.length == null) this.buf.b += "null"; else this.buf.b += "" + s.length;
+		this.buf.b += ":";
+		if(s == null) this.buf.b += "null"; else this.buf.b += "" + s;
+	}
+	,serializeRef: function(v) {
+		var vt = typeof(v);
+		var _g1 = 0;
+		var _g = this.cache.length;
+		while(_g1 < _g) {
+			var i = _g1++;
+			var ci = this.cache[i];
+			if(typeof(ci) == vt && ci == v) {
+				this.buf.b += "r";
+				if(i == null) this.buf.b += "null"; else this.buf.b += "" + i;
+				return true;
+			}
+		}
+		this.cache.push(v);
+		return false;
+	}
+	,serializeFields: function(v) {
+		var _g = 0;
+		var _g1 = Reflect.fields(v);
+		while(_g < _g1.length) {
+			var f = _g1[_g];
+			++_g;
+			this.serializeString(f);
+			this.serialize(Reflect.field(v,f));
+		}
+		this.buf.b += "g";
+	}
+	,serialize: function(v) {
+		{
+			var _g = Type["typeof"](v);
+			switch(_g[1]) {
+			case 0:
+				this.buf.b += "n";
+				break;
+			case 1:
+				var v1 = v;
+				if(v1 == 0) {
+					this.buf.b += "z";
+					return;
+				}
+				this.buf.b += "i";
+				if(v1 == null) this.buf.b += "null"; else this.buf.b += "" + v1;
+				break;
+			case 2:
+				var v2 = v;
+				if(Math.isNaN(v2)) this.buf.b += "k"; else if(!Math.isFinite(v2)) if(v2 < 0) this.buf.b += "m"; else this.buf.b += "p"; else {
+					this.buf.b += "d";
+					if(v2 == null) this.buf.b += "null"; else this.buf.b += "" + v2;
+				}
+				break;
+			case 3:
+				if(v) this.buf.b += "t"; else this.buf.b += "f";
+				break;
+			case 6:
+				var c = _g[2];
+				if(c == String) {
+					this.serializeString(v);
+					return;
+				}
+				if(this.useCache && this.serializeRef(v)) return;
+				switch(c) {
+				case Array:
+					var ucount = 0;
+					this.buf.b += "a";
+					var l = v.length;
+					var _g1 = 0;
+					while(_g1 < l) {
+						var i = _g1++;
+						if(v[i] == null) ucount++; else {
+							if(ucount > 0) {
+								if(ucount == 1) this.buf.b += "n"; else {
+									this.buf.b += "u";
+									if(ucount == null) this.buf.b += "null"; else this.buf.b += "" + ucount;
+								}
+								ucount = 0;
+							}
+							this.serialize(v[i]);
+						}
+					}
+					if(ucount > 0) {
+						if(ucount == 1) this.buf.b += "n"; else {
+							this.buf.b += "u";
+							if(ucount == null) this.buf.b += "null"; else this.buf.b += "" + ucount;
+						}
+					}
+					this.buf.b += "h";
+					break;
+				case List:
+					this.buf.b += "l";
+					var v3 = v;
+					var $it0 = v3.iterator();
+					while( $it0.hasNext() ) {
+						var i1 = $it0.next();
+						this.serialize(i1);
+					}
+					this.buf.b += "h";
+					break;
+				case Date:
+					var d = v;
+					this.buf.b += "v";
+					this.buf.add(HxOverrides.dateStr(d));
+					break;
+				case haxe.ds.StringMap:
+					this.buf.b += "b";
+					var v4 = v;
+					var $it1 = v4.keys();
+					while( $it1.hasNext() ) {
+						var k = $it1.next();
+						this.serializeString(k);
+						this.serialize(v4.get(k));
+					}
+					this.buf.b += "h";
+					break;
+				case haxe.ds.IntMap:
+					this.buf.b += "q";
+					var v5 = v;
+					var $it2 = v5.keys();
+					while( $it2.hasNext() ) {
+						var k1 = $it2.next();
+						this.buf.b += ":";
+						if(k1 == null) this.buf.b += "null"; else this.buf.b += "" + k1;
+						this.serialize(v5.get(k1));
+					}
+					this.buf.b += "h";
+					break;
+				case haxe.ds.ObjectMap:
+					this.buf.b += "M";
+					var v6 = v;
+					var $it3 = v6.keys();
+					while( $it3.hasNext() ) {
+						var k2 = $it3.next();
+						var id = Reflect.field(k2,"__id__");
+						Reflect.deleteField(k2,"__id__");
+						this.serialize(k2);
+						k2.__id__ = id;
+						this.serialize(v6.h[k2.__id__]);
+					}
+					this.buf.b += "h";
+					break;
+				case haxe.io.Bytes:
+					var v7 = v;
+					var i2 = 0;
+					var max = v7.length - 2;
+					var charsBuf = new StringBuf();
+					var b64 = haxe.Serializer.BASE64;
+					while(i2 < max) {
+						var b1 = v7.get(i2++);
+						var b2 = v7.get(i2++);
+						var b3 = v7.get(i2++);
+						charsBuf.add(b64.charAt(b1 >> 2));
+						charsBuf.add(b64.charAt((b1 << 4 | b2 >> 4) & 63));
+						charsBuf.add(b64.charAt((b2 << 2 | b3 >> 6) & 63));
+						charsBuf.add(b64.charAt(b3 & 63));
+					}
+					if(i2 == max) {
+						var b11 = v7.get(i2++);
+						var b21 = v7.get(i2++);
+						charsBuf.add(b64.charAt(b11 >> 2));
+						charsBuf.add(b64.charAt((b11 << 4 | b21 >> 4) & 63));
+						charsBuf.add(b64.charAt(b21 << 2 & 63));
+					} else if(i2 == max + 1) {
+						var b12 = v7.get(i2++);
+						charsBuf.add(b64.charAt(b12 >> 2));
+						charsBuf.add(b64.charAt(b12 << 4 & 63));
+					}
+					var chars = charsBuf.b;
+					this.buf.b += "s";
+					if(chars.length == null) this.buf.b += "null"; else this.buf.b += "" + chars.length;
+					this.buf.b += ":";
+					if(chars == null) this.buf.b += "null"; else this.buf.b += "" + chars;
+					break;
+				default:
+					if(this.useCache) this.cache.pop();
+					if(v.hxSerialize != null) {
+						this.buf.b += "C";
+						this.serializeString(Type.getClassName(c));
+						if(this.useCache) this.cache.push(v);
+						v.hxSerialize(this);
+						this.buf.b += "g";
+					} else {
+						this.buf.b += "c";
+						this.serializeString(Type.getClassName(c));
+						if(this.useCache) this.cache.push(v);
+						this.serializeFields(v);
+					}
+				}
+				break;
+			case 4:
+				if(this.useCache && this.serializeRef(v)) return;
+				this.buf.b += "o";
+				this.serializeFields(v);
+				break;
+			case 7:
+				var e = _g[2];
+				if(this.useCache) {
+					if(this.serializeRef(v)) return;
+					this.cache.pop();
+				}
+				if(this.useEnumIndex) this.buf.b += "j"; else this.buf.b += "w";
+				this.serializeString(Type.getEnumName(e));
+				if(this.useEnumIndex) {
+					this.buf.b += ":";
+					this.buf.b += Std.string(v[1]);
+				} else this.serializeString(v[0]);
+				this.buf.b += ":";
+				var l1 = v.length;
+				this.buf.b += Std.string(l1 - 2);
+				var _g11 = 2;
+				while(_g11 < l1) {
+					var i3 = _g11++;
+					this.serialize(v[i3]);
+				}
+				if(this.useCache) this.cache.push(v);
+				break;
+			case 5:
+				throw "Cannot serialize function";
+				break;
+			default:
+				throw "Cannot serialize " + Std.string(v);
+			}
+		}
+	}
+	,__class__: haxe.Serializer
+};
+haxe.Unserializer = $hxClasses["haxe.Unserializer"] = function(buf) {
 	this.buf = buf;
 	this.length = buf.length;
 	this.pos = 0;
@@ -128,8 +497,7 @@ haxe.Unserializer = function(buf) {
 	}
 	this.setResolver(r);
 };
-$hxClasses["haxe.Unserializer"] = haxe.Unserializer;
-haxe.Unserializer.__name__ = true;
+haxe.Unserializer.__name__ = ["haxe","Unserializer"];
 haxe.Unserializer.initCodes = function() {
 	var codes = new Array();
 	var _g1 = 0;
@@ -385,25 +753,33 @@ haxe.Unserializer.prototype = {
 	}
 	,__class__: haxe.Unserializer
 };
-haxe.ds = {};
-haxe.ds.IntMap = function() {
+if(!haxe.ds) haxe.ds = {};
+haxe.ds.IntMap = $hxClasses["haxe.ds.IntMap"] = function() {
 	this.h = { };
 };
-$hxClasses["haxe.ds.IntMap"] = haxe.ds.IntMap;
-haxe.ds.IntMap.__name__ = true;
+haxe.ds.IntMap.__name__ = ["haxe","ds","IntMap"];
 haxe.ds.IntMap.__interfaces__ = [IMap];
 haxe.ds.IntMap.prototype = {
 	set: function(key,value) {
 		this.h[key] = value;
 	}
+	,get: function(key) {
+		return this.h[key];
+	}
+	,keys: function() {
+		var a = [];
+		for( var key in this.h ) {
+		if(this.h.hasOwnProperty(key)) a.push(key | 0);
+		}
+		return HxOverrides.iter(a);
+	}
 	,__class__: haxe.ds.IntMap
 };
-haxe.ds.ObjectMap = function() {
+haxe.ds.ObjectMap = $hxClasses["haxe.ds.ObjectMap"] = function() {
 	this.h = { };
 	this.h.__keys__ = { };
 };
-$hxClasses["haxe.ds.ObjectMap"] = haxe.ds.ObjectMap;
-haxe.ds.ObjectMap.__name__ = true;
+haxe.ds.ObjectMap.__name__ = ["haxe","ds","ObjectMap"];
 haxe.ds.ObjectMap.__interfaces__ = [IMap];
 haxe.ds.ObjectMap.prototype = {
 	set: function(key,value) {
@@ -411,27 +787,42 @@ haxe.ds.ObjectMap.prototype = {
 		this.h[id] = value;
 		this.h.__keys__[id] = key;
 	}
+	,keys: function() {
+		var a = [];
+		for( var key in this.h.__keys__ ) {
+		if(this.h.hasOwnProperty(key)) a.push(this.h.__keys__[key]);
+		}
+		return HxOverrides.iter(a);
+	}
 	,__class__: haxe.ds.ObjectMap
 };
-haxe.ds.StringMap = function() {
+haxe.ds.StringMap = $hxClasses["haxe.ds.StringMap"] = function() {
 	this.h = { };
 };
-$hxClasses["haxe.ds.StringMap"] = haxe.ds.StringMap;
-haxe.ds.StringMap.__name__ = true;
+haxe.ds.StringMap.__name__ = ["haxe","ds","StringMap"];
 haxe.ds.StringMap.__interfaces__ = [IMap];
 haxe.ds.StringMap.prototype = {
 	set: function(key,value) {
 		this.h["$" + key] = value;
 	}
+	,get: function(key) {
+		return this.h["$" + key];
+	}
+	,keys: function() {
+		var a = [];
+		for( var key in this.h ) {
+		if(this.h.hasOwnProperty(key)) a.push(key.substr(1));
+		}
+		return HxOverrides.iter(a);
+	}
 	,__class__: haxe.ds.StringMap
 };
-haxe.io = {};
-haxe.io.Bytes = function(length,b) {
+if(!haxe.io) haxe.io = {};
+haxe.io.Bytes = $hxClasses["haxe.io.Bytes"] = function(length,b) {
 	this.length = length;
 	this.b = b;
 };
-$hxClasses["haxe.io.Bytes"] = haxe.io.Bytes;
-haxe.io.Bytes.__name__ = true;
+haxe.io.Bytes.__name__ = ["haxe","io","Bytes"];
 haxe.io.Bytes.alloc = function(length) {
 	var a = new Array();
 	var _g = 0;
@@ -442,24 +833,25 @@ haxe.io.Bytes.alloc = function(length) {
 	return new haxe.io.Bytes(length,a);
 };
 haxe.io.Bytes.prototype = {
-	set: function(pos,v) {
+	get: function(pos) {
+		return this.b[pos];
+	}
+	,set: function(pos,v) {
 		this.b[pos] = v & 255;
 	}
 	,__class__: haxe.io.Bytes
 };
-haxe.io.Eof = function() { };
-$hxClasses["haxe.io.Eof"] = haxe.io.Eof;
-haxe.io.Eof.__name__ = true;
+haxe.io.Eof = $hxClasses["haxe.io.Eof"] = function() { };
+haxe.io.Eof.__name__ = ["haxe","io","Eof"];
 haxe.io.Eof.prototype = {
 	toString: function() {
 		return "Eof";
 	}
 	,__class__: haxe.io.Eof
 };
-var js = {};
-js.Boot = function() { };
-$hxClasses["js.Boot"] = js.Boot;
-js.Boot.__name__ = true;
+var js = js || {};
+js.Boot = $hxClasses["js.Boot"] = function() { };
+js.Boot.__name__ = ["js","Boot"];
 js.Boot.getClass = function(o) {
 	if((o instanceof Array) && o.__enum__ == null) return Array; else return o.__class__;
 };
@@ -572,15 +964,17 @@ js.Boot.__instanceof = function(o,cl) {
 		return o.__enum__ == cl;
 	}
 };
-js.Lib = function() { };
-$hxClasses["js.Lib"] = js.Lib;
-js.Lib.__name__ = true;
+js.Boot.__cast = function(o,t) {
+	if(js.Boot.__instanceof(o,t)) return o; else throw "Cannot cast " + Std.string(o) + " to " + Std.string(t);
+};
+js.Lib = $hxClasses["js.Lib"] = function() { };
+js.Lib.__name__ = ["js","Lib"];
 js.Lib.alert = function(v) {
 	alert(js.Boot.__string_rec(v,""));
 };
-var jsx = {};
-jsx.palette_change = {};
-jsx.palette_change.Converter = function() {
+var jsx = jsx || {};
+if(!jsx.palette_change) jsx.palette_change = {};
+jsx.palette_change.Converter = $hxClasses["jsx.palette_change.Converter"] = function() {
 	if(jsx.palette_change.PaletteInfo.instance == null) this.palletInfo = jsx.palette_change.PaletteInfo.instance = new jsx.palette_change.PaletteInfo(); else this.palletInfo = jsx.palette_change.PaletteInfo.instance;
 	this.application = app;
 	this.activeDocument = this.application.activeDocument;
@@ -590,8 +984,7 @@ jsx.palette_change.Converter = function() {
 	this.execute();
 	this.layersDisplay.restore();
 };
-$hxClasses["jsx.palette_change.Converter"] = jsx.palette_change.Converter;
-jsx.palette_change.Converter.__name__ = true;
+jsx.palette_change.Converter.__name__ = ["jsx","palette_change","Converter"];
 jsx.palette_change.Converter.prototype = {
 	selectPixel: function(x,y) {
 		this.activeDocument.selection.select([[x,y],[x + 1,y],[x + 1,y + 1],[x,y + 1]]);
@@ -659,37 +1052,34 @@ jsx.palette_change.Converter.prototype = {
 	}
 	,__class__: jsx.palette_change.Converter
 };
-jsx.palette_change.ConversionData = function(pixel,rgbHexValue) {
+jsx.palette_change.ConversionData = $hxClasses["jsx.palette_change.ConversionData"] = function(pixel,rgbHexValue) {
 	this.pixel = pixel;
 	this.rgbHexValue = rgbHexValue;
 };
-$hxClasses["jsx.palette_change.ConversionData"] = jsx.palette_change.ConversionData;
-jsx.palette_change.ConversionData.__name__ = true;
+jsx.palette_change.ConversionData.__name__ = ["jsx","palette_change","ConversionData"];
 jsx.palette_change.ConversionData.prototype = {
 	__class__: jsx.palette_change.ConversionData
 };
-jsx.palette_change.PaletteChange = function(code) {
+jsx.palette_change.PaletteChange = $hxClasses["jsx.palette_change.PaletteChange"] = function() {
 	this.application = app;
 	if(jsx.palette_change.PaletteInfo.instance == null) this.palletInfo = jsx.palette_change.PaletteInfo.instance = new jsx.palette_change.PaletteInfo(); else this.palletInfo = jsx.palette_change.PaletteInfo.instance;
-	this.palletInfo.convert(code);
-	if(!this.palletInfo.parsedResult) {
-		js.Lib.alert("code error");
-		return;
-	}
-	new jsx.palette_change.Converter();
-	js.Lib.alert("completed");
+	js.Lib.alert(this.application);
 };
-$hxClasses["jsx.palette_change.PaletteChange"] = jsx.palette_change.PaletteChange;
-jsx.palette_change.PaletteChange.__name__ = true;
+jsx.palette_change.PaletteChange.__name__ = ["jsx","palette_change","PaletteChange"];
 jsx.palette_change.PaletteChange.main = function() {
 };
 jsx.palette_change.PaletteChange.prototype = {
-	__class__: jsx.palette_change.PaletteChange
+	execute: function(code) {
+		this.palletInfo.convert(code);
+		if(!this.palletInfo.parsedResult) return haxe.Serializer.run(common.PalletChangeEvent.ERROR("code error"));
+		new jsx.palette_change.Converter();
+		return haxe.Serializer.run(common.PalletChangeEvent.SUCCESS);
+	}
+	,__class__: jsx.palette_change.PaletteChange
 };
-jsx.palette_change.PaletteInfo = function() {
+jsx.palette_change.PaletteInfo = $hxClasses["jsx.palette_change.PaletteInfo"] = function() {
 };
-$hxClasses["jsx.palette_change.PaletteInfo"] = jsx.palette_change.PaletteInfo;
-jsx.palette_change.PaletteInfo.__name__ = true;
+jsx.palette_change.PaletteInfo.__name__ = ["jsx","palette_change","PaletteInfo"];
 jsx.palette_change.PaletteInfo.get_instance = function() {
 	if(jsx.palette_change.PaletteInfo.instance == null) return jsx.palette_change.PaletteInfo.instance = new jsx.palette_change.PaletteInfo(); else return jsx.palette_change.PaletteInfo.instance;
 };
@@ -708,11 +1098,10 @@ jsx.palette_change.PaletteInfo.prototype = {
 	}
 	,__class__: jsx.palette_change.PaletteInfo
 };
-jsx.palette_change.Palette = function(rgbHexValueSet) {
+jsx.palette_change.Palette = $hxClasses["jsx.palette_change.Palette"] = function(rgbHexValueSet) {
 	this.rgbHexValueSet = rgbHexValueSet;
 };
-$hxClasses["jsx.palette_change.Palette"] = jsx.palette_change.Palette;
-jsx.palette_change.Palette.__name__ = true;
+jsx.palette_change.Palette.__name__ = ["jsx","palette_change","Palette"];
 jsx.palette_change.Palette.prototype = {
 	indexOf: function(checkedRgbHexValue) {
 		var _g1 = 0;
@@ -725,19 +1114,19 @@ jsx.palette_change.Palette.prototype = {
 	}
 	,__class__: jsx.palette_change.Palette
 };
-jsx.palette_change.PaletteColorPosition = $hxClasses["jsx.palette_change.PaletteColorPosition"] = { __ename__ : true, __constructs__ : ["NONE","EXSITS"] };
+jsx.palette_change.PaletteColorPosition = $hxClasses["jsx.palette_change.PaletteColorPosition"] = { __ename__ : ["jsx","palette_change","PaletteColorPosition"], __constructs__ : ["NONE","EXSITS"] };
 jsx.palette_change.PaletteColorPosition.NONE = ["NONE",0];
+jsx.palette_change.PaletteColorPosition.NONE.toString = $estr;
 jsx.palette_change.PaletteColorPosition.NONE.__enum__ = jsx.palette_change.PaletteColorPosition;
-jsx.palette_change.PaletteColorPosition.EXSITS = function(index) { var $x = ["EXSITS",1,index]; $x.__enum__ = jsx.palette_change.PaletteColorPosition; return $x; };
-jsx.util = {};
-jsx.util.Bounds = function(left,top,right,bottom) {
+jsx.palette_change.PaletteColorPosition.EXSITS = function(index) { var $x = ["EXSITS",1,index]; $x.__enum__ = jsx.palette_change.PaletteColorPosition; $x.toString = $estr; return $x; };
+if(!jsx.util) jsx.util = {};
+jsx.util.Bounds = $hxClasses["jsx.util.Bounds"] = function(left,top,right,bottom) {
 	this.left = left;
 	this.top = top;
 	this.right = right;
 	this.bottom = bottom;
 };
-$hxClasses["jsx.util.Bounds"] = jsx.util.Bounds;
-jsx.util.Bounds.__name__ = true;
+jsx.util.Bounds.__name__ = ["jsx","util","Bounds"];
 jsx.util.Bounds.convert = function(bounds) {
 	return new jsx.util.Bounds(bounds[0].value,bounds[1].value,bounds[2].value,bounds[3].value);
 };
@@ -747,12 +1136,12 @@ jsx.util.Bounds.prototype = {
 	}
 	,__class__: jsx.util.Bounds
 };
-jsx.util.LayersDisplay = function(layers) {
+jsx.util.LayersDisplay = $hxClasses["jsx.util.LayersDisplay"] = function(layers) {
 	this.layers = layers;
 	this.defaultLayerVisibleSet = [];
+	this.layersDisplayMap = new haxe.ds.ObjectMap();
 };
-$hxClasses["jsx.util.LayersDisplay"] = jsx.util.LayersDisplay;
-jsx.util.LayersDisplay.__name__ = true;
+jsx.util.LayersDisplay.__name__ = ["jsx","util","LayersDisplay"];
 jsx.util.LayersDisplay.prototype = {
 	hide: function() {
 		var _g1 = 0;
@@ -760,6 +1149,15 @@ jsx.util.LayersDisplay.prototype = {
 		while(_g1 < _g) {
 			var i = _g1++;
 			var layer = this.layers[i];
+			if(layer.typename == LayerTypeName.LAYER_SET) {
+				var layerSet;
+				layerSet = js.Boot.__cast(layer , LayerSet);
+				var layersDisplay = new jsx.util.LayersDisplay(layerSet.layers);
+				layersDisplay.hide();
+				this.layersDisplayMap.set(layerSet,layersDisplay);
+				continue;
+			}
+			if((js.Boot.__cast(layer , ArtLayer)).isBackgroundLayer) continue;
 			this.defaultLayerVisibleSet[i] = layer.visible;
 			layer.visible = false;
 		}
@@ -770,11 +1168,21 @@ jsx.util.LayersDisplay.prototype = {
 		while(_g1 < _g) {
 			var i = _g1++;
 			var layer = this.layers[i];
+			if(layer.typename == LayerTypeName.LAYER_SET) {
+				var layerSet;
+				layerSet = js.Boot.__cast(layer , LayerSet);
+				var layersDisplay = this.layersDisplayMap.h[layerSet.__id__];
+				layersDisplay.restore();
+				continue;
+			}
+			if((js.Boot.__cast(layer , ArtLayer)).isBackgroundLayer) continue;
 			layer.visible = this.defaultLayerVisibleSet[i];
 		}
 	}
 	,__class__: jsx.util.LayersDisplay
 };
+var LayerTypeName = $hxClasses["LayerTypeName"] = function() { };
+LayerTypeName.__name__ = ["LayerTypeName"];
 Math.NaN = Number.NaN;
 Math.NEGATIVE_INFINITY = Number.NEGATIVE_INFINITY;
 Math.POSITIVE_INFINITY = Number.POSITIVE_INFINITY;
@@ -786,9 +1194,9 @@ Math.isNaN = function(i1) {
 	return isNaN(i1);
 };
 String.prototype.__class__ = $hxClasses.String = String;
-String.__name__ = true;
+String.__name__ = ["String"];
 $hxClasses.Array = Array;
-Array.__name__ = true;
+Array.__name__ = ["Array"];
 Date.prototype.__class__ = $hxClasses.Date = Date;
 Date.__name__ = ["Date"];
 var Int = $hxClasses.Int = { __name__ : ["Int"]};
@@ -799,10 +1207,13 @@ var Bool = $hxClasses.Bool = Boolean;
 Bool.__ename__ = ["Bool"];
 var Class = $hxClasses.Class = { __name__ : ["Class"]};
 var Enum = { };
+haxe.Serializer.USE_CACHE = false;
+haxe.Serializer.USE_ENUM_INDEX = false;
+haxe.Serializer.BASE64 = "ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz0123456789%:";
 haxe.Unserializer.DEFAULT_RESOLVER = Type;
 haxe.Unserializer.BASE64 = "ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz0123456789%:";
 haxe.ds.ObjectMap.count = 0;
 jsx.palette_change.PaletteChange.ATTENTION_WIDTH = 400;
 jsx.palette_change.PaletteChange.ATTENTION_HEIGHT = 400;
+LayerTypeName.LAYER_SET = "LayerSet";
 jsx.palette_change.PaletteChange.main();
-})();

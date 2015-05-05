@@ -1,17 +1,27 @@
-<!DOCTYPE html>
+<!doctype html>
+
 <html>
-<head lang="en">
+<head>
 	<meta charset="UTF-8">
 	<title>PaletteChangerPanel</title>
+	<link rel="stylesheet" type="text/css" href="./css/index.css">
 
-	<link rel="stylesheet" type="text/css" href="css/index.css">
-
-	<script src="js/jquery.js"></script>
-	<script src="js/index.js"></script>
+	<script src="./js/CSInterface-4.0.0.js"></script>
+	<script src="./js/jquery.js"></script>
+	<script src="./js/index.js"></script>
+	
 </head>
 <body>
+<div id="overlay">
+	<div class="window">
+		<p class="message"></p>
+		<button class="cancel_button">CANCEL</button>
+	</div>
+</div>
 
 <div id="container">
+
+	<p id="title_canvas_color_sampler" class="title">Canvas Color Sampler</p>
 	<div id="canvas_color_sampler">
 		<div id="page_ui">
 			<button class="button prev">
@@ -27,18 +37,17 @@
 		</div>
 		<div class="container">
 			<div class="area before">
-				<div class="frame">
-					<table class="palette"></table>
-					<div class="button_area">
-						<button class="scan_button">
-							<img src="img/scan.png" />
-						</button>
-						<button class="clear_button">
-							<img src="img/clear.png" />
-						</button>
-					</div>
-					<div class="clear"></div>
+				<table class="palette">
+				</table>
+				<div class="button_area">
+					<button class="scan_button" title="sample canvas color">
+						<img src="img/scan.png" />
+					</button>
+					<button class="clear_button" title="clear palette">
+						<img src="img/clear.png" />
+					</button>
 				</div>
+				<div class="clear"></div>
 			</div>
 			<div class="to">
 				<div class="arrow">
@@ -46,26 +55,35 @@
 				</div>
 			</div>
 			<div class="area after">
-				<div class="frame">
-					<table class="palette"></table>
-					<div class="button_area">
-						<button class="scan_button">
-							<img src="img/scan.png" />
-						</button>
-						<button class="clear_button">
-							<img src="img/clear.png" />
-						</button>
-					</div>
-					<div class="clear"></div>
+				<table class="palette">
+				</table>
+				<div class="button_area">
+					<button class="scan_button" title="sample canvas color">
+						<img src="img/scan.png" />
+					</button>
+					<button class="clear_button" title="clear palette">
+						<img src="img/clear.png" />
+					</button>
 				</div>
+				<div class="clear"></div>
 			</div>
 		</div>
 	</div>
 
+	<p id="title_option" class="title">Option</p>
+	<ul id="setting">
+		<li>
+			<input type="checkbox" class="duplicate_color" /> Allow duplicate color in pallet B
+		</li>
+		<li>
+			<input type="checkbox" class="ignore_locked" checked="checked" /> Ignore locked layer paint
+		</li>
+	</ul>
+
 	<hr />
 
 	<div id="palette_changer">
-		<button class="run_button">RUN</button>
+		<button class="run_button" title="start to change palette">RUN</button>
 	</div>
 </div>
 

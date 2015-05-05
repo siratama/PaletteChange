@@ -1,0 +1,9 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<ExtensionList>
+	<Extension Id="com.dango_itimi.PaletteChange.extension1">
+		<HostList>
+			<Host Name="PHXS" Port="8080"/>
+			<Host Name="FLPR" Port="8080"/>
+		</HostList>
+	</Extension>
+</ExtensionList>

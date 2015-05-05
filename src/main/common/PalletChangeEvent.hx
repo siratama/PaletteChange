@@ -2,5 +2,6 @@ package common;
 enum PalletChangeEvent
 {
 	NONE;
-	RESULT;
+	SUCCESS;
+	ERROR(message:String);
 }

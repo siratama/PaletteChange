@@ -1,5 +1,5 @@
-(function ($hx_exports) { "use strict";
-var HxOverrides = function() { };
+var $hxClasses = $hxClasses || {},$estr = function() { return js.Boot.__string_rec(this,''); };
+var HxOverrides = $hxClasses["HxOverrides"] = function() { };
 HxOverrides.__name__ = ["HxOverrides"];
 HxOverrides.dateStr = function(date) {
 	var m = date.getMonth() + 1;
@@ -9,17 +9,42 @@ HxOverrides.dateStr = function(date) {
 	var s = date.getSeconds();
 	return date.getFullYear() + "-" + (m < 10?"0" + m:"" + m) + "-" + (d < 10?"0" + d:"" + d) + " " + (h < 10?"0" + h:"" + h) + ":" + (mi < 10?"0" + mi:"" + mi) + ":" + (s < 10?"0" + s:"" + s);
 };
-HxOverrides.indexOf = function(a,obj,i) {
-	var len = a.length;
-	if(i < 0) {
-		i += len;
-		if(i < 0) i = 0;
+HxOverrides.strDate = function(s) {
+	var _g = s.length;
+	switch(_g) {
+	case 8:
+		var k = s.split(":");
+		var d = new Date();
+		d.setTime(0);
+		d.setUTCHours(k[0]);
+		d.setUTCMinutes(k[1]);
+		d.setUTCSeconds(k[2]);
+		return d;
+	case 10:
+		var k1 = s.split("-");
+		return new Date(k1[0],k1[1] - 1,k1[2],0,0,0);
+	case 19:
+		var k2 = s.split(" ");
+		var y = k2[0].split("-");
+		var t = k2[1].split(":");
+		return new Date(y[0],y[1] - 1,y[2],t[0],t[1],t[2]);
+	default:
+		throw "Invalid date format : " + s;
 	}
-	while(i < len) {
-		if(a[i] === obj) return i;
-		i++;
-	}
-	return -1;
+};
+HxOverrides.cca = function(s,index) {
+	var x = s.charCodeAt(index);
+	if(x != x) return undefined;
+	return x;
+};
+HxOverrides.substr = function(s,pos,len) {
+	if(pos != null && pos != 0 && len != null && len < 0) return "";
+	if(len == null) len = s.length;
+	if(pos < 0) {
+		pos = s.length + pos;
+		if(pos < 0) pos = 0;
+	} else if(len < 0) len = s.length + len - pos;
+	return s.substr(pos,len);
 };
 HxOverrides.iter = function(a) {
 	return { cur : 0, arr : a, hasNext : function() {
@@ -28,10 +53,18 @@ HxOverrides.iter = function(a) {
 		return this.arr[this.cur++];
 	}};
 };
-var List = function() { };
+var List = $hxClasses["List"] = function() {
+	this.length = 0;
+};
 List.__name__ = ["List"];
 List.prototype = {
-	iterator: function() {
+	add: function(item) {
+		var x = [item];
+		if(this.h == null) this.h = x; else this.q[1] = x;
+		this.q = x;
+		this.length++;
+	}
+	,iterator: function() {
 		return { h : this.h, hasNext : function() {
 			return this.h != null;
 		}, next : function() {
@@ -43,10 +76,10 @@ List.prototype = {
 	}
 	,__class__: List
 };
-var IMap = function() { };
+var IMap = $hxClasses["IMap"] = function() { };
 IMap.__name__ = ["IMap"];
 Math.__name__ = ["Math"];
-var Reflect = function() { };
+var Reflect = $hxClasses["Reflect"] = function() { };
 Reflect.__name__ = ["Reflect"];
 Reflect.field = function(o,field) {
 	try {
@@ -65,17 +98,23 @@ Reflect.fields = function(o) {
 	}
 	return a;
 };
+Reflect.isFunction = function(f) {
+	return typeof(f) == "function" && !(f.__name__ || f.__ename__);
+};
 Reflect.deleteField = function(o,field) {
 	if(!Object.prototype.hasOwnProperty.call(o,field)) return false;
 	delete(o[field]);
 	return true;
 };
-var Std = function() { };
+var Std = $hxClasses["Std"] = function() { };
 Std.__name__ = ["Std"];
 Std.string = function(s) {
 	return js.Boot.__string_rec(s,"");
 };
-var StringBuf = function() {
+Std.parseFloat = function(x) {
+	return parseFloat(x);
+};
+var StringBuf = $hxClasses["StringBuf"] = function() {
 	this.b = "";
 };
 StringBuf.__name__ = ["StringBuf"];
@@ -85,24 +124,36 @@ StringBuf.prototype = {
 	}
 	,__class__: StringBuf
 };
-var ValueType = { __ename__ : ["ValueType"], __constructs__ : ["TNull","TInt","TFloat","TBool","TObject","TFunction","TClass","TEnum","TUnknown"] };
+var StringTools = $hxClasses["StringTools"] = function() { };
+StringTools.__name__ = ["StringTools"];
+StringTools.fastCodeAt = function(s,index) {
+	return s.charCodeAt(index);
+};
+var ValueType = $hxClasses["ValueType"] = { __ename__ : ["ValueType"], __constructs__ : ["TNull","TInt","TFloat","TBool","TObject","TFunction","TClass","TEnum","TUnknown"] };
 ValueType.TNull = ["TNull",0];
+ValueType.TNull.toString = $estr;
 ValueType.TNull.__enum__ = ValueType;
 ValueType.TInt = ["TInt",1];
+ValueType.TInt.toString = $estr;
 ValueType.TInt.__enum__ = ValueType;
 ValueType.TFloat = ["TFloat",2];
+ValueType.TFloat.toString = $estr;
 ValueType.TFloat.__enum__ = ValueType;
 ValueType.TBool = ["TBool",3];
+ValueType.TBool.toString = $estr;
 ValueType.TBool.__enum__ = ValueType;
 ValueType.TObject = ["TObject",4];
+ValueType.TObject.toString = $estr;
 ValueType.TObject.__enum__ = ValueType;
 ValueType.TFunction = ["TFunction",5];
+ValueType.TFunction.toString = $estr;
 ValueType.TFunction.__enum__ = ValueType;
-ValueType.TClass = function(c) { var $x = ["TClass",6,c]; $x.__enum__ = ValueType; return $x; };
-ValueType.TEnum = function(e) { var $x = ["TEnum",7,e]; $x.__enum__ = ValueType; return $x; };
+ValueType.TClass = function(c) { var $x = ["TClass",6,c]; $x.__enum__ = ValueType; $x.toString = $estr; return $x; };
+ValueType.TEnum = function(e) { var $x = ["TEnum",7,e]; $x.__enum__ = ValueType; $x.toString = $estr; return $x; };
 ValueType.TUnknown = ["TUnknown",8];
+ValueType.TUnknown.toString = $estr;
 ValueType.TUnknown.__enum__ = ValueType;
-var Type = function() { };
+var Type = $hxClasses["Type"] = function() { };
 Type.__name__ = ["Type"];
 Type.getClassName = function(c) {
 	var a = c.__name__;
@@ -111,6 +162,34 @@ Type.getClassName = function(c) {
 Type.getEnumName = function(e) {
 	var a = e.__ename__;
 	return a.join(".");
+};
+Type.resolveClass = function(name) {
+	var cl = $hxClasses[name];
+	if(cl == null || !cl.__name__) return null;
+	return cl;
+};
+Type.resolveEnum = function(name) {
+	var e = $hxClasses[name];
+	if(e == null || !e.__ename__) return null;
+	return e;
+};
+Type.createEmptyInstance = function(cl) {
+	function empty() {}; empty.prototype = cl.prototype;
+	return new empty();
+};
+Type.createEnum = function(e,constr,params) {
+	var f = Reflect.field(e,constr);
+	if(f == null) throw "No such constructor " + constr;
+	if(Reflect.isFunction(f)) {
+		if(params == null) throw "Constructor " + constr + " need parameters";
+		return f.apply(e,params);
+	}
+	if(params != null && params.length != 0) throw "Constructor " + constr + " does not need parameters";
+	return f;
+};
+Type.getEnumConstructs = function(e) {
+	var a = e.__constructs__;
+	return a.slice();
 };
 Type["typeof"] = function(v) {
 	var _g = typeof(v);
@@ -139,8 +218,19 @@ Type["typeof"] = function(v) {
 		return ValueType.TUnknown;
 	}
 };
-var haxe = {};
-haxe.Serializer = function() {
+var common = common || {};
+common.CanvasColorSamplerEvent = $hxClasses["common.CanvasColorSamplerEvent"] = { __ename__ : ["common","CanvasColorSamplerEvent"], __constructs__ : ["NONE","RESULT"] };
+common.CanvasColorSamplerEvent.NONE = ["NONE",0];
+common.CanvasColorSamplerEvent.NONE.toString = $estr;
+common.CanvasColorSamplerEvent.NONE.__enum__ = common.CanvasColorSamplerEvent;
+common.CanvasColorSamplerEvent.RESULT = function(rgbHexColorSet) { var $x = ["RESULT",1,rgbHexColorSet]; $x.__enum__ = common.CanvasColorSamplerEvent; $x.toString = $estr; return $x; };
+common.InitialErrorEvent = $hxClasses["common.InitialErrorEvent"] = { __ename__ : ["common","InitialErrorEvent"], __constructs__ : ["NONE","ERROR"] };
+common.InitialErrorEvent.NONE = ["NONE",0];
+common.InitialErrorEvent.NONE.toString = $estr;
+common.InitialErrorEvent.NONE.__enum__ = common.InitialErrorEvent;
+common.InitialErrorEvent.ERROR = function(message) { var $x = ["ERROR",1,message]; $x.__enum__ = common.InitialErrorEvent; $x.toString = $estr; return $x; };
+var haxe = haxe || {};
+haxe.Serializer = $hxClasses["haxe.Serializer"] = function() {
 	this.buf = new StringBuf();
 	this.cache = new Array();
 	this.useCache = haxe.Serializer.USE_CACHE;
@@ -396,12 +486,286 @@ haxe.Serializer.prototype = {
 	}
 	,__class__: haxe.Serializer
 };
-haxe.ds = {};
-haxe.ds.IntMap = function() { };
+haxe.Unserializer = $hxClasses["haxe.Unserializer"] = function(buf) {
+	this.buf = buf;
+	this.length = buf.length;
+	this.pos = 0;
+	this.scache = new Array();
+	this.cache = new Array();
+	var r = haxe.Unserializer.DEFAULT_RESOLVER;
+	if(r == null) {
+		r = Type;
+		haxe.Unserializer.DEFAULT_RESOLVER = r;
+	}
+	this.setResolver(r);
+};
+haxe.Unserializer.__name__ = ["haxe","Unserializer"];
+haxe.Unserializer.initCodes = function() {
+	var codes = new Array();
+	var _g1 = 0;
+	var _g = haxe.Unserializer.BASE64.length;
+	while(_g1 < _g) {
+		var i = _g1++;
+		codes[haxe.Unserializer.BASE64.charCodeAt(i)] = i;
+	}
+	return codes;
+};
+haxe.Unserializer.run = function(v) {
+	return new haxe.Unserializer(v).unserialize();
+};
+haxe.Unserializer.prototype = {
+	setResolver: function(r) {
+		if(r == null) this.resolver = { resolveClass : function(_) {
+			return null;
+		}, resolveEnum : function(_1) {
+			return null;
+		}}; else this.resolver = r;
+	}
+	,get: function(p) {
+		return this.buf.charCodeAt(p);
+	}
+	,readDigits: function() {
+		var k = 0;
+		var s = false;
+		var fpos = this.pos;
+		while(true) {
+			var c = this.buf.charCodeAt(this.pos);
+			if(c != c) break;
+			if(c == 45) {
+				if(this.pos != fpos) break;
+				s = true;
+				this.pos++;
+				continue;
+			}
+			if(c < 48 || c > 57) break;
+			k = k * 10 + (c - 48);
+			this.pos++;
+		}
+		if(s) k *= -1;
+		return k;
+	}
+	,unserializeObject: function(o) {
+		while(true) {
+			if(this.pos >= this.length) throw "Invalid object";
+			if(this.buf.charCodeAt(this.pos) == 103) break;
+			var k = this.unserialize();
+			if(!(typeof(k) == "string")) throw "Invalid object key";
+			var v = this.unserialize();
+			o[k] = v;
+		}
+		this.pos++;
+	}
+	,unserializeEnum: function(edecl,tag) {
+		if(this.get(this.pos++) != 58) throw "Invalid enum format";
+		var nargs = this.readDigits();
+		if(nargs == 0) return Type.createEnum(edecl,tag);
+		var args = new Array();
+		while(nargs-- > 0) args.push(this.unserialize());
+		return Type.createEnum(edecl,tag,args);
+	}
+	,unserialize: function() {
+		var _g = this.get(this.pos++);
+		switch(_g) {
+		case 110:
+			return null;
+		case 116:
+			return true;
+		case 102:
+			return false;
+		case 122:
+			return 0;
+		case 105:
+			return this.readDigits();
+		case 100:
+			var p1 = this.pos;
+			while(true) {
+				var c = this.buf.charCodeAt(this.pos);
+				if(c >= 43 && c < 58 || c == 101 || c == 69) this.pos++; else break;
+			}
+			return Std.parseFloat(HxOverrides.substr(this.buf,p1,this.pos - p1));
+		case 121:
+			var len = this.readDigits();
+			if(this.get(this.pos++) != 58 || this.length - this.pos < len) throw "Invalid string length";
+			var s = HxOverrides.substr(this.buf,this.pos,len);
+			this.pos += len;
+			s = decodeURIComponent(s.split("+").join(" "));
+			this.scache.push(s);
+			return s;
+		case 107:
+			return Math.NaN;
+		case 109:
+			return Math.NEGATIVE_INFINITY;
+		case 112:
+			return Math.POSITIVE_INFINITY;
+		case 97:
+			var buf = this.buf;
+			var a = new Array();
+			this.cache.push(a);
+			while(true) {
+				var c1 = this.buf.charCodeAt(this.pos);
+				if(c1 == 104) {
+					this.pos++;
+					break;
+				}
+				if(c1 == 117) {
+					this.pos++;
+					var n = this.readDigits();
+					a[a.length + n - 1] = null;
+				} else a.push(this.unserialize());
+			}
+			return a;
+		case 111:
+			var o = { };
+			this.cache.push(o);
+			this.unserializeObject(o);
+			return o;
+		case 114:
+			var n1 = this.readDigits();
+			if(n1 < 0 || n1 >= this.cache.length) throw "Invalid reference";
+			return this.cache[n1];
+		case 82:
+			var n2 = this.readDigits();
+			if(n2 < 0 || n2 >= this.scache.length) throw "Invalid string reference";
+			return this.scache[n2];
+		case 120:
+			throw this.unserialize();
+			break;
+		case 99:
+			var name = this.unserialize();
+			var cl = this.resolver.resolveClass(name);
+			if(cl == null) throw "Class not found " + name;
+			var o1 = Type.createEmptyInstance(cl);
+			this.cache.push(o1);
+			this.unserializeObject(o1);
+			return o1;
+		case 119:
+			var name1 = this.unserialize();
+			var edecl = this.resolver.resolveEnum(name1);
+			if(edecl == null) throw "Enum not found " + name1;
+			var e = this.unserializeEnum(edecl,this.unserialize());
+			this.cache.push(e);
+			return e;
+		case 106:
+			var name2 = this.unserialize();
+			var edecl1 = this.resolver.resolveEnum(name2);
+			if(edecl1 == null) throw "Enum not found " + name2;
+			this.pos++;
+			var index = this.readDigits();
+			var tag = Type.getEnumConstructs(edecl1)[index];
+			if(tag == null) throw "Unknown enum index " + name2 + "@" + index;
+			var e1 = this.unserializeEnum(edecl1,tag);
+			this.cache.push(e1);
+			return e1;
+		case 108:
+			var l = new List();
+			this.cache.push(l);
+			var buf1 = this.buf;
+			while(this.buf.charCodeAt(this.pos) != 104) l.add(this.unserialize());
+			this.pos++;
+			return l;
+		case 98:
+			var h = new haxe.ds.StringMap();
+			this.cache.push(h);
+			var buf2 = this.buf;
+			while(this.buf.charCodeAt(this.pos) != 104) {
+				var s1 = this.unserialize();
+				h.set(s1,this.unserialize());
+			}
+			this.pos++;
+			return h;
+		case 113:
+			var h1 = new haxe.ds.IntMap();
+			this.cache.push(h1);
+			var buf3 = this.buf;
+			var c2 = this.get(this.pos++);
+			while(c2 == 58) {
+				var i = this.readDigits();
+				h1.set(i,this.unserialize());
+				c2 = this.get(this.pos++);
+			}
+			if(c2 != 104) throw "Invalid IntMap format";
+			return h1;
+		case 77:
+			var h2 = new haxe.ds.ObjectMap();
+			this.cache.push(h2);
+			var buf4 = this.buf;
+			while(this.buf.charCodeAt(this.pos) != 104) {
+				var s2 = this.unserialize();
+				h2.set(s2,this.unserialize());
+			}
+			this.pos++;
+			return h2;
+		case 118:
+			var d;
+			var s3 = HxOverrides.substr(this.buf,this.pos,19);
+			d = HxOverrides.strDate(s3);
+			this.cache.push(d);
+			this.pos += 19;
+			return d;
+		case 115:
+			var len1 = this.readDigits();
+			var buf5 = this.buf;
+			if(this.get(this.pos++) != 58 || this.length - this.pos < len1) throw "Invalid bytes length";
+			var codes = haxe.Unserializer.CODES;
+			if(codes == null) {
+				codes = haxe.Unserializer.initCodes();
+				haxe.Unserializer.CODES = codes;
+			}
+			var i1 = this.pos;
+			var rest = len1 & 3;
+			var size;
+			size = (len1 >> 2) * 3 + (rest >= 2?rest - 1:0);
+			var max = i1 + (len1 - rest);
+			var bytes = haxe.io.Bytes.alloc(size);
+			var bpos = 0;
+			while(i1 < max) {
+				var c11 = codes[StringTools.fastCodeAt(buf5,i1++)];
+				var c21 = codes[StringTools.fastCodeAt(buf5,i1++)];
+				bytes.set(bpos++,c11 << 2 | c21 >> 4);
+				var c3 = codes[StringTools.fastCodeAt(buf5,i1++)];
+				bytes.set(bpos++,c21 << 4 | c3 >> 2);
+				var c4 = codes[StringTools.fastCodeAt(buf5,i1++)];
+				bytes.set(bpos++,c3 << 6 | c4);
+			}
+			if(rest >= 2) {
+				var c12 = codes[StringTools.fastCodeAt(buf5,i1++)];
+				var c22 = codes[StringTools.fastCodeAt(buf5,i1++)];
+				bytes.set(bpos++,c12 << 2 | c22 >> 4);
+				if(rest == 3) {
+					var c31 = codes[StringTools.fastCodeAt(buf5,i1++)];
+					bytes.set(bpos++,c22 << 4 | c31 >> 2);
+				}
+			}
+			this.pos += len1;
+			this.cache.push(bytes);
+			return bytes;
+		case 67:
+			var name3 = this.unserialize();
+			var cl1 = this.resolver.resolveClass(name3);
+			if(cl1 == null) throw "Class not found " + name3;
+			var o2 = Type.createEmptyInstance(cl1);
+			this.cache.push(o2);
+			o2.hxUnserialize(this);
+			if(this.get(this.pos++) != 103) throw "Invalid custom data";
+			return o2;
+		default:
+		}
+		this.pos--;
+		throw "Invalid char " + this.buf.charAt(this.pos) + " at position " + this.pos;
+	}
+	,__class__: haxe.Unserializer
+};
+if(!haxe.ds) haxe.ds = {};
+haxe.ds.IntMap = $hxClasses["haxe.ds.IntMap"] = function() {
+	this.h = { };
+};
 haxe.ds.IntMap.__name__ = ["haxe","ds","IntMap"];
 haxe.ds.IntMap.__interfaces__ = [IMap];
 haxe.ds.IntMap.prototype = {
-	get: function(key) {
+	set: function(key,value) {
+		this.h[key] = value;
+	}
+	,get: function(key) {
 		return this.h[key];
 	}
 	,keys: function() {
@@ -413,11 +777,19 @@ haxe.ds.IntMap.prototype = {
 	}
 	,__class__: haxe.ds.IntMap
 };
-haxe.ds.ObjectMap = function() { };
+haxe.ds.ObjectMap = $hxClasses["haxe.ds.ObjectMap"] = function() {
+	this.h = { };
+	this.h.__keys__ = { };
+};
 haxe.ds.ObjectMap.__name__ = ["haxe","ds","ObjectMap"];
 haxe.ds.ObjectMap.__interfaces__ = [IMap];
 haxe.ds.ObjectMap.prototype = {
-	keys: function() {
+	set: function(key,value) {
+		var id = key.__id__ || (key.__id__ = ++haxe.ds.ObjectMap.count);
+		this.h[id] = value;
+		this.h.__keys__[id] = key;
+	}
+	,keys: function() {
 		var a = [];
 		for( var key in this.h.__keys__ ) {
 		if(this.h.hasOwnProperty(key)) a.push(this.h.__keys__[key]);
@@ -426,7 +798,7 @@ haxe.ds.ObjectMap.prototype = {
 	}
 	,__class__: haxe.ds.ObjectMap
 };
-haxe.ds.StringMap = function() {
+haxe.ds.StringMap = $hxClasses["haxe.ds.StringMap"] = function() {
 	this.h = { };
 };
 haxe.ds.StringMap.__name__ = ["haxe","ds","StringMap"];
@@ -447,16 +819,31 @@ haxe.ds.StringMap.prototype = {
 	}
 	,__class__: haxe.ds.StringMap
 };
-haxe.io = {};
-haxe.io.Bytes = function() { };
+if(!haxe.io) haxe.io = {};
+haxe.io.Bytes = $hxClasses["haxe.io.Bytes"] = function(length,b) {
+	this.length = length;
+	this.b = b;
+};
 haxe.io.Bytes.__name__ = ["haxe","io","Bytes"];
+haxe.io.Bytes.alloc = function(length) {
+	var a = new Array();
+	var _g = 0;
+	while(_g < length) {
+		var i = _g++;
+		a.push(0);
+	}
+	return new haxe.io.Bytes(length,a);
+};
 haxe.io.Bytes.prototype = {
 	get: function(pos) {
 		return this.b[pos];
 	}
+	,set: function(pos,v) {
+		this.b[pos] = v & 255;
+	}
 	,__class__: haxe.io.Bytes
 };
-haxe.io.Eof = function() { };
+haxe.io.Eof = $hxClasses["haxe.io.Eof"] = function() { };
 haxe.io.Eof.__name__ = ["haxe","io","Eof"];
 haxe.io.Eof.prototype = {
 	toString: function() {
@@ -464,9 +851,12 @@ haxe.io.Eof.prototype = {
 	}
 	,__class__: haxe.io.Eof
 };
-var js = {};
-js.Boot = function() { };
+var js = js || {};
+js.Boot = $hxClasses["js.Boot"] = function() { };
 js.Boot.__name__ = ["js","Boot"];
+js.Boot.getClass = function(o) {
+	if((o instanceof Array) && o.__enum__ == null) return Array; else return o.__class__;
+};
 js.Boot.__string_rec = function(o,s) {
 	if(o == null) return "null";
 	if(s.length >= 5) return "<...>";
@@ -534,44 +924,152 @@ js.Boot.__string_rec = function(o,s) {
 		return String(o);
 	}
 };
-var jsx = {};
-jsx.color_sampler = {};
-jsx.color_sampler.CanvasColorSampler = $hx_exports.CanvasColorSampler = function() {
+js.Boot.__interfLoop = function(cc,cl) {
+	if(cc == null) return false;
+	if(cc == cl) return true;
+	var intf = cc.__interfaces__;
+	if(intf != null) {
+		var _g1 = 0;
+		var _g = intf.length;
+		while(_g1 < _g) {
+			var i = _g1++;
+			var i1 = intf[i];
+			if(i1 == cl || js.Boot.__interfLoop(i1,cl)) return true;
+		}
+	}
+	return js.Boot.__interfLoop(cc.__super__,cl);
 };
-jsx.color_sampler.CanvasColorSampler.__name__ = ["jsx","color_sampler","CanvasColorSampler"];
-jsx.color_sampler.CanvasColorSampler.main = function() {
+js.Boot.__instanceof = function(o,cl) {
+	if(cl == null) return false;
+	switch(cl) {
+	case Int:
+		return (o|0) === o;
+	case Float:
+		return typeof(o) == "number";
+	case Bool:
+		return typeof(o) == "boolean";
+	case String:
+		return typeof(o) == "string";
+	case Array:
+		return (o instanceof Array) && o.__enum__ == null;
+	case Dynamic:
+		return true;
+	default:
+		if(o != null) {
+			if(typeof(cl) == "function") {
+				if(o instanceof cl) return true;
+				if(js.Boot.__interfLoop(js.Boot.getClass(o),cl)) return true;
+			}
+		} else return false;
+		if(cl == Class && o.__name__ != null) return true;
+		if(cl == Enum && o.__ename__ != null) return true;
+		return o.__enum__ == cl;
+	}
 };
-jsx.color_sampler.CanvasColorSampler.prototype = {
-	execute: function() {
-		this.application = app;
+js.Boot.__cast = function(o,t) {
+	if(js.Boot.__instanceof(o,t)) return o; else throw "Cannot cast " + Std.string(o) + " to " + Std.string(t);
+};
+js.Lib = $hxClasses["js.Lib"] = function() { };
+js.Lib.__name__ = ["js","Lib"];
+js.Lib.alert = function(v) {
+	alert(js.Boot.__string_rec(v,""));
+};
+var CanvasColorSampler = $hxClasses["CanvasColorSampler"] = function() {
+	this.application = app;
+};
+CanvasColorSampler.__name__ = ["CanvasColorSampler"];
+CanvasColorSampler.main = function() {
+};
+CanvasColorSampler.test = function() {
+	CanvasColorSampler.canvasColorSampler = new CanvasColorSampler();
+	var initialErrorEvent = haxe.Unserializer.run(CanvasColorSampler.canvasColorSampler.getInitialErrorEvent());
+	switch(initialErrorEvent[1]) {
+	case 1:
+		var message = initialErrorEvent[2];
+		js.Lib.alert(message);
+		return;
+	case 0:
+		"";
+		break;
+	}
+	CanvasColorSampler.canvasColorSampler.initialize();
+	CanvasColorSampler.canvasColorSampler.run();
+	CanvasColorSampler.canvasColorSampler.run();
+	var result = CanvasColorSampler.canvasColorSampler.getSerializedEvent();
+	var event = haxe.Unserializer.run(result);
+	switch(event[1]) {
+	case 0:
+		return;
+	case 1:
+		var rgbHexColorSet = event[2];
+		js.Lib.alert(rgbHexColorSet);
+		break;
+	}
+};
+CanvasColorSampler.prototype = {
+	getSerializedEvent: function() {
+		return haxe.Serializer.run(this.event);
+	}
+	,run: function() {
+		this.mainFunction();
+	}
+	,getInitialErrorEvent: function() {
+		var event;
+		if(this.application.documents.length == 0) event = common.InitialErrorEvent.ERROR("Open document."); else if(this.application.activeDocument.activeLayer.typename == LayerTypeName.LAYER_SET) event = common.InitialErrorEvent.ERROR("Select layer."); else event = common.InitialErrorEvent.NONE;
+		return haxe.Serializer.run(event);
+	}
+	,initialize: function() {
 		this.activeDocument = this.application.activeDocument;
-		this.layers = this.activeDocument.layers;
-		this.layersDisplay = new jsx.util.LayersDisplay(this.layers);
+		var activeLayer = this.activeDocument.activeLayer;
+		this.layersDisplay = new jsx.util.LayersDisplay(this.activeDocument.layers);
 		this.layersDisplay.hide();
-		var layer = this.activeDocument.activeLayer;
-		layer.visible = true;
-		var rgbHexValueSet = [];
-		var bounds = jsx.util.Bounds.convert(layer.bounds);
-		var _g1 = bounds.top | 0;
-		var _g = bounds.bottom | 0;
+		if(!(js.Boot.__cast(activeLayer , ArtLayer)).isBackgroundLayer) activeLayer.visible = true;
+		this.bounds = jsx.util.Bounds.convert(activeLayer.bounds);
+		this.rgbHexValueSet = [];
+		this.rgbHexValueMap = new haxe.ds.StringMap();
+		this.positionX = this.bounds.left | 0;
+		this.positionY = this.bounds.top | 0;
+		this.event = common.CanvasColorSamplerEvent.NONE;
+		this.mainFunction = $bind(this,this.scan);
+	}
+	,scan: function() {
+		this.scanPixelCount = 0;
+		var _g1 = this.positionY;
+		var _g = this.bounds.bottom | 0;
 		while(_g1 < _g) {
 			var y = _g1++;
-			var _g3 = bounds.left | 0;
-			var _g2 = bounds.right | 0;
+			var _g3 = this.positionX;
+			var _g2 = this.bounds.right | 0;
 			while(_g3 < _g2) {
 				var x = _g3++;
-				var colorSample = this.activeDocument.colorSamplers.add([x,y]);
-				var rgbHexValue = colorSample.color.rgb.hexValue;
-				if(HxOverrides.indexOf(rgbHexValueSet,rgbHexValue,0) != -1) rgbHexValueSet.push(rgbHexValue);
+				var colorSampler = this.activeDocument.colorSamplers.add([x,y]);
+				try {
+					var rgbHexValue = colorSampler.color.rgb.hexValue;
+					if(!this.rgbHexValueMap.get(rgbHexValue)) {
+						this.rgbHexValueSet.push(rgbHexValue);
+						this.rgbHexValueMap.set(rgbHexValue,true);
+					}
+				} catch( error ) {
+				}
+				colorSampler.remove();
+				if(++this.scanPixelCount >= 10) {
+					this.positionX = x + 1;
+					this.positionY = y;
+					if(this.positionX >= (this.bounds.right | 0)) {
+						this.positionX = 0;
+						this.positionY++;
+					}
+					return;
+				}
 			}
 		}
-		this.layersDisplay.restore();
-		return haxe.Serializer.run(rgbHexValueSet);
+		this.event = common.CanvasColorSamplerEvent.RESULT(this.rgbHexValueSet);
 	}
-	,__class__: jsx.color_sampler.CanvasColorSampler
+	,__class__: CanvasColorSampler
 };
-jsx.util = {};
-jsx.util.Bounds = function(left,top,right,bottom) {
+var jsx = jsx || {};
+if(!jsx.util) jsx.util = {};
+jsx.util.Bounds = $hxClasses["jsx.util.Bounds"] = function(left,top,right,bottom) {
 	this.left = left;
 	this.top = top;
 	this.right = right;
@@ -587,9 +1085,10 @@ jsx.util.Bounds.prototype = {
 	}
 	,__class__: jsx.util.Bounds
 };
-jsx.util.LayersDisplay = function(layers) {
+jsx.util.LayersDisplay = $hxClasses["jsx.util.LayersDisplay"] = function(layers) {
 	this.layers = layers;
 	this.defaultLayerVisibleSet = [];
+	this.layersDisplayMap = new haxe.ds.ObjectMap();
 };
 jsx.util.LayersDisplay.__name__ = ["jsx","util","LayersDisplay"];
 jsx.util.LayersDisplay.prototype = {
@@ -599,6 +1098,15 @@ jsx.util.LayersDisplay.prototype = {
 		while(_g1 < _g) {
 			var i = _g1++;
 			var layer = this.layers[i];
+			if(layer.typename == LayerTypeName.LAYER_SET) {
+				var layerSet;
+				layerSet = js.Boot.__cast(layer , LayerSet);
+				var layersDisplay = new jsx.util.LayersDisplay(layerSet.layers);
+				layersDisplay.hide();
+				this.layersDisplayMap.set(layerSet,layersDisplay);
+				continue;
+			}
+			if((js.Boot.__cast(layer , ArtLayer)).isBackgroundLayer) continue;
 			this.defaultLayerVisibleSet[i] = layer.visible;
 			layer.visible = false;
 		}
@@ -609,30 +1117,53 @@ jsx.util.LayersDisplay.prototype = {
 		while(_g1 < _g) {
 			var i = _g1++;
 			var layer = this.layers[i];
+			if(layer.typename == LayerTypeName.LAYER_SET) {
+				var layerSet;
+				layerSet = js.Boot.__cast(layer , LayerSet);
+				var layersDisplay = this.layersDisplayMap.h[layerSet.__id__];
+				layersDisplay.restore();
+				continue;
+			}
+			if((js.Boot.__cast(layer , ArtLayer)).isBackgroundLayer) continue;
 			layer.visible = this.defaultLayerVisibleSet[i];
 		}
 	}
 	,__class__: jsx.util.LayersDisplay
 };
-if(Array.prototype.indexOf) HxOverrides.indexOf = function(a,o,i) {
-	return Array.prototype.indexOf.call(a,o,i);
-};
+var LayerTypeName = $hxClasses["LayerTypeName"] = function() { };
+LayerTypeName.__name__ = ["LayerTypeName"];
+var $_, $fid = 0;
+function $bind(o,m) { if( m == null ) return null; if( m.__id__ == null ) m.__id__ = $fid++; var f; if( o.hx__closures__ == null ) o.hx__closures__ = {}; else f = o.hx__closures__[m.__id__]; if( f == null ) { f = function(){ return f.method.apply(f.scope, arguments); }; f.scope = o; f.method = m; o.hx__closures__[m.__id__] = f; } return f; }
 Math.NaN = Number.NaN;
 Math.NEGATIVE_INFINITY = Number.NEGATIVE_INFINITY;
 Math.POSITIVE_INFINITY = Number.POSITIVE_INFINITY;
+$hxClasses.Math = Math;
 Math.isFinite = function(i) {
 	return isFinite(i);
 };
 Math.isNaN = function(i1) {
 	return isNaN(i1);
 };
-String.prototype.__class__ = String;
+String.prototype.__class__ = $hxClasses.String = String;
 String.__name__ = ["String"];
+$hxClasses.Array = Array;
 Array.__name__ = ["Array"];
-Date.prototype.__class__ = Date;
+Date.prototype.__class__ = $hxClasses.Date = Date;
 Date.__name__ = ["Date"];
+var Int = $hxClasses.Int = { __name__ : ["Int"]};
+var Dynamic = $hxClasses.Dynamic = { __name__ : ["Dynamic"]};
+var Float = $hxClasses.Float = Number;
+Float.__name__ = ["Float"];
+var Bool = $hxClasses.Bool = Boolean;
+Bool.__ename__ = ["Bool"];
+var Class = $hxClasses.Class = { __name__ : ["Class"]};
+var Enum = { };
 haxe.Serializer.USE_CACHE = false;
 haxe.Serializer.USE_ENUM_INDEX = false;
 haxe.Serializer.BASE64 = "ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz0123456789%:";
-jsx.color_sampler.CanvasColorSampler.main();
-})(typeof window != "undefined" ? window : exports);
+haxe.Unserializer.DEFAULT_RESOLVER = Type;
+haxe.Unserializer.BASE64 = "ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz0123456789%:";
+haxe.ds.ObjectMap.count = 0;
+CanvasColorSampler.ONCE_SCAN_PIXEL = 10;
+LayerTypeName.LAYER_SET = "LayerSet";
+CanvasColorSampler.main();

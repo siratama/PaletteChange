@@ -54,7 +54,16 @@ class PageUI
 
 		var wasMaximum = pageNumber.isMaximum();
 		var wasMinimum = pageNumber.isMinimum();
-		pageNumber.changeMaximumIndex(maximumIndex);
+		pageNumber.setMaximumIndex(maximumIndex);
+
+		if(beforeMaximumIndex < maximumIndex && nextButton.isDisabled())
+		{
+			nextButton.removeDisabled();
+		}
+		else if(beforeMaximumIndex > maximumIndex)
+		{
+			pageNumber.setIndex(maximumIndex);
+		}
 
 		if(pageNumber.isMaximum()){
 			nextButton.disable();
@@ -62,6 +71,9 @@ class PageUI
 		if(pageNumber.isMinimum()){
 			prevButton.disable();
 		}
+
+		pageNumber.draw();
+
 		return
 			(beforeMaximumIndex == maximumIndex) ? PageMaximumChangeEvent.NONE:
 			(beforeMaximumIndex > maximumIndex) ? PageMaximumChangeEvent.DOWN: PageMaximumChangeEvent.UP;
@@ -124,10 +136,11 @@ class PageNumber
 	public function isMaximum():Bool{
 		return index == maximumIndex;
 	}
-	public function changeMaximumIndex(maximumIndex:Int)
-	{
+	public function setMaximumIndex(maximumIndex:Int){
 		this.maximumIndex = maximumIndex;
-		index = maximumIndex;
+	}
+	public function setIndex(index:Int){
+		this.index = index;
 	}
 	public function draw()
 	{
