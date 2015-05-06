@@ -4,7 +4,7 @@ enum CanvasColorSamplerEvent
 	NONE;
 	RESULT(rgbHexColorSet:Array<String>);
 }
-enum InitialErrorEvent
+enum CanvasColorSamplerInitialErrorEvent
 {
 	NONE;
 	ERROR(message:String);

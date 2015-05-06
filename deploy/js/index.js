@@ -236,19 +236,22 @@ common.CanvasColorSamplerEvent = $hxClasses["common.CanvasColorSamplerEvent"] = 
 common.CanvasColorSamplerEvent.NONE = ["NONE",0];
 common.CanvasColorSamplerEvent.NONE.__enum__ = common.CanvasColorSamplerEvent;
 common.CanvasColorSamplerEvent.RESULT = function(rgbHexColorSet) { var $x = ["RESULT",1,rgbHexColorSet]; $x.__enum__ = common.CanvasColorSamplerEvent; return $x; };
-common.InitialErrorEvent = $hxClasses["common.InitialErrorEvent"] = { __ename__ : ["common","InitialErrorEvent"], __constructs__ : ["NONE","ERROR"] };
-common.InitialErrorEvent.NONE = ["NONE",0];
-common.InitialErrorEvent.NONE.__enum__ = common.InitialErrorEvent;
-common.InitialErrorEvent.ERROR = function(message) { var $x = ["ERROR",1,message]; $x.__enum__ = common.InitialErrorEvent; return $x; };
+common.CanvasColorSamplerInitialErrorEvent = $hxClasses["common.CanvasColorSamplerInitialErrorEvent"] = { __ename__ : ["common","CanvasColorSamplerInitialErrorEvent"], __constructs__ : ["NONE","ERROR"] };
+common.CanvasColorSamplerInitialErrorEvent.NONE = ["NONE",0];
+common.CanvasColorSamplerInitialErrorEvent.NONE.__enum__ = common.CanvasColorSamplerInitialErrorEvent;
+common.CanvasColorSamplerInitialErrorEvent.ERROR = function(message) { var $x = ["ERROR",1,message]; $x.__enum__ = common.CanvasColorSamplerInitialErrorEvent; return $x; };
 common.ClassName = function() { };
 $hxClasses["common.ClassName"] = common.ClassName;
 common.ClassName.__name__ = ["common","ClassName"];
-common.PalletChangeEvent = $hxClasses["common.PalletChangeEvent"] = { __ename__ : ["common","PalletChangeEvent"], __constructs__ : ["NONE","SUCCESS","ERROR"] };
-common.PalletChangeEvent.NONE = ["NONE",0];
-common.PalletChangeEvent.NONE.__enum__ = common.PalletChangeEvent;
-common.PalletChangeEvent.SUCCESS = ["SUCCESS",1];
-common.PalletChangeEvent.SUCCESS.__enum__ = common.PalletChangeEvent;
-common.PalletChangeEvent.ERROR = function(message) { var $x = ["ERROR",2,message]; $x.__enum__ = common.PalletChangeEvent; return $x; };
+common.PaletteChangeEvent = $hxClasses["common.PaletteChangeEvent"] = { __ename__ : ["common","PaletteChangeEvent"], __constructs__ : ["NONE","SUCCESS"] };
+common.PaletteChangeEvent.NONE = ["NONE",0];
+common.PaletteChangeEvent.NONE.__enum__ = common.PaletteChangeEvent;
+common.PaletteChangeEvent.SUCCESS = ["SUCCESS",1];
+common.PaletteChangeEvent.SUCCESS.__enum__ = common.PaletteChangeEvent;
+common.PaletteChangeInitialErrorEvent = $hxClasses["common.PaletteChangeInitialErrorEvent"] = { __ename__ : ["common","PaletteChangeInitialErrorEvent"], __constructs__ : ["NONE","ERROR"] };
+common.PaletteChangeInitialErrorEvent.NONE = ["NONE",0];
+common.PaletteChangeInitialErrorEvent.NONE.__enum__ = common.PaletteChangeInitialErrorEvent;
+common.PaletteChangeInitialErrorEvent.ERROR = function(message) { var $x = ["ERROR",1,message]; $x.__enum__ = common.PaletteChangeInitialErrorEvent; return $x; };
 var csinterface = {};
 csinterface.AbstractCSInterface = function(csInterface) {
 	this.csInterface = csInterface;
@@ -316,26 +319,32 @@ extension.CanvasColorSamplerRunner.prototype = {
 					this.destroy();
 					break;
 				case 0:
-					this.csInterface.evalScript("" + "canvasColorSampler" + ".initialize();");
-					this.mainFunction = $bind(this,this.sampleCanvasColor);
+					this.initializeToSample();
 					break;
 				}
 				break;
 			}
 		}
 	}
-	,sampleCanvasColor: function() {
+	,initializeToSample: function() {
+		this.csInterface.evalScript("" + "canvasColorSampler" + ".initialize();");
+		this.mainFunction = $bind(this,this.sample);
+	}
+	,sample: function() {
 		var _g = this;
-		if(this.overlayWindow.cancelButton.isClicked()) this.destroy(); else {
+		if(this.overlayWindow.cancelButton.isClicked()) {
+			this.csInterface.evalScript("" + "canvasColorSampler" + ".interrupt();");
+			this.destroy();
+		} else {
 			this.jsxEvent = extension.JsxEvent.NONE;
 			this.csInterface.evalScript("" + "canvasColorSampler" + ".run();");
 			this.csInterface.evalScript("" + "canvasColorSampler" + ".getSerializedEvent();",function(result) {
 				_g.jsxEvent = extension.JsxEvent.GOTTEN(result);
 			});
-			this.mainFunction = $bind(this,this.observeToSampleCanvasColor);
+			this.mainFunction = $bind(this,this.observeToSample);
 		}
 	}
-	,observeToSampleCanvasColor: function() {
+	,observeToSample: function() {
 		{
 			var _g = this.recieveJsxEvent();
 			switch(_g[1]) {
@@ -346,7 +355,7 @@ extension.CanvasColorSamplerRunner.prototype = {
 				var canvasColorSamplerEvent = haxe.Unserializer.run(serializedEvent);
 				switch(canvasColorSamplerEvent[1]) {
 				case 0:
-					this.mainFunction = $bind(this,this.sampleCanvasColor);
+					this.mainFunction = $bind(this,this.sample);
 					break;
 				case 1:
 					var rgbHexColorSet = canvasColorSamplerEvent[2];
@@ -471,7 +480,7 @@ extension.Panel.prototype = {
 		var _g = this;
 		var rgbHexValueSets = this.canvasColorSampler.palletContainer.getRgbHexValueSets();
 		var data = haxe.Serializer.run(rgbHexValueSets);
-		this.paletteChangeEvent = common.PalletChangeEvent.NONE;
+		this.paletteChangeEvent = common.PaletteChangeEvent.NONE;
 		this.csInterface.evalScript("var " + "paletteChange" + " = new " + "PaletteChange" + "(" + data + ");");
 		this.csInterface.evalScript("" + "paletteChange" + ".execute(" + data + ");",function(result) {
 			_g.paletteChangeEvent = haxe.Unserializer.run(result);
@@ -480,7 +489,7 @@ extension.Panel.prototype = {
 	}
 	,getPaletteChangeEvent: function() {
 		var n = this.paletteChangeEvent;
-		this.paletteChangeEvent = common.PalletChangeEvent.NONE;
+		this.paletteChangeEvent = common.PaletteChangeEvent.NONE;
 		return n;
 	}
 	,changePalette: function() {
@@ -488,11 +497,6 @@ extension.Panel.prototype = {
 		switch(event[1]) {
 		case 0:
 			return;
-		case 2:
-			var message = event[2];
-			js.Lib.alert(message);
-			this.mainFunction = $bind(this,this.observeToClickUI);
-			break;
 		case 1:
 			this.mainFunction = $bind(this,this.observeToClickUI);
 			break;

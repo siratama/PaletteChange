@@ -101,6 +101,11 @@ Reflect.fields = function(o) {
 Reflect.isFunction = function(f) {
 	return typeof(f) == "function" && !(f.__name__ || f.__ename__);
 };
+Reflect.compareMethods = function(f1,f2) {
+	if(f1 == f2) return true;
+	if(!Reflect.isFunction(f1) || !Reflect.isFunction(f2)) return false;
+	return f1.scope == f2.scope && f1.method == f2.method && f1.method != null;
+};
 Reflect.deleteField = function(o,field) {
 	if(!Object.prototype.hasOwnProperty.call(o,field)) return false;
 	delete(o[field]);
@@ -218,15 +223,22 @@ Type["typeof"] = function(v) {
 		return ValueType.TUnknown;
 	}
 };
+Type.enumIndex = function(e) {
+	return e[1];
+};
 var common = common || {};
-common.PalletChangeEvent = $hxClasses["common.PalletChangeEvent"] = { __ename__ : ["common","PalletChangeEvent"], __constructs__ : ["NONE","SUCCESS","ERROR"] };
-common.PalletChangeEvent.NONE = ["NONE",0];
-common.PalletChangeEvent.NONE.toString = $estr;
-common.PalletChangeEvent.NONE.__enum__ = common.PalletChangeEvent;
-common.PalletChangeEvent.SUCCESS = ["SUCCESS",1];
-common.PalletChangeEvent.SUCCESS.toString = $estr;
-common.PalletChangeEvent.SUCCESS.__enum__ = common.PalletChangeEvent;
-common.PalletChangeEvent.ERROR = function(message) { var $x = ["ERROR",2,message]; $x.__enum__ = common.PalletChangeEvent; $x.toString = $estr; return $x; };
+common.PaletteChangeEvent = $hxClasses["common.PaletteChangeEvent"] = { __ename__ : ["common","PaletteChangeEvent"], __constructs__ : ["NONE","SUCCESS"] };
+common.PaletteChangeEvent.NONE = ["NONE",0];
+common.PaletteChangeEvent.NONE.toString = $estr;
+common.PaletteChangeEvent.NONE.__enum__ = common.PaletteChangeEvent;
+common.PaletteChangeEvent.SUCCESS = ["SUCCESS",1];
+common.PaletteChangeEvent.SUCCESS.toString = $estr;
+common.PaletteChangeEvent.SUCCESS.__enum__ = common.PaletteChangeEvent;
+common.PaletteChangeInitialErrorEvent = $hxClasses["common.PaletteChangeInitialErrorEvent"] = { __ename__ : ["common","PaletteChangeInitialErrorEvent"], __constructs__ : ["NONE","ERROR"] };
+common.PaletteChangeInitialErrorEvent.NONE = ["NONE",0];
+common.PaletteChangeInitialErrorEvent.NONE.toString = $estr;
+common.PaletteChangeInitialErrorEvent.NONE.__enum__ = common.PaletteChangeInitialErrorEvent;
+common.PaletteChangeInitialErrorEvent.ERROR = function(message) { var $x = ["ERROR",1,message]; $x.__enum__ = common.PaletteChangeInitialErrorEvent; $x.toString = $estr; return $x; };
 var haxe = haxe || {};
 haxe.Serializer = $hxClasses["haxe.Serializer"] = function() {
 	this.buf = new StringBuf();
@@ -975,150 +987,218 @@ js.Lib.alert = function(v) {
 var jsx = jsx || {};
 if(!jsx.palette_change) jsx.palette_change = {};
 jsx.palette_change.Converter = $hxClasses["jsx.palette_change.Converter"] = function() {
-	if(jsx.palette_change.PaletteInfo.instance == null) this.palletInfo = jsx.palette_change.PaletteInfo.instance = new jsx.palette_change.PaletteInfo(); else this.palletInfo = jsx.palette_change.PaletteInfo.instance;
+	if(jsx.palette_change.PaletteMap.instance == null) this.palletInfo = jsx.palette_change.PaletteMap.instance = new jsx.palette_change.PaletteMap(); else this.palletInfo = jsx.palette_change.PaletteMap.instance;
 	this.application = app;
-	this.activeDocument = this.application.activeDocument;
-	this.layers = this.activeDocument.layers;
-	this.layersDisplay = new jsx.util.LayersDisplay(this.layers);
-	this.layersDisplay.hide();
-	this.execute();
-	this.layersDisplay.restore();
 };
 jsx.palette_change.Converter.__name__ = ["jsx","palette_change","Converter"];
 jsx.palette_change.Converter.prototype = {
-	selectPixel: function(x,y) {
-		this.activeDocument.selection.select([[x,y],[x + 1,y],[x + 1,y + 1],[x,y + 1]]);
+	run: function() {
+		this.mainFunction();
 	}
-	,execute: function() {
-		var _g1 = 0;
-		var _g = this.layers.length;
-		while(_g1 < _g) {
-			var i = _g1++;
-			var layer = this.layers[i];
-			if(layer.allLocked) continue;
-			this.application.activeDocument.activeLayer = layer;
-			layer.visible = true;
-			var conversionDataSet = this.getConversionDataSet(layer);
-			this.paint(layer,conversionDataSet);
-			layer.visible = false;
+	,initialize: function() {
+		this.activeDocument = this.application.activeDocument;
+		this.layers = this.activeDocument.layers;
+		this.layersDisplay = new jsx.util.LayersDisplay(this.layers);
+		this.layersDisplay.hide();
+		this.sampleLayerIndex = 0;
+		this.mainFunction = $bind(this,this.setSampleLayer);
+	}
+	,setSampleLayer: function() {
+		if(this.sampleLayerIndex < this.layers.length) {
+			this.sampleLayer = this.layers[this.sampleLayerIndex];
+			if(this.sampleLayer.allLocked) this.sampleLayerIndex++; else this.initializeToCreateConversionDataSet();
+		} else {
+			this.layersDisplay.restore();
+			this.mainFunction = $bind(this,this.finish);
 		}
 	}
-	,getConversionDataSet: function(layer) {
-		var conversionDataSet = [];
-		var bounds = jsx.util.Bounds.convert(layer.bounds);
-		var _g1 = bounds.top | 0;
-		var _g = bounds.bottom | 0;
+	,initializeToCreateConversionDataSet: function() {
+		this.application.activeDocument.activeLayer = this.sampleLayer;
+		if(!(js.Boot.__cast(this.sampleLayer , ArtLayer)).isBackgroundLayer) this.sampleLayer.visible = true;
+		this.sampleBounds = jsx.util.Bounds.convert(this.sampleLayer.bounds);
+		this.samplePositionX = this.sampleBounds.left | 0;
+		this.samplePositionY = this.sampleBounds.top | 0;
+		this.conversionDataSet = [];
+		this.mainFunction = $bind(this,this.createConversionDataSet);
+	}
+	,createConversionDataSet: function() {
+		this.scanPixelCount = 0;
+		var _g1 = this.samplePositionY;
+		var _g = this.sampleBounds.bottom | 0;
 		while(_g1 < _g) {
 			var y = _g1++;
-			var _g3 = bounds.left | 0;
-			var _g2 = bounds.right | 0;
+			var _g3 = this.samplePositionX;
+			var _g2 = this.sampleBounds.right | 0;
 			while(_g3 < _g2) {
 				var x = _g3++;
-				var colorSample = this.activeDocument.colorSamplers.add([x,y]);
-				var rgb = colorSample.color.rgb.hexValue;
-				var palletColorPosition = this.palletInfo.before.indexOf(colorSample.color.rgb.hexValue);
-				switch(palletColorPosition[1]) {
-				case 0:
-					continue;
-					break;
-				case 1:
-					var index = palletColorPosition[2];
-					var conversionData = new jsx.palette_change.ConversionData(new Point(x,y),this.palletInfo.after.rgbHexValueSet[index]);
-					conversionDataSet.push(conversionData);
-					break;
+				var colorSampler = this.activeDocument.colorSamplers.add([x,y]);
+				try {
+					var hexValue = colorSampler.color.rgb.hexValue;
+					if(this.palletInfo.map.get(hexValue) != null) {
+						var conversionData = new jsx.palette_change.ConversionData(x,y,this.palletInfo.map.get(hexValue));
+						this.conversionDataSet.push(conversionData);
+					}
+				} catch( error ) {
+				}
+				colorSampler.remove();
+				if(++this.scanPixelCount >= 10) {
+					this.samplePositionX = x + 1;
+					this.samplePositionY = y;
+					if(this.samplePositionX >= (this.sampleBounds.right | 0)) {
+						this.samplePositionX = 0;
+						this.samplePositionY++;
+					}
+					return;
 				}
 			}
 		}
-		return conversionDataSet;
+		this.initializeToPaint();
 	}
-	,paint: function(layer,conversionDataSet) {
-		var duplicatedLayer = layer.duplicate();
-		var _g = 0;
-		while(_g < conversionDataSet.length) {
-			var conversionData = conversionDataSet[_g];
-			++_g;
-			this.application.activeDocument.activeLayer = layer;
-			var pixel = conversionData.pixel;
-			this.selectPixel(pixel.x | 0,pixel.y | 0);
-			this.activeDocument.selection.similar(0,false);
-			this.application.activeDocument.activeLayer = duplicatedLayer;
-			var color = new SolidColor();
-			color.rgb.hexValue = conversionData.rgbHexValue;
-			this.activeDocument.selection.fill(color);
-			this.activeDocument.selection.deselect();
-		}
-		var duplicatedArtLayer = this.activeDocument.artLayers.getByName(duplicatedLayer.name);
-		duplicatedArtLayer.merge();
+	,initializeToPaint: function() {
+		this.duplicatedPaintLayer = this.sampleLayer.duplicate();
+		this.mainFunction = $bind(this,this.setPaintedConversionData);
+	}
+	,setPaintedConversionData: function() {
+		if(this.conversionDataSet.length > 0) {
+			this.paintedConversionData = this.conversionDataSet.shift();
+			this.mainFunction = $bind(this,this.paint);
+		} else this.destroyToPaint();
+	}
+	,paint: function() {
+		this.application.activeDocument.activeLayer = this.sampleLayer;
+		this.selectPixel(this.paintedConversionData.pixelX,this.paintedConversionData.pixelY);
+		this.activeDocument.selection.similar(0,false);
+		this.application.activeDocument.activeLayer = this.duplicatedPaintLayer;
+		var color = new SolidColor();
+		color.rgb.hexValue = this.paintedConversionData.rgbHexValue;
+		this.activeDocument.selection.fill(color);
+		this.activeDocument.selection.deselect();
+		this.mainFunction = $bind(this,this.setPaintedConversionData);
+	}
+	,selectPixel: function(x,y) {
+		this.activeDocument.selection.select([[x,y],[x + 1,y],[x + 1,y + 1],[x,y + 1]]);
+	}
+	,destroyToPaint: function() {
+		(js.Boot.__cast(this.duplicatedPaintLayer , ArtLayer)).merge();
+		if(!(js.Boot.__cast(this.sampleLayer , ArtLayer)).isBackgroundLayer) this.sampleLayer.visible = false;
+		this.sampleLayerIndex++;
+		this.mainFunction = $bind(this,this.setSampleLayer);
+	}
+	,finish: function() {
+	}
+	,isFinished: function() {
+		return Reflect.compareMethods(this.mainFunction,$bind(this,this.finish));
+	}
+	,interrupt: function() {
+		this.layersDisplay.restore();
 	}
 	,__class__: jsx.palette_change.Converter
 };
-jsx.palette_change.ConversionData = $hxClasses["jsx.palette_change.ConversionData"] = function(pixel,rgbHexValue) {
-	this.pixel = pixel;
+jsx.palette_change.ConversionData = $hxClasses["jsx.palette_change.ConversionData"] = function(pixelX,pixelY,rgbHexValue) {
+	this.pixelX = pixelX;
+	this.pixelY = pixelY;
 	this.rgbHexValue = rgbHexValue;
 };
 jsx.palette_change.ConversionData.__name__ = ["jsx","palette_change","ConversionData"];
 jsx.palette_change.ConversionData.prototype = {
 	__class__: jsx.palette_change.ConversionData
 };
-jsx.palette_change.PaletteChange = $hxClasses["jsx.palette_change.PaletteChange"] = function() {
+var PaletteChange = $hxClasses["PaletteChange"] = function() {
 	this.application = app;
-	if(jsx.palette_change.PaletteInfo.instance == null) this.palletInfo = jsx.palette_change.PaletteInfo.instance = new jsx.palette_change.PaletteInfo(); else this.palletInfo = jsx.palette_change.PaletteInfo.instance;
-	js.Lib.alert(this.application);
+	if(jsx.palette_change.PaletteMap.instance == null) this.paletteMap = jsx.palette_change.PaletteMap.instance = new jsx.palette_change.PaletteMap(); else this.paletteMap = jsx.palette_change.PaletteMap.instance;
+	this.converter = new jsx.palette_change.Converter();
 };
-jsx.palette_change.PaletteChange.__name__ = ["jsx","palette_change","PaletteChange"];
-jsx.palette_change.PaletteChange.main = function() {
+PaletteChange.__name__ = ["PaletteChange"];
+PaletteChange.main = function() {
+	PaletteChange.test();
 };
-jsx.palette_change.PaletteChange.prototype = {
-	execute: function(code) {
-		this.palletInfo.convert(code);
-		if(!this.palletInfo.parsedResult) return haxe.Serializer.run(common.PalletChangeEvent.ERROR("code error"));
-		new jsx.palette_change.Converter();
-		return haxe.Serializer.run(common.PalletChangeEvent.SUCCESS);
-	}
-	,__class__: jsx.palette_change.PaletteChange
-};
-jsx.palette_change.PaletteInfo = $hxClasses["jsx.palette_change.PaletteInfo"] = function() {
-};
-jsx.palette_change.PaletteInfo.__name__ = ["jsx","palette_change","PaletteInfo"];
-jsx.palette_change.PaletteInfo.get_instance = function() {
-	if(jsx.palette_change.PaletteInfo.instance == null) return jsx.palette_change.PaletteInfo.instance = new jsx.palette_change.PaletteInfo(); else return jsx.palette_change.PaletteInfo.instance;
-};
-jsx.palette_change.PaletteInfo.prototype = {
-	convert: function(code) {
-		try {
-			var rgbHexValueSets = haxe.Unserializer.run(code);
-			this.before = new jsx.palette_change.Palette(rgbHexValueSets[0]);
-			this.after = new jsx.palette_change.Palette(rgbHexValueSets[1]);
-			this.parsedResult = true;
-		} catch( error ) {
-			if( js.Boot.__instanceof(error,String) ) {
-				this.parsedResult = false;
-			} else throw(error);
+PaletteChange.test = function() {
+	var paletteChange = new PaletteChange();
+	{
+		var _g = haxe.Unserializer.run(paletteChange.getInitialErrorEvent());
+		switch(Type.enumIndex(_g)) {
+		case 1:
+			var message = _g[2];
+			js.Lib.alert(message);
+			return;
+		case 0:
+			"";
+			break;
 		}
 	}
-	,__class__: jsx.palette_change.PaletteInfo
+	var arr = [["FF0000"],["0000FF"]];
+	var code = haxe.Serializer.run(arr);
+	paletteChange.execute(code);
+	var _g1 = 0;
+	try {
+		while(_g1 < 100) {
+			var i = _g1++;
+			paletteChange.run();
+			var result = paletteChange.getSerializedEvent();
+			var event = haxe.Unserializer.run(result);
+			switch(event[1]) {
+			case 0:
+				"";
+				break;
+			case 1:
+				js.Lib.alert("success!");
+				throw "__break__";
+				break;
+			}
+		}
+	} catch( e ) { if( e != "__break__" ) throw e; }
 };
-jsx.palette_change.Palette = $hxClasses["jsx.palette_change.Palette"] = function(rgbHexValueSet) {
-	this.rgbHexValueSet = rgbHexValueSet;
+PaletteChange.prototype = {
+	getSerializedEvent: function() {
+		return haxe.Serializer.run(this.event);
+	}
+	,getInitialErrorEvent: function() {
+		var event;
+		if(this.application.documents.length == 0) event = common.PaletteChangeInitialErrorEvent.ERROR("Open document."); else event = common.PaletteChangeInitialErrorEvent.NONE;
+		return haxe.Serializer.run(event);
+	}
+	,run: function() {
+		this.mainFunction();
+	}
+	,execute: function(code) {
+		this.paletteMap.convert(code);
+		this.event = common.PaletteChangeEvent.NONE;
+		this.converter.initialize();
+		this.mainFunction = $bind(this,this.convert);
+	}
+	,convert: function() {
+		this.converter.run();
+		if(this.converter.isFinished()) this.event = common.PaletteChangeEvent.SUCCESS;
+	}
+	,interrupt: function() {
+		this.converter.interrupt();
+	}
+	,__class__: PaletteChange
 };
-jsx.palette_change.Palette.__name__ = ["jsx","palette_change","Palette"];
-jsx.palette_change.Palette.prototype = {
-	indexOf: function(checkedRgbHexValue) {
+jsx.palette_change.PaletteMap = $hxClasses["jsx.palette_change.PaletteMap"] = function() {
+};
+jsx.palette_change.PaletteMap.__name__ = ["jsx","palette_change","PaletteMap"];
+jsx.palette_change.PaletteMap.get_instance = function() {
+	if(jsx.palette_change.PaletteMap.instance == null) return jsx.palette_change.PaletteMap.instance = new jsx.palette_change.PaletteMap(); else return jsx.palette_change.PaletteMap.instance;
+};
+jsx.palette_change.PaletteMap.prototype = {
+	convert: function(code) {
+		var rgbHexValueSets = haxe.Unserializer.run(code);
+		var beforeRgbHexValueSet = rgbHexValueSets[0];
+		var afterRgbHexValueSet = rgbHexValueSets[1];
+		this.map = new haxe.ds.StringMap();
 		var _g1 = 0;
-		var _g = this.rgbHexValueSet.length;
+		var _g = beforeRgbHexValueSet.length;
 		while(_g1 < _g) {
 			var i = _g1++;
-			if(this.rgbHexValueSet[i] == checkedRgbHexValue) return jsx.palette_change.PaletteColorPosition.EXSITS(i);
+			var beforeRgbHexValue = beforeRgbHexValueSet[i];
+			var afterRgbHexValue = afterRgbHexValueSet[i];
+			this.map.set(beforeRgbHexValue,afterRgbHexValue);
+			afterRgbHexValue;
 		}
-		return jsx.palette_change.PaletteColorPosition.NONE;
 	}
-	,__class__: jsx.palette_change.Palette
+	,__class__: jsx.palette_change.PaletteMap
 };
-jsx.palette_change.PaletteColorPosition = $hxClasses["jsx.palette_change.PaletteColorPosition"] = { __ename__ : ["jsx","palette_change","PaletteColorPosition"], __constructs__ : ["NONE","EXSITS"] };
-jsx.palette_change.PaletteColorPosition.NONE = ["NONE",0];
-jsx.palette_change.PaletteColorPosition.NONE.toString = $estr;
-jsx.palette_change.PaletteColorPosition.NONE.__enum__ = jsx.palette_change.PaletteColorPosition;
-jsx.palette_change.PaletteColorPosition.EXSITS = function(index) { var $x = ["EXSITS",1,index]; $x.__enum__ = jsx.palette_change.PaletteColorPosition; $x.toString = $estr; return $x; };
 if(!jsx.util) jsx.util = {};
 jsx.util.Bounds = $hxClasses["jsx.util.Bounds"] = function(left,top,right,bottom) {
 	this.left = left;
@@ -1183,6 +1263,8 @@ jsx.util.LayersDisplay.prototype = {
 };
 var LayerTypeName = $hxClasses["LayerTypeName"] = function() { };
 LayerTypeName.__name__ = ["LayerTypeName"];
+var $_, $fid = 0;
+function $bind(o,m) { if( m == null ) return null; if( m.__id__ == null ) m.__id__ = $fid++; var f; if( o.hx__closures__ == null ) o.hx__closures__ = {}; else f = o.hx__closures__[m.__id__]; if( f == null ) { f = function(){ return f.method.apply(f.scope, arguments); }; f.scope = o; f.method = m; o.hx__closures__[m.__id__] = f; } return f; }
 Math.NaN = Number.NaN;
 Math.NEGATIVE_INFINITY = Number.NEGATIVE_INFINITY;
 Math.POSITIVE_INFINITY = Number.POSITIVE_INFINITY;
@@ -1213,7 +1295,6 @@ haxe.Serializer.BASE64 = "ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz01
 haxe.Unserializer.DEFAULT_RESOLVER = Type;
 haxe.Unserializer.BASE64 = "ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz0123456789%:";
 haxe.ds.ObjectMap.count = 0;
-jsx.palette_change.PaletteChange.ATTENTION_WIDTH = 400;
-jsx.palette_change.PaletteChange.ATTENTION_HEIGHT = 400;
+jsx.palette_change.Converter.ONCE_SCAN_PIXEL = 10;
 LayerTypeName.LAYER_SET = "LayerSet";
-jsx.palette_change.PaletteChange.main();
+PaletteChange.main();

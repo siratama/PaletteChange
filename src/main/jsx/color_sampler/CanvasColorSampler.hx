@@ -39,16 +39,15 @@ class CanvasColorSampler
 	public static function main(){
 		//test();
 	}
-	private static var canvasColorSampler:CanvasColorSampler;
 	private static function test()
 	{
-		canvasColorSampler = new CanvasColorSampler();
+		var canvasColorSampler = new CanvasColorSampler();
 		var initialErrorEvent = Unserializer.run(canvasColorSampler.getInitialErrorEvent());
 		switch(initialErrorEvent){
-			case InitialErrorEvent.ERROR(message):
+			case CanvasColorSamplerInitialErrorEvent.ERROR(message):
 				js.Lib.alert(message);
 				return;
-			case InitialErrorEvent.NONE:
+			case CanvasColorSamplerInitialErrorEvent.NONE:
 				"";
 		}
 
@@ -77,10 +76,10 @@ class CanvasColorSampler
 	{
 		var event =
 			(application.documents.length == 0) ?
-				InitialErrorEvent.ERROR("Open document."):
+				CanvasColorSamplerInitialErrorEvent.ERROR("Open document."):
 			(application.activeDocument.activeLayer.typename == LayerTypeName.LAYER_SET) ?
-				InitialErrorEvent.ERROR("Select layer."):
-				InitialErrorEvent.NONE;
+				CanvasColorSamplerInitialErrorEvent.ERROR("Select layer."):
+				CanvasColorSamplerInitialErrorEvent.NONE;
 
 		return Serializer.run(event);
 	}
@@ -138,6 +137,15 @@ class CanvasColorSampler
 				}
 			}
 		}
+		mainFunction = finish;
+	}
+	private function finish()
+	{
+		layersDisplay.restore();
 		event = CanvasColorSamplerEvent.RESULT(rgbHexValueSet);
+	}
+	public function interrupt()
+	{
+		layersDisplay.restore();
 	}
 }

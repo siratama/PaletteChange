@@ -224,11 +224,11 @@ common.CanvasColorSamplerEvent.NONE = ["NONE",0];
 common.CanvasColorSamplerEvent.NONE.toString = $estr;
 common.CanvasColorSamplerEvent.NONE.__enum__ = common.CanvasColorSamplerEvent;
 common.CanvasColorSamplerEvent.RESULT = function(rgbHexColorSet) { var $x = ["RESULT",1,rgbHexColorSet]; $x.__enum__ = common.CanvasColorSamplerEvent; $x.toString = $estr; return $x; };
-common.InitialErrorEvent = $hxClasses["common.InitialErrorEvent"] = { __ename__ : ["common","InitialErrorEvent"], __constructs__ : ["NONE","ERROR"] };
-common.InitialErrorEvent.NONE = ["NONE",0];
-common.InitialErrorEvent.NONE.toString = $estr;
-common.InitialErrorEvent.NONE.__enum__ = common.InitialErrorEvent;
-common.InitialErrorEvent.ERROR = function(message) { var $x = ["ERROR",1,message]; $x.__enum__ = common.InitialErrorEvent; $x.toString = $estr; return $x; };
+common.CanvasColorSamplerInitialErrorEvent = $hxClasses["common.CanvasColorSamplerInitialErrorEvent"] = { __ename__ : ["common","CanvasColorSamplerInitialErrorEvent"], __constructs__ : ["NONE","ERROR"] };
+common.CanvasColorSamplerInitialErrorEvent.NONE = ["NONE",0];
+common.CanvasColorSamplerInitialErrorEvent.NONE.toString = $estr;
+common.CanvasColorSamplerInitialErrorEvent.NONE.__enum__ = common.CanvasColorSamplerInitialErrorEvent;
+common.CanvasColorSamplerInitialErrorEvent.ERROR = function(message) { var $x = ["ERROR",1,message]; $x.__enum__ = common.CanvasColorSamplerInitialErrorEvent; $x.toString = $estr; return $x; };
 var haxe = haxe || {};
 haxe.Serializer = $hxClasses["haxe.Serializer"] = function() {
 	this.buf = new StringBuf();
@@ -981,8 +981,8 @@ CanvasColorSampler.__name__ = ["CanvasColorSampler"];
 CanvasColorSampler.main = function() {
 };
 CanvasColorSampler.test = function() {
-	CanvasColorSampler.canvasColorSampler = new CanvasColorSampler();
-	var initialErrorEvent = haxe.Unserializer.run(CanvasColorSampler.canvasColorSampler.getInitialErrorEvent());
+	var canvasColorSampler = new CanvasColorSampler();
+	var initialErrorEvent = haxe.Unserializer.run(canvasColorSampler.getInitialErrorEvent());
 	switch(initialErrorEvent[1]) {
 	case 1:
 		var message = initialErrorEvent[2];
@@ -992,10 +992,10 @@ CanvasColorSampler.test = function() {
 		"";
 		break;
 	}
-	CanvasColorSampler.canvasColorSampler.initialize();
-	CanvasColorSampler.canvasColorSampler.run();
-	CanvasColorSampler.canvasColorSampler.run();
-	var result = CanvasColorSampler.canvasColorSampler.getSerializedEvent();
+	canvasColorSampler.initialize();
+	canvasColorSampler.run();
+	canvasColorSampler.run();
+	var result = canvasColorSampler.getSerializedEvent();
 	var event = haxe.Unserializer.run(result);
 	switch(event[1]) {
 	case 0:
@@ -1015,7 +1015,7 @@ CanvasColorSampler.prototype = {
 	}
 	,getInitialErrorEvent: function() {
 		var event;
-		if(this.application.documents.length == 0) event = common.InitialErrorEvent.ERROR("Open document."); else if(this.application.activeDocument.activeLayer.typename == LayerTypeName.LAYER_SET) event = common.InitialErrorEvent.ERROR("Select layer."); else event = common.InitialErrorEvent.NONE;
+		if(this.application.documents.length == 0) event = common.CanvasColorSamplerInitialErrorEvent.ERROR("Open document."); else if(this.application.activeDocument.activeLayer.typename == LayerTypeName.LAYER_SET) event = common.CanvasColorSamplerInitialErrorEvent.ERROR("Select layer."); else event = common.CanvasColorSamplerInitialErrorEvent.NONE;
 		return haxe.Serializer.run(event);
 	}
 	,initialize: function() {
@@ -1063,7 +1063,14 @@ CanvasColorSampler.prototype = {
 				}
 			}
 		}
+		this.mainFunction = $bind(this,this.finish);
+	}
+	,finish: function() {
+		this.layersDisplay.restore();
 		this.event = common.CanvasColorSamplerEvent.RESULT(this.rgbHexValueSet);
+	}
+	,interrupt: function() {
+		this.layersDisplay.restore();
 	}
 	,__class__: CanvasColorSampler
 };

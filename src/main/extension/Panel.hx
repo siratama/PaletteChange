@@ -2,7 +2,7 @@ package extension;
 
 import extension.overlay.OverlayWindow;
 import extension.option.Setting;
-import common.PalletChangeEvent;
+import common.PaletteChangeEvent;
 import common.ClassName;
 import extension.color_sampler.palette.PaletteKind;
 import extension.palette_change.PaletteChange;
@@ -25,7 +25,7 @@ class Panel
 	private var canvasColorSampler:CanvasColorSampler;
 
 	private var paletteChange:PaletteChange;
-	private var paletteChangeEvent:PalletChangeEvent;
+	private var paletteChangeEvent:PaletteChangeEvent;
 
 	private static inline var PALETTE_CHANGE_INSTANCE_NAME = "paletteChange";
 
@@ -101,7 +101,7 @@ class Panel
 		var rgbHexValueSets:Array<Array<String>> = canvasColorSampler.palletContainer.getRgbHexValueSets();
 		var data = Serializer.run(rgbHexValueSets);
 
-		paletteChangeEvent = PalletChangeEvent.NONE;
+		paletteChangeEvent = PaletteChangeEvent.NONE;
 		csInterface.evalScript('var $PALETTE_CHANGE_INSTANCE_NAME = new ${ClassName.PALETTE_CHANGE}($data);');
 		csInterface.evalScript('$PALETTE_CHANGE_INSTANCE_NAME.execute($data);', function(result){
 			paletteChangeEvent = Unserializer.run(result);
@@ -109,10 +109,10 @@ class Panel
 
 		mainFunction = changePalette;
 	}
-	private function getPaletteChangeEvent():PalletChangeEvent
+	private function getPaletteChangeEvent():PaletteChangeEvent
 	{
 		var n = paletteChangeEvent;
-		paletteChangeEvent = PalletChangeEvent.NONE;
+		paletteChangeEvent = PaletteChangeEvent.NONE;
 		return n;
 	}
 	private function changePalette()
@@ -120,11 +120,8 @@ class Panel
 		var event = getPaletteChangeEvent();
 		switch(event)
 		{
-			case PalletChangeEvent.NONE: return;
-			case PalletChangeEvent.ERROR(message):
-				js.Lib.alert(message);
-				mainFunction = observeToClickUI;
-			case PalletChangeEvent.SUCCESS:
+			case PaletteChangeEvent.NONE: return;
+			case PaletteChangeEvent.SUCCESS:
 				mainFunction = observeToClickUI;
 		}
 	}

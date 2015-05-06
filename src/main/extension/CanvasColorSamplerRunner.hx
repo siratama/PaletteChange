@@ -54,22 +54,27 @@ class CanvasColorSamplerRunner
 		{
 			case JsxEvent.NONE: return;
 			case JsxEvent.GOTTEN(serializedEvent):
-				var initialErrorEvent:InitialErrorEvent = Unserializer.run(serializedEvent);
+				var initialErrorEvent:CanvasColorSamplerInitialErrorEvent = Unserializer.run(serializedEvent);
 				switch(initialErrorEvent)
 				{
-					case InitialErrorEvent.ERROR(message):
+					case CanvasColorSamplerInitialErrorEvent.ERROR(message):
 						js.Lib.alert(message);
 						destroy();
-					case InitialErrorEvent.NONE:
-						csInterface.evalScript('$CANVAS_COLOR_SAMPLER_INSTANCE_NAME.initialize();');
-						mainFunction = sampleCanvasColor;
+					case CanvasColorSamplerInitialErrorEvent.NONE:
+						initializeToSample();
 				}
 		}
 	}
-	private function sampleCanvasColor()
+	private function initializeToSample()
+	{
+		csInterface.evalScript('$CANVAS_COLOR_SAMPLER_INSTANCE_NAME.initialize();');
+		mainFunction = sample;
+	}
+	private function sample()
 	{
 		if(overlayWindow.cancelButton.isClicked())
 		{
+			csInterface.evalScript('$CANVAS_COLOR_SAMPLER_INSTANCE_NAME.interrupt();');
 			destroy();
 		}
 		else{
@@ -78,10 +83,10 @@ class CanvasColorSamplerRunner
 			csInterface.evalScript('$CANVAS_COLOR_SAMPLER_INSTANCE_NAME.getSerializedEvent();', function(result){
 				jsxEvent = JsxEvent.GOTTEN(result);
 			});
-			mainFunction = observeToSampleCanvasColor;
+			mainFunction = observeToSample;
 		}
 	}
-	private function observeToSampleCanvasColor()
+	private function observeToSample()
 	{
 		switch(recieveJsxEvent())
 		{
@@ -91,7 +96,7 @@ class CanvasColorSamplerRunner
 
 				switch(canvasColorSamplerEvent){
 					case CanvasColorSamplerEvent.NONE:
-						mainFunction = sampleCanvasColor;
+						mainFunction = sample;
 
 					case CanvasColorSamplerEvent.RESULT(rgbHexColorSet):
 						switch(clickedPaletteKind){

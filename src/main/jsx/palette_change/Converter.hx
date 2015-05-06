@@ -1,8 +1,9 @@
 package jsx.palette_change;
 
+import jsx.util.Bounds;
+import psd.ColorSampler;
+import psd.ArtLayer;
 import jsx.util.LayersDisplay;
-import js.html.Point;
-import jsx.palette_change.PaletteInfo.PaletteColorPosition;
 import psd.RGBColor;
 import psd.SolidColor;
 import psd.Document;
@@ -14,107 +15,179 @@ using jsx.util.Bounds;
 
 class Converter
 {
+	private var mainFunction:Void->Void;
 	private var application:Application;
 	private var activeDocument:Document;
 	private var layers:Layers;
-	private var palletInfo:PaletteInfo;
+	private var palletInfo:PaletteMap;
 	private var layersDisplay:LayersDisplay;
+
+	private var scanPixelCount:Int;
+	private static inline var ONCE_SCAN_PIXEL = 10;
+
+	private var sampleLayerIndex:Int;
+	private var sampleLayer:Layer;
+	private var sampleBounds:Bounds;
+	private var samplePositionX:Int;
+	private var samplePositionY:Int;
+
+	private var conversionDataSet:Array<ConversionData>;
+	private var paintedConversionData:ConversionData;
+
+	private var duplicatedPaintLayer:Layer;
 
 	public function new()
 	{
-		palletInfo = PaletteInfo.instance;
-
+		palletInfo = PaletteMap.instance;
 		application = untyped app;
+	}
+	public function run()
+	{
+		mainFunction();
+	}
+
+	//
+	public function initialize()
+	{
 		activeDocument = application.activeDocument;
 		layers = activeDocument.layers;
 
 		layersDisplay = new LayersDisplay(layers);
-
 		layersDisplay.hide();
-		execute();
-		layersDisplay.restore();
+
+		sampleLayerIndex = 0;
+		mainFunction = setSampleLayer;
+	}
+	private function setSampleLayer()
+	{
+		if(sampleLayerIndex < layers.length)
+		{
+			sampleLayer = layers[sampleLayerIndex];
+			if(sampleLayer.allLocked){
+				sampleLayerIndex++;
+			}
+			else{
+				initializeToCreateConversionDataSet();
+			}
+		}
+		else{
+			layersDisplay.restore();
+			mainFunction = finish;
+		}
+	}
+	private function initializeToCreateConversionDataSet()
+	{
+		application.activeDocument.activeLayer = sampleLayer;
+
+		if(!cast(sampleLayer, ArtLayer).isBackgroundLayer)
+			sampleLayer.visible = true;
+
+		sampleBounds = sampleLayer.bounds.convert();
+		samplePositionX = Std.int(sampleBounds.left);
+		samplePositionY = Std.int(sampleBounds.top);
+		conversionDataSet = [];
+		mainFunction = createConversionDataSet;
+	}
+	private function createConversionDataSet()
+	{
+		scanPixelCount = 0;
+		for (y in samplePositionY...Std.int(sampleBounds.bottom))
+		{
+			for (x in samplePositionX...Std.int(sampleBounds.right))
+			{
+				var colorSampler = activeDocument.colorSamplers.add([x, y]);
+				try{
+					var hexValue = colorSampler.color.rgb.hexValue;
+
+					if(palletInfo.map[hexValue] != null){
+						var conversionData = new ConversionData(x, y, palletInfo.map[hexValue]);
+						conversionDataSet.push(conversionData);
+					}
+				}
+				//colorSampler.color is transparent
+				catch(error:Dynamic){}
+
+				colorSampler.remove();
+
+				if(++scanPixelCount >= ONCE_SCAN_PIXEL){
+					samplePositionX = x + 1;
+					samplePositionY = y;
+					if(samplePositionX >= Std.int(sampleBounds.right)){
+						samplePositionX = 0;
+						samplePositionY++;
+					}
+					return;
+				}
+			}
+		}
+		initializeToPaint();
+	}
+
+	//
+	private function initializeToPaint()
+	{
+		duplicatedPaintLayer = sampleLayer.duplicate();
+		mainFunction = setPaintedConversionData;
+	}
+	private function setPaintedConversionData()
+	{
+		if(conversionDataSet.length > 0)
+		{
+			paintedConversionData = conversionDataSet.shift();
+			mainFunction = paint;
+		}
+		else{
+			destroyToPaint();
+		}
+	}
+	private function paint()
+	{
+		application.activeDocument.activeLayer = sampleLayer;
+		selectPixel(paintedConversionData.pixelX, paintedConversionData.pixelY);
+		activeDocument.selection.similar(0, false);
+
+		application.activeDocument.activeLayer = duplicatedPaintLayer;
+		var color = new SolidColor();
+		color.rgb.hexValue = paintedConversionData.rgbHexValue;
+		activeDocument.selection.fill(color);
+		activeDocument.selection.deselect();
+
+		mainFunction = setPaintedConversionData;
 	}
 	private function selectPixel(x:Int, y:Int)
 	{
 		activeDocument.selection.select([[x, y], [x+1, y], [x+1, y+1], [x, y+1]]);
 	}
-
-	//
-	private function execute()
+	private function destroyToPaint()
 	{
-		for (i in 0...layers.length)
-		{
-			var layer:Layer = layers[i];
-			if(layer.allLocked) continue;
+		cast(duplicatedPaintLayer, ArtLayer).merge();
 
-			application.activeDocument.activeLayer = layer;
+		if(!cast(sampleLayer, ArtLayer).isBackgroundLayer)
+			sampleLayer.visible = false;
 
-			layer.visible = true;
-			var conversionDataSet = getConversionDataSet(layer);
-			paint(layer, conversionDataSet);
-			layer.visible = false;
-		}
+		sampleLayerIndex++;
+		mainFunction = setSampleLayer;
 	}
-	private function getConversionDataSet(layer:Layer):Array<ConversionData>
+	
+	private function finish(){}
+	public function isFinished():Bool
+		return Reflect.compareMethods(mainFunction, finish);
+
+	public function interrupt()
 	{
-		var conversionDataSet:Array<ConversionData> = [];
-
-		var bounds = layer.bounds.convert();
-		for (y in Std.int(bounds.top)...Std.int(bounds.bottom))
-		{
-			for (x in Std.int(bounds.left)...Std.int(bounds.right))
-			{
-				var colorSample = activeDocument.colorSamplers.add([x, y]);
-				var rgb = colorSample.color.rgb.hexValue;
-
-				var palletColorPosition = palletInfo.before.indexOf(colorSample.color.rgb.hexValue);
-				switch(palletColorPosition)
-				{
-					case PaletteColorPosition.NONE: continue;
-					case PaletteColorPosition.EXSITS(index):
-
-						var conversionData = new ConversionData(new Point(x, y), palletInfo.after.rgbHexValueSet[index]);
-						conversionDataSet.push(conversionData);
-				}
-			}
-		}
-		return conversionDataSet;
-	}
-
-	/**
-	 * 着色後の色が 変換対象の色と同値になる場合がある事を避けるため
-	 * 元レイヤーを複製して複製したレイヤーに着色
-	 * 色の抽出調査は元レイヤーを利用
-	 */
-	private function paint(layer:Layer, conversionDataSet:Array<ConversionData>)
-	{
-		var duplicatedLayer:Layer = layer.duplicate();
-
-		for (conversionData in conversionDataSet)
-		{
-			application.activeDocument.activeLayer = layer;
-			var pixel = conversionData.pixel;
-			selectPixel(Std.int(pixel.x), Std.int(pixel.y));
-			activeDocument.selection.similar(0, false);
-
-			application.activeDocument.activeLayer = duplicatedLayer;
-			var color = new SolidColor();
-			color.rgb.hexValue = conversionData.rgbHexValue;
-			activeDocument.selection.fill(color);
-			activeDocument.selection.deselect();
-		}
-		var duplicatedArtLayer = activeDocument.artLayers.getByName(duplicatedLayer.name);
-		duplicatedArtLayer.merge();
+		layersDisplay.restore();
 	}
 }
 
 class ConversionData
 {
-	public var pixel(default, null):Point;
+	public var pixelX(default, null):Int;
+	public var pixelY(default, null):Int;
 	public var rgbHexValue(default, null):String;
-	public function new(pixel:Point, rgbHexValue:String)
+	public function new(pixelX:Int, pixelY:Int, rgbHexValue:String)
 	{
-		this.pixel = pixel;
+		this.pixelX = pixelX;
+		this.pixelY = pixelY;
 		this.rgbHexValue = rgbHexValue;
 	}
 }
