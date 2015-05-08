@@ -114,18 +114,21 @@ class CanvasColorSampler
 
 				try{
 					var rgbHexValue = colorSampler.color.rgb.hexValue;
+					js.Lib.alert(x + ":" + y + ":" + rgbHexValue);
 
 					//call Map.exists method is error from extension panel
 					if(!rgbHexValueMap[rgbHexValue])
 					{
 						rgbHexValueSet.push(rgbHexValue);
 						rgbHexValueMap.set(rgbHexValue, true);
+						js.Lib.alert(rgbHexValue);
 					}
 				//colorSampler.color is transparent
 				}catch(error:Dynamic){}
 
 				colorSampler.remove();
 
+				/*
 				if(++scanPixelCount >= ONCE_SCAN_PIXEL){
 					positionX = x + 1;
 					positionY = y;
@@ -135,6 +138,7 @@ class CanvasColorSampler
 					}
 					return;
 				}
+				*/
 			}
 		}
 		mainFunction = finish;

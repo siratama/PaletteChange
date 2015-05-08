@@ -23,6 +23,10 @@ class OverlayWindow
 	{
 		show("Color sampling...");
 	}
+	public function showPaletteChangeRunning()
+	{
+		show("Palette changing...");
+	}
 	private function show(message:String)
 	{
 		messageElement.text(message);

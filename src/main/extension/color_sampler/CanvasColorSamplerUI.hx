@@ -3,15 +3,15 @@ import extension.parts.TitleBar;
 import extension.color_sampler.PageUI.PageMaximumChangeEvent;
 import extension.color_sampler.PageUI.PageUIEvent;
 import jQuery.JQuery;
-class CanvasColorSampler
+class CanvasColorSamplerUI
 {
 	private var element:JQuery;
 	public var palletContainer(default, null):PaletteContainer;
 	private var pageUI:PageUI;
 
-	@:allow(extension) private static var instance(get, null):CanvasColorSampler;
-	private static inline function get_instance():CanvasColorSampler
-		return instance == null ? instance = new CanvasColorSampler(): instance;
+	@:allow(extension) private static var instance(get, null):CanvasColorSamplerUI;
+	private static inline function get_instance():CanvasColorSamplerUI
+		return instance == null ? instance = new CanvasColorSamplerUI(): instance;
 
 	private function new()
 	{

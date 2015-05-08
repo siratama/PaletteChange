@@ -987,7 +987,7 @@ js.Lib.alert = function(v) {
 var jsx = jsx || {};
 if(!jsx.palette_change) jsx.palette_change = {};
 jsx.palette_change.Converter = $hxClasses["jsx.palette_change.Converter"] = function() {
-	if(jsx.palette_change.PaletteMap.instance == null) this.palletInfo = jsx.palette_change.PaletteMap.instance = new jsx.palette_change.PaletteMap(); else this.palletInfo = jsx.palette_change.PaletteMap.instance;
+	if(jsx.palette_change.PaletteMap.instance == null) this.paletteMap = jsx.palette_change.PaletteMap.instance = new jsx.palette_change.PaletteMap(); else this.paletteMap = jsx.palette_change.PaletteMap.instance;
 	this.application = app;
 };
 jsx.palette_change.Converter.__name__ = ["jsx","palette_change","Converter"];
@@ -1019,6 +1019,7 @@ jsx.palette_change.Converter.prototype = {
 		this.samplePositionX = this.sampleBounds.left | 0;
 		this.samplePositionY = this.sampleBounds.top | 0;
 		this.conversionDataSet = [];
+		this.conversionRgbHexValueMap = new haxe.ds.StringMap();
 		this.mainFunction = $bind(this,this.createConversionDataSet);
 	}
 	,createConversionDataSet: function() {
@@ -1034,9 +1035,13 @@ jsx.palette_change.Converter.prototype = {
 				var colorSampler = this.activeDocument.colorSamplers.add([x,y]);
 				try {
 					var hexValue = colorSampler.color.rgb.hexValue;
-					if(this.palletInfo.map.get(hexValue) != null) {
-						var conversionData = new jsx.palette_change.ConversionData(x,y,this.palletInfo.map.get(hexValue));
+					js.Lib.alert(hexValue);
+					if(!this.conversionRgbHexValueMap.get(hexValue) && this.paletteMap.map.get(hexValue) != null) {
+						js.Lib.alert("exchange!");
+						var conversionData = new jsx.palette_change.ConversionData(x,y,this.paletteMap.map.get(hexValue));
 						this.conversionDataSet.push(conversionData);
+						this.conversionRgbHexValueMap.set(hexValue,true);
+						true;
 					}
 				} catch( error ) {
 				}
@@ -1110,7 +1115,6 @@ var PaletteChange = $hxClasses["PaletteChange"] = function() {
 };
 PaletteChange.__name__ = ["PaletteChange"];
 PaletteChange.main = function() {
-	PaletteChange.test();
 };
 PaletteChange.test = function() {
 	var paletteChange = new PaletteChange();
@@ -1161,8 +1165,8 @@ PaletteChange.prototype = {
 		this.mainFunction();
 	}
 	,execute: function(code) {
-		this.paletteMap.convert(code);
 		this.event = common.PaletteChangeEvent.NONE;
+		this.paletteMap.convert(code);
 		this.converter.initialize();
 		this.mainFunction = $bind(this,this.convert);
 	}
@@ -1193,8 +1197,10 @@ jsx.palette_change.PaletteMap.prototype = {
 			var i = _g1++;
 			var beforeRgbHexValue = beforeRgbHexValueSet[i];
 			var afterRgbHexValue = afterRgbHexValueSet[i];
+			if(beforeRgbHexValue == afterRgbHexValue) continue;
 			this.map.set(beforeRgbHexValue,afterRgbHexValue);
 			afterRgbHexValue;
+			js.Lib.alert(beforeRgbHexValue + ":" + afterRgbHexValue);
 		}
 	}
 	,__class__: jsx.palette_change.PaletteMap

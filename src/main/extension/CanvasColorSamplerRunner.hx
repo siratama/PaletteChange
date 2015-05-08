@@ -1,24 +1,20 @@
 package extension;
-import extension.CanvasColorSamplerRunner.JsxEvent;
+import common.JsxEvent;
 import haxe.Unserializer;
 import common.CanvasColorSamplerEvent;
 import csinterface.CSInterface.AbstractCSInterface;
-import extension.color_sampler.CanvasColorSampler;
+import extension.color_sampler.CanvasColorSamplerUI;
 import extension.overlay.OverlayWindow;
 import common.ClassName;
 import extension.color_sampler.palette.PaletteKind;
 
-enum JsxEvent{
-	NONE;
-	GOTTEN(serializedEvent:String);
-}
 class CanvasColorSamplerRunner
 {
 	private var mainFunction:Void->Void;
 	private var csInterface:AbstractCSInterface;
 	private var overlayWindow:OverlayWindow;
 
-	private var canvasColorSampler:CanvasColorSampler;
+	private var canvasColorSamplerUI:CanvasColorSamplerUI;
 	private var jsxEvent:JsxEvent;
 	private var clickedPaletteKind:PaletteKind;
 
@@ -27,7 +23,7 @@ class CanvasColorSamplerRunner
 	public function new()
 	{
 		csInterface = AbstractCSInterface.create();
-		canvasColorSampler = CanvasColorSampler.instance;
+		canvasColorSamplerUI = CanvasColorSamplerUI.instance;
 		overlayWindow = OverlayWindow.instance;
 	}
 	public function run()
@@ -101,11 +97,11 @@ class CanvasColorSamplerRunner
 					case CanvasColorSamplerEvent.RESULT(rgbHexColorSet):
 						switch(clickedPaletteKind){
 							case PaletteKind.BEFORE:
-								canvasColorSampler.palletContainer.before.palette.updateRgbHexColorSet(rgbHexColorSet);
+								canvasColorSamplerUI.palletContainer.before.palette.updateRgbHexColorSet(rgbHexColorSet);
 							case PaletteKind.AFTER:
-								canvasColorSampler.palletContainer.after.palette.updateRgbHexColorSet(rgbHexColorSet);
+								canvasColorSamplerUI.palletContainer.after.palette.updateRgbHexColorSet(rgbHexColorSet);
 						}
-						canvasColorSampler.updatePageIndex();
+						canvasColorSamplerUI.updatePageIndex();
 						destroy();
 				}
 		}

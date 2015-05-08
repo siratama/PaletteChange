@@ -19,7 +19,7 @@ class PaletteChange
 	}
 
 	public static function main(){
-		test();
+		//test();
 	}
 	public static function test()
 	{
@@ -34,6 +34,7 @@ class PaletteChange
 		}
 
 		var arr = [["FF0000"], ["0000FF"]];
+		//var arr = [[], []];
 		var code = Serializer.run(arr);
 		paletteChange.execute(code);
 
@@ -75,9 +76,8 @@ class PaletteChange
 	 */
 	public function execute(code:String)
 	{
-		paletteMap.convert(code);
-
 		event = PaletteChangeEvent.NONE;
+		paletteMap.convert(code);
 		converter.initialize();
 		mainFunction = convert;
 	}

@@ -243,6 +243,10 @@ common.CanvasColorSamplerInitialErrorEvent.ERROR = function(message) { var $x = 
 common.ClassName = function() { };
 $hxClasses["common.ClassName"] = common.ClassName;
 common.ClassName.__name__ = ["common","ClassName"];
+common.JsxEvent = $hxClasses["common.JsxEvent"] = { __ename__ : ["common","JsxEvent"], __constructs__ : ["NONE","GOTTEN"] };
+common.JsxEvent.NONE = ["NONE",0];
+common.JsxEvent.NONE.__enum__ = common.JsxEvent;
+common.JsxEvent.GOTTEN = function(serializedEvent) { var $x = ["GOTTEN",1,serializedEvent]; $x.__enum__ = common.JsxEvent; return $x; };
 common.PaletteChangeEvent = $hxClasses["common.PaletteChangeEvent"] = { __ename__ : ["common","PaletteChangeEvent"], __constructs__ : ["NONE","SUCCESS"] };
 common.PaletteChangeEvent.NONE = ["NONE",0];
 common.PaletteChangeEvent.NONE.__enum__ = common.PaletteChangeEvent;
@@ -277,13 +281,9 @@ csinterface.AbstractCSInterface.prototype = {
 	,__class__: csinterface.AbstractCSInterface
 };
 var extension = {};
-extension.JsxEvent = $hxClasses["extension.JsxEvent"] = { __ename__ : ["extension","JsxEvent"], __constructs__ : ["NONE","GOTTEN"] };
-extension.JsxEvent.NONE = ["NONE",0];
-extension.JsxEvent.NONE.__enum__ = extension.JsxEvent;
-extension.JsxEvent.GOTTEN = function(serializedEvent) { var $x = ["GOTTEN",1,serializedEvent]; $x.__enum__ = extension.JsxEvent; return $x; };
 extension.CanvasColorSamplerRunner = function() {
 	this.csInterface = csinterface.AbstractCSInterface.create();
-	if(extension.color_sampler.CanvasColorSampler.instance == null) this.canvasColorSampler = extension.color_sampler.CanvasColorSampler.instance = new extension.color_sampler.CanvasColorSampler(); else this.canvasColorSampler = extension.color_sampler.CanvasColorSampler.instance;
+	if(extension.color_sampler.CanvasColorSamplerUI.instance == null) this.canvasColorSamplerUI = extension.color_sampler.CanvasColorSamplerUI.instance = new extension.color_sampler.CanvasColorSamplerUI(); else this.canvasColorSamplerUI = extension.color_sampler.CanvasColorSamplerUI.instance;
 	if(extension.overlay.OverlayWindow.instance == null) this.overlayWindow = extension.overlay.OverlayWindow.instance = new extension.overlay.OverlayWindow(); else this.overlayWindow = extension.overlay.OverlayWindow.instance;
 };
 $hxClasses["extension.CanvasColorSamplerRunner"] = extension.CanvasColorSamplerRunner;
@@ -296,10 +296,10 @@ extension.CanvasColorSamplerRunner.prototype = {
 		var _g = this;
 		this.clickedPaletteKind = clickedPaletteKind;
 		this.overlayWindow.showCanvasColorSamplerRunning();
-		this.jsxEvent = extension.JsxEvent.NONE;
+		this.jsxEvent = common.JsxEvent.NONE;
 		this.csInterface.evalScript("var " + "canvasColorSampler" + " = new " + "CanvasColorSampler" + "();");
 		this.csInterface.evalScript("" + "canvasColorSampler" + ".getInitialErrorEvent();",function(result) {
-			_g.jsxEvent = extension.JsxEvent.GOTTEN(result);
+			_g.jsxEvent = common.JsxEvent.GOTTEN(result);
 		});
 		this.mainFunction = $bind(this,this.observeToRecieveInitialErrorEvent);
 	}
@@ -336,10 +336,10 @@ extension.CanvasColorSamplerRunner.prototype = {
 			this.csInterface.evalScript("" + "canvasColorSampler" + ".interrupt();");
 			this.destroy();
 		} else {
-			this.jsxEvent = extension.JsxEvent.NONE;
+			this.jsxEvent = common.JsxEvent.NONE;
 			this.csInterface.evalScript("" + "canvasColorSampler" + ".run();");
 			this.csInterface.evalScript("" + "canvasColorSampler" + ".getSerializedEvent();",function(result) {
-				_g.jsxEvent = extension.JsxEvent.GOTTEN(result);
+				_g.jsxEvent = common.JsxEvent.GOTTEN(result);
 			});
 			this.mainFunction = $bind(this,this.observeToSample);
 		}
@@ -362,13 +362,13 @@ extension.CanvasColorSamplerRunner.prototype = {
 					var _g1 = this.clickedPaletteKind;
 					switch(_g1[1]) {
 					case 0:
-						this.canvasColorSampler.palletContainer.before.palette.updateRgbHexColorSet(rgbHexColorSet);
+						this.canvasColorSamplerUI.palletContainer.before.palette.updateRgbHexColorSet(rgbHexColorSet);
 						break;
 					case 1:
-						this.canvasColorSampler.palletContainer.after.palette.updateRgbHexColorSet(rgbHexColorSet);
+						this.canvasColorSamplerUI.palletContainer.after.palette.updateRgbHexColorSet(rgbHexColorSet);
 						break;
 					}
-					this.canvasColorSampler.updatePageIndex();
+					this.canvasColorSamplerUI.updatePageIndex();
 					this.destroy();
 					break;
 				}
@@ -378,7 +378,7 @@ extension.CanvasColorSamplerRunner.prototype = {
 	}
 	,recieveJsxEvent: function() {
 		var n = this.jsxEvent;
-		this.jsxEvent = extension.JsxEvent.NONE;
+		this.jsxEvent = common.JsxEvent.NONE;
 		return n;
 	}
 	,destroy: function() {
@@ -436,6 +436,107 @@ extension.JsxLoader.prototype = {
 	}
 	,__class__: extension.JsxLoader
 };
+extension.PaletteChangeRunner = function() {
+	this.csInterface = csinterface.AbstractCSInterface.create();
+	if(extension.palette_change.PaletteChangeUI.instance == null) this.paletteChangeUI = extension.palette_change.PaletteChangeUI.instance = new extension.palette_change.PaletteChangeUI(); else this.paletteChangeUI = extension.palette_change.PaletteChangeUI.instance;
+	if(extension.overlay.OverlayWindow.instance == null) this.overlayWindow = extension.overlay.OverlayWindow.instance = new extension.overlay.OverlayWindow(); else this.overlayWindow = extension.overlay.OverlayWindow.instance;
+};
+$hxClasses["extension.PaletteChangeRunner"] = extension.PaletteChangeRunner;
+extension.PaletteChangeRunner.__name__ = ["extension","PaletteChangeRunner"];
+extension.PaletteChangeRunner.prototype = {
+	run: function() {
+		this.mainFunction();
+	}
+	,call: function(rgbHexValueSets) {
+		var _g = this;
+		this.rgbHexValueSets = rgbHexValueSets;
+		this.overlayWindow.showPaletteChangeRunning();
+		this.jsxEvent = common.JsxEvent.NONE;
+		this.csInterface.evalScript("var " + "paletteChange" + " = new " + "PaletteChange" + "();");
+		this.csInterface.evalScript("" + "paletteChange" + ".getInitialErrorEvent();",function(result) {
+			_g.jsxEvent = common.JsxEvent.GOTTEN(result);
+		});
+		this.mainFunction = $bind(this,this.observeToRecieveInitialErrorEvent);
+	}
+	,observeToRecieveInitialErrorEvent: function() {
+		{
+			var _g = this.recieveJsxEvent();
+			switch(_g[1]) {
+			case 0:
+				return;
+			case 1:
+				var serializedEvent = _g[2];
+				var initialErrorEvent = haxe.Unserializer.run(serializedEvent);
+				switch(initialErrorEvent[1]) {
+				case 1:
+					var message = initialErrorEvent[2];
+					js.Lib.alert(message);
+					this.destroy();
+					break;
+				case 0:
+					this.initializeToChangePalette();
+					break;
+				}
+				break;
+			}
+		}
+	}
+	,initializeToChangePalette: function() {
+		var data = haxe.Serializer.run(this.rgbHexValueSets);
+		this.csInterface.evalScript("" + "paletteChange" + ".execute(\"" + data + "\");");
+		this.mainFunction = $bind(this,this.changePalette);
+	}
+	,changePalette: function() {
+		var _g = this;
+		if(this.overlayWindow.cancelButton.isClicked()) {
+			this.csInterface.evalScript("" + "paletteChange" + ".interrupt();");
+			this.destroy();
+		} else {
+			this.jsxEvent = common.JsxEvent.NONE;
+			this.csInterface.evalScript("" + "paletteChange" + ".run();");
+			this.csInterface.evalScript("" + "paletteChange" + ".getSerializedEvent();",function(result) {
+				_g.jsxEvent = common.JsxEvent.GOTTEN(result);
+			});
+			this.mainFunction = $bind(this,this.observeToChangePalette);
+		}
+	}
+	,observeToChangePalette: function() {
+		{
+			var _g = this.recieveJsxEvent();
+			switch(_g[1]) {
+			case 0:
+				return;
+			case 1:
+				var serializedEvent = _g[2];
+				var event = haxe.Unserializer.run(serializedEvent);
+				switch(event[1]) {
+				case 0:
+					this.mainFunction = $bind(this,this.changePalette);
+					break;
+				case 1:
+					this.destroy();
+					break;
+				}
+				break;
+			}
+		}
+	}
+	,recieveJsxEvent: function() {
+		var n = this.jsxEvent;
+		this.jsxEvent = common.JsxEvent.NONE;
+		return n;
+	}
+	,destroy: function() {
+		this.overlayWindow.hide();
+		this.mainFunction = $bind(this,this.finish);
+	}
+	,finish: function() {
+	}
+	,isFinished: function() {
+		return Reflect.compareMethods(this.mainFunction,$bind(this,this.finish));
+	}
+	,__class__: extension.PaletteChangeRunner
+};
 extension.Panel = function() {
 	window.addEventListener("load",$bind(this,this.initialize));
 };
@@ -448,11 +549,12 @@ extension.Panel.prototype = {
 	initialize: function(event) {
 		this.csInterface = csinterface.AbstractCSInterface.create();
 		this.jsxLoader = new extension.JsxLoader();
-		if(extension.color_sampler.CanvasColorSampler.instance == null) this.canvasColorSampler = extension.color_sampler.CanvasColorSampler.instance = new extension.color_sampler.CanvasColorSampler(); else this.canvasColorSampler = extension.color_sampler.CanvasColorSampler.instance;
-		this.paletteChange = new extension.palette_change.PaletteChange();
+		if(extension.color_sampler.CanvasColorSamplerUI.instance == null) this.canvasColorSamplerUI = extension.color_sampler.CanvasColorSamplerUI.instance = new extension.color_sampler.CanvasColorSamplerUI(); else this.canvasColorSamplerUI = extension.color_sampler.CanvasColorSamplerUI.instance;
+		if(extension.palette_change.PaletteChangeUI.instance == null) this.paletteChangeUI = extension.palette_change.PaletteChangeUI.instance = new extension.palette_change.PaletteChangeUI(); else this.paletteChangeUI = extension.palette_change.PaletteChangeUI.instance;
 		if(extension.option.Setting.instance == null) extension.option.Setting.instance = new extension.option.Setting(); else extension.option.Setting.instance;
-		if(extension.overlay.OverlayWindow.instance == null) this.overlayWindow = extension.overlay.OverlayWindow.instance = new extension.overlay.OverlayWindow(); else this.overlayWindow = extension.overlay.OverlayWindow.instance;
+		if(extension.overlay.OverlayWindow.instance == null) extension.overlay.OverlayWindow.instance = new extension.overlay.OverlayWindow(); else extension.overlay.OverlayWindow.instance;
 		this.canvasColorSamplerRunner = new extension.CanvasColorSamplerRunner();
+		this.paletteChangeRunner = new extension.PaletteChangeRunner();
 		this.mainFunction = $bind(this,this.loadJsx);
 		this.timer = new haxe.Timer(100);
 		this.timer.run = $bind(this,this.run);
@@ -465,8 +567,8 @@ extension.Panel.prototype = {
 		if(this.jsxLoader.isFinished()) this.mainFunction = $bind(this,this.observeToClickUI);
 	}
 	,observeToClickUI: function() {
-		this.canvasColorSampler.run();
-		if(this.canvasColorSampler.palletContainer.before.scanButton.isClicked()) this.initializeToCallCanvasColorSampler(extension.color_sampler.palette.PaletteKind.BEFORE); else if(this.canvasColorSampler.palletContainer.after.scanButton.isClicked()) this.initializeToCallCanvasColorSampler(extension.color_sampler.palette.PaletteKind.AFTER); else if(this.paletteChange.runButton.isClicked()) this.callPaletteChange();
+		this.canvasColorSamplerUI.run();
+		if(this.canvasColorSamplerUI.palletContainer.before.scanButton.isClicked()) this.initializeToCallCanvasColorSampler(extension.color_sampler.palette.PaletteKind.BEFORE); else if(this.canvasColorSamplerUI.palletContainer.after.scanButton.isClicked()) this.initializeToCallCanvasColorSampler(extension.color_sampler.palette.PaletteKind.AFTER); else if(this.paletteChangeUI.runButton.isClicked()) this.initializeToCallPaletteChange();
 	}
 	,initializeToCallCanvasColorSampler: function(paletteKind) {
 		this.canvasColorSamplerRunner.call(paletteKind);
@@ -476,47 +578,30 @@ extension.Panel.prototype = {
 		this.canvasColorSamplerRunner.run();
 		if(this.canvasColorSamplerRunner.isFinished()) this.mainFunction = $bind(this,this.observeToClickUI);
 	}
+	,initializeToCallPaletteChange: function() {
+		var rgbHexValueSets = this.canvasColorSamplerUI.palletContainer.getRgbHexValueSets();
+		this.paletteChangeRunner.call(rgbHexValueSets);
+		this.mainFunction = $bind(this,this.callPaletteChange);
+	}
 	,callPaletteChange: function() {
-		var _g = this;
-		var rgbHexValueSets = this.canvasColorSampler.palletContainer.getRgbHexValueSets();
-		var data = haxe.Serializer.run(rgbHexValueSets);
-		this.paletteChangeEvent = common.PaletteChangeEvent.NONE;
-		this.csInterface.evalScript("var " + "paletteChange" + " = new " + "PaletteChange" + "(" + data + ");");
-		this.csInterface.evalScript("" + "paletteChange" + ".execute(" + data + ");",function(result) {
-			_g.paletteChangeEvent = haxe.Unserializer.run(result);
-		});
-		this.mainFunction = $bind(this,this.changePalette);
-	}
-	,getPaletteChangeEvent: function() {
-		var n = this.paletteChangeEvent;
-		this.paletteChangeEvent = common.PaletteChangeEvent.NONE;
-		return n;
-	}
-	,changePalette: function() {
-		var event = this.getPaletteChangeEvent();
-		switch(event[1]) {
-		case 0:
-			return;
-		case 1:
-			this.mainFunction = $bind(this,this.observeToClickUI);
-			break;
-		}
+		this.paletteChangeRunner.run();
+		if(this.paletteChangeRunner.isFinished()) this.mainFunction = $bind(this,this.observeToClickUI);
 	}
 	,__class__: extension.Panel
 };
 extension.color_sampler = {};
-extension.color_sampler.CanvasColorSampler = function() {
+extension.color_sampler.CanvasColorSamplerUI = function() {
 	this.element = new $("#canvas_color_sampler");
 	this.palletContainer = new extension.color_sampler.PaletteContainer(this.element);
 	if(extension.color_sampler.PageUI.instance == null) this.pageUI = extension.color_sampler.PageUI.instance = new extension.color_sampler.PageUI(); else this.pageUI = extension.color_sampler.PageUI.instance;
 	new extension.parts.TitleBar("title_canvas_color_sampler",this.element);
 };
-$hxClasses["extension.color_sampler.CanvasColorSampler"] = extension.color_sampler.CanvasColorSampler;
-extension.color_sampler.CanvasColorSampler.__name__ = ["extension","color_sampler","CanvasColorSampler"];
-extension.color_sampler.CanvasColorSampler.get_instance = function() {
-	if(extension.color_sampler.CanvasColorSampler.instance == null) return extension.color_sampler.CanvasColorSampler.instance = new extension.color_sampler.CanvasColorSampler(); else return extension.color_sampler.CanvasColorSampler.instance;
+$hxClasses["extension.color_sampler.CanvasColorSamplerUI"] = extension.color_sampler.CanvasColorSamplerUI;
+extension.color_sampler.CanvasColorSamplerUI.__name__ = ["extension","color_sampler","CanvasColorSamplerUI"];
+extension.color_sampler.CanvasColorSamplerUI.get_instance = function() {
+	if(extension.color_sampler.CanvasColorSamplerUI.instance == null) return extension.color_sampler.CanvasColorSamplerUI.instance = new extension.color_sampler.CanvasColorSamplerUI(); else return extension.color_sampler.CanvasColorSamplerUI.instance;
 };
-extension.color_sampler.CanvasColorSampler.prototype = {
+extension.color_sampler.CanvasColorSamplerUI.prototype = {
 	run: function() {
 		this.ovservePageUI();
 		this.ovserveClearButton();
@@ -551,7 +636,7 @@ extension.color_sampler.CanvasColorSampler.prototype = {
 			return;
 		}
 	}
-	,__class__: extension.color_sampler.CanvasColorSampler
+	,__class__: extension.color_sampler.CanvasColorSamplerUI
 };
 extension.color_sampler.PageUIEvent = $hxClasses["extension.color_sampler.PageUIEvent"] = { __ename__ : ["extension","color_sampler","PageUIEvent"], __constructs__ : ["NONE","SELECTED_NEXT","SELECTED_PREV"] };
 extension.color_sampler.PageUIEvent.NONE = ["NONE",0];
@@ -961,6 +1046,9 @@ extension.overlay.OverlayWindow.prototype = {
 	showCanvasColorSamplerRunning: function() {
 		this.show("Color sampling...");
 	}
+	,showPaletteChangeRunning: function() {
+		this.show("Palette changing...");
+	}
 	,show: function(message) {
 		this.messageElement.text(message);
 		this.element.fadeIn("fast");
@@ -971,14 +1059,17 @@ extension.overlay.OverlayWindow.prototype = {
 	,__class__: extension.overlay.OverlayWindow
 };
 extension.palette_change = {};
-extension.palette_change.PaletteChange = function() {
+extension.palette_change.PaletteChangeUI = function() {
 	this.element = new $("#palette_changer");
 	this.runButton = new extension.palette_change.RunButton(this.element,"run_button");
 };
-$hxClasses["extension.palette_change.PaletteChange"] = extension.palette_change.PaletteChange;
-extension.palette_change.PaletteChange.__name__ = ["extension","palette_change","PaletteChange"];
-extension.palette_change.PaletteChange.prototype = {
-	__class__: extension.palette_change.PaletteChange
+$hxClasses["extension.palette_change.PaletteChangeUI"] = extension.palette_change.PaletteChangeUI;
+extension.palette_change.PaletteChangeUI.__name__ = ["extension","palette_change","PaletteChangeUI"];
+extension.palette_change.PaletteChangeUI.get_instance = function() {
+	if(extension.palette_change.PaletteChangeUI.instance == null) return extension.palette_change.PaletteChangeUI.instance = new extension.palette_change.PaletteChangeUI(); else return extension.palette_change.PaletteChangeUI.instance;
+};
+extension.palette_change.PaletteChangeUI.prototype = {
+	__class__: extension.palette_change.PaletteChangeUI
 };
 extension.palette_change.RunButton = function(parentElement,className) {
 	extension.parts.Button.call(this,parentElement,className);
@@ -1746,7 +1837,7 @@ common.ClassName.INITIAL_ERROR_CHECK = "InitialErrorCheck";
 extension.CanvasColorSamplerRunner.CANVAS_COLOR_SAMPLER_INSTANCE_NAME = "canvasColorSampler";
 extension.JsxLoader.JSX_DIRECTORY = "/jsx/";
 extension.JsxLoader.JSX_EXTENSION = ".jsx";
-extension.Panel.PALETTE_CHANGE_INSTANCE_NAME = "paletteChange";
+extension.PaletteChangeRunner.PALETTE_CHANGE_INSTANCE_NAME = "paletteChange";
 extension.color_sampler.PageNumber.DEFAULT_INDEX = 0;
 extension.color_sampler.palette.Palette.LINE_TOTAL = 5;
 extension.color_sampler.palette.Line.CELL_TOTAL = 10;

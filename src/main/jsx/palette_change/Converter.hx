@@ -19,7 +19,7 @@ class Converter
 	private var application:Application;
 	private var activeDocument:Document;
 	private var layers:Layers;
-	private var palletInfo:PaletteMap;
+	private var paletteMap:PaletteMap;
 	private var layersDisplay:LayersDisplay;
 
 	private var scanPixelCount:Int;
@@ -32,13 +32,14 @@ class Converter
 	private var samplePositionY:Int;
 
 	private var conversionDataSet:Array<ConversionData>;
+	private var conversionRgbHexValueMap:Map<String, Bool>;
 	private var paintedConversionData:ConversionData;
 
 	private var duplicatedPaintLayer:Layer;
 
 	public function new()
 	{
-		palletInfo = PaletteMap.instance;
+		paletteMap = PaletteMap.instance;
 		application = untyped app;
 	}
 	public function run()
@@ -86,6 +87,7 @@ class Converter
 		samplePositionX = Std.int(sampleBounds.left);
 		samplePositionY = Std.int(sampleBounds.top);
 		conversionDataSet = [];
+		conversionRgbHexValueMap = new Map();
 		mainFunction = createConversionDataSet;
 	}
 	private function createConversionDataSet()
@@ -98,10 +100,12 @@ class Converter
 				var colorSampler = activeDocument.colorSamplers.add([x, y]);
 				try{
 					var hexValue = colorSampler.color.rgb.hexValue;
-
-					if(palletInfo.map[hexValue] != null){
-						var conversionData = new ConversionData(x, y, palletInfo.map[hexValue]);
+js.Lib.alert(hexValue);
+					if(!conversionRgbHexValueMap[hexValue] && paletteMap.map[hexValue] != null){
+js.Lib.alert("exchange!");
+						var conversionData = new ConversionData(x, y, paletteMap.map[hexValue]);
 						conversionDataSet.push(conversionData);
+						conversionRgbHexValueMap[hexValue] = true;
 					}
 				}
 				//colorSampler.color is transparent

@@ -1045,22 +1045,15 @@ CanvasColorSampler.prototype = {
 				var colorSampler = this.activeDocument.colorSamplers.add([x,y]);
 				try {
 					var rgbHexValue = colorSampler.color.rgb.hexValue;
+					js.Lib.alert(x + ":" + y + ":" + rgbHexValue);
 					if(!this.rgbHexValueMap.get(rgbHexValue)) {
 						this.rgbHexValueSet.push(rgbHexValue);
 						this.rgbHexValueMap.set(rgbHexValue,true);
+						js.Lib.alert(rgbHexValue);
 					}
 				} catch( error ) {
 				}
 				colorSampler.remove();
-				if(++this.scanPixelCount >= 10) {
-					this.positionX = x + 1;
-					this.positionY = y;
-					if(this.positionX >= (this.bounds.right | 0)) {
-						this.positionX = 0;
-						this.positionY++;
-					}
-					return;
-				}
 			}
 		}
 		this.mainFunction = $bind(this,this.finish);
