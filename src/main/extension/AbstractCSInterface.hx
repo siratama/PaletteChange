@@ -1,19 +1,6 @@
-package csinterface;
-
-@:native("CSInterface")
-extern class CSInterface
-{
-	public function new():Void;
-	public function getSystemPath(pathType:String):String;
-
-	//script type is not String
-	//example: String + static Function
-	public function evalScript(script:Dynamic, ?callback:Dynamic->Void):Void;
-
-	public function dispatchEvent(csEvent:CSEvent):Void;
-
-}
-
+package extension;
+import adobe.cep.SystemPath;
+import adobe.cep.CSInterface;
 class AbstractCSInterface
 {
 	public var csInterface(default, null):CSInterface;

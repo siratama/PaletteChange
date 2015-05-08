@@ -4,6 +4,7 @@
 -cp src/extern
 -cp src/adobe_extension
 -lib jQueryExtern
+-lib haxe-cep
 -debug
 
 --next

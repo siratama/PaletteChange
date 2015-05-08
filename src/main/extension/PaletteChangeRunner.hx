@@ -7,7 +7,6 @@ import haxe.Serializer;
 import extension.palette_change.PaletteChangeUI;
 import common.JsxEvent;
 import extension.overlay.OverlayWindow;
-import csinterface.CSInterface.AbstractCSInterface;
 class PaletteChangeRunner
 {
 	private var mainFunction:Void->Void;

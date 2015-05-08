@@ -9,4 +9,5 @@ extern class Layer
 	public var name:String;
 	public var typename(default, null):LayerTypeName;
 	public function duplicate(relativeObject:Dynamic = null, insertionLocation:ElementPlacement = null):Layer;
+	public function remove():Void;
 }

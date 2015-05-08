@@ -4,6 +4,8 @@ import haxe.Unserializer;
 import haxe.Serializer;
 import common.PaletteChangeEvent;
 import psd.Application;
+import psd.Lib;
+import psd.Lib.app;
 
 @:native("PaletteChange")
 class PaletteChange
@@ -27,7 +29,7 @@ class PaletteChange
 		switch(Unserializer.run(paletteChange.getInitialErrorEvent()))
 		{
 			case PaletteChangeInitialErrorEvent.ERROR(message):
-				js.Lib.alert(message);
+				Lib.alert(message);
 				return;
 			case PaletteChangeInitialErrorEvent.NONE:
 				"";
@@ -47,7 +49,7 @@ class PaletteChange
 			{
 				case PaletteChangeEvent.NONE: "";
 				case PaletteChangeEvent.SUCCESS:
-					js.Lib.alert("success!");
+					Lib.alert("success!");
 					break;
 			}
 		}
@@ -55,7 +57,7 @@ class PaletteChange
 
 	public function new()
 	{
-		application = untyped app;
+		application = app;
 		paletteMap = PaletteMap.instance;
 		converter = new Converter();
 	}

@@ -988,7 +988,9 @@ var jsx = jsx || {};
 if(!jsx.palette_change) jsx.palette_change = {};
 jsx.palette_change.Converter = $hxClasses["jsx.palette_change.Converter"] = function() {
 	if(jsx.palette_change.PaletteMap.instance == null) this.paletteMap = jsx.palette_change.PaletteMap.instance = new jsx.palette_change.PaletteMap(); else this.paletteMap = jsx.palette_change.PaletteMap.instance;
-	this.application = app;
+	this.application = psd.Lib.app;
+	this.painter = new jsx.palette_change._Converter.Painter();
+	this.scanner = new jsx.palette_change._Converter.Scanner();
 };
 jsx.palette_change.Converter.__name__ = ["jsx","palette_change","Converter"];
 jsx.palette_change.Converter.prototype = {
@@ -997,6 +999,7 @@ jsx.palette_change.Converter.prototype = {
 	}
 	,initialize: function() {
 		this.activeDocument = this.application.activeDocument;
+		this.activeDocumentHeight = this.activeDocument.height;
 		this.layers = this.activeDocument.layers;
 		this.layersDisplay = new jsx.util.LayersDisplay(this.layers);
 		this.layersDisplay.hide();
@@ -1006,88 +1009,30 @@ jsx.palette_change.Converter.prototype = {
 	,setSampleLayer: function() {
 		if(this.sampleLayerIndex < this.layers.length) {
 			this.sampleLayer = this.layers[this.sampleLayerIndex];
-			if(this.sampleLayer.allLocked) this.sampleLayerIndex++; else this.initializeToCreateConversionDataSet();
+			if(this.sampleLayer.allLocked) this.sampleLayerIndex++; else this.initializeToScan();
 		} else {
 			this.layersDisplay.restore();
 			this.mainFunction = $bind(this,this.finish);
 		}
 	}
-	,initializeToCreateConversionDataSet: function() {
-		this.application.activeDocument.activeLayer = this.sampleLayer;
-		if(!(js.Boot.__cast(this.sampleLayer , ArtLayer)).isBackgroundLayer) this.sampleLayer.visible = true;
-		this.sampleBounds = jsx.util.Bounds.convert(this.sampleLayer.bounds);
-		this.samplePositionX = this.sampleBounds.left | 0;
-		this.samplePositionY = this.sampleBounds.top | 0;
-		this.conversionDataSet = [];
-		this.conversionRgbHexValueMap = new haxe.ds.StringMap();
-		this.mainFunction = $bind(this,this.createConversionDataSet);
+	,initializeToScan: function() {
+		this.scanner.initialize(this.activeDocument,this.sampleLayer);
+		this.mainFunction = $bind(this,this.scan);
 	}
-	,createConversionDataSet: function() {
-		this.scanPixelCount = 0;
-		var _g1 = this.samplePositionY;
-		var _g = this.sampleBounds.bottom | 0;
-		while(_g1 < _g) {
-			var y = _g1++;
-			var _g3 = this.samplePositionX;
-			var _g2 = this.sampleBounds.right | 0;
-			while(_g3 < _g2) {
-				var x = _g3++;
-				var colorSampler = this.activeDocument.colorSamplers.add([x,y]);
-				try {
-					var hexValue = colorSampler.color.rgb.hexValue;
-					js.Lib.alert(hexValue);
-					if(!this.conversionRgbHexValueMap.get(hexValue) && this.paletteMap.map.get(hexValue) != null) {
-						js.Lib.alert("exchange!");
-						var conversionData = new jsx.palette_change.ConversionData(x,y,this.paletteMap.map.get(hexValue));
-						this.conversionDataSet.push(conversionData);
-						this.conversionRgbHexValueMap.set(hexValue,true);
-						true;
-					}
-				} catch( error ) {
-				}
-				colorSampler.remove();
-				if(++this.scanPixelCount >= 10) {
-					this.samplePositionX = x + 1;
-					this.samplePositionY = y;
-					if(this.samplePositionX >= (this.sampleBounds.right | 0)) {
-						this.samplePositionX = 0;
-						this.samplePositionY++;
-					}
-					return;
-				}
-			}
-		}
-		this.initializeToPaint();
+	,scan: function() {
+		this.scanner.run();
+		if(this.scanner.isFinished()) this.initializeToPaint();
 	}
 	,initializeToPaint: function() {
-		this.duplicatedPaintLayer = this.sampleLayer.duplicate();
-		this.mainFunction = $bind(this,this.setPaintedConversionData);
-	}
-	,setPaintedConversionData: function() {
-		if(this.conversionDataSet.length > 0) {
-			this.paintedConversionData = this.conversionDataSet.shift();
-			this.mainFunction = $bind(this,this.paint);
-		} else this.destroyToPaint();
+		this.painter.initialize(this.activeDocument,this.sampleLayer,this.scanner.conversionDataSet);
+		this.mainFunction = $bind(this,this.paint);
 	}
 	,paint: function() {
-		this.application.activeDocument.activeLayer = this.sampleLayer;
-		this.selectPixel(this.paintedConversionData.pixelX,this.paintedConversionData.pixelY);
-		this.activeDocument.selection.similar(0,false);
-		this.application.activeDocument.activeLayer = this.duplicatedPaintLayer;
-		var color = new SolidColor();
-		color.rgb.hexValue = this.paintedConversionData.rgbHexValue;
-		this.activeDocument.selection.fill(color);
-		this.activeDocument.selection.deselect();
-		this.mainFunction = $bind(this,this.setPaintedConversionData);
-	}
-	,selectPixel: function(x,y) {
-		this.activeDocument.selection.select([[x,y],[x + 1,y],[x + 1,y + 1],[x,y + 1]]);
-	}
-	,destroyToPaint: function() {
-		(js.Boot.__cast(this.duplicatedPaintLayer , ArtLayer)).merge();
-		if(!(js.Boot.__cast(this.sampleLayer , ArtLayer)).isBackgroundLayer) this.sampleLayer.visible = false;
-		this.sampleLayerIndex++;
-		this.mainFunction = $bind(this,this.setSampleLayer);
+		this.painter.run();
+		if(this.painter.isFinished()) {
+			this.sampleLayerIndex++;
+			this.mainFunction = $bind(this,this.setSampleLayer);
+		}
 	}
 	,finish: function() {
 	}
@@ -1108,8 +1053,125 @@ jsx.palette_change.ConversionData.__name__ = ["jsx","palette_change","Conversion
 jsx.palette_change.ConversionData.prototype = {
 	__class__: jsx.palette_change.ConversionData
 };
+if(!jsx.palette_change._Converter) jsx.palette_change._Converter = {};
+jsx.palette_change._Converter.Scanner = $hxClasses["jsx.palette_change._Converter.Scanner"] = function() {
+	if(jsx.palette_change.PaletteMap.instance == null) this.paletteMap = jsx.palette_change.PaletteMap.instance = new jsx.palette_change.PaletteMap(); else this.paletteMap = jsx.palette_change.PaletteMap.instance;
+};
+jsx.palette_change._Converter.Scanner.__name__ = ["jsx","palette_change","_Converter","Scanner"];
+jsx.palette_change._Converter.Scanner.prototype = {
+	run: function() {
+		this.mainFunction();
+	}
+	,initialize: function(activeDocument,sampleLayer) {
+		this.activeDocument = activeDocument;
+		this.activeDocumentHeight = activeDocument.height;
+		activeDocument.activeLayer = sampleLayer;
+		if(!(js.Boot.__cast(sampleLayer , ArtLayer)).isBackgroundLayer) sampleLayer.visible = true;
+		this.sampleBounds = jsx.util.Bounds.convert(sampleLayer.bounds);
+		this.samplePositionX = this.sampleBounds.left | 0;
+		this.samplePositionY = this.sampleBounds.top | 0;
+		this.conversionDataSet = [];
+		this.conversionRgbHexValueMap = new haxe.ds.StringMap();
+		this.mainFunction = $bind(this,this.execute);
+	}
+	,execute: function() {
+		this.scanPixelCount = 0;
+		var _g1 = this.samplePositionY;
+		var _g = this.sampleBounds.bottom | 0;
+		while(_g1 < _g) {
+			var y = _g1++;
+			var adjustY;
+			if(y == this.activeDocumentHeight) adjustY = y; else adjustY = y + 0.1;
+			var _g3 = this.samplePositionX;
+			var _g2 = this.sampleBounds.right | 0;
+			while(_g3 < _g2) {
+				var x = _g3++;
+				var colorSampler = this.activeDocument.colorSamplers.add([new psd.UnitValue(x,"px"),new psd.UnitValue(y,"px")]);
+				try {
+					var hexValue = colorSampler.color.rgb.hexValue;
+					if(!this.conversionRgbHexValueMap.get(hexValue) && this.paletteMap.map.get(hexValue) != null) {
+						var conversionData = new jsx.palette_change.ConversionData(x,y,this.paletteMap.map.get(hexValue));
+						this.conversionDataSet.push(conversionData);
+						this.conversionRgbHexValueMap.set(hexValue,true);
+						true;
+					}
+				} catch( error ) {
+				}
+				colorSampler.remove();
+				if(++this.scanPixelCount < 10) continue;
+				this.adjustPosition(x,y);
+			}
+		}
+		this.mainFunction = $bind(this,this.finish);
+	}
+	,adjustPosition: function(x,y) {
+		this.samplePositionX = x + 1;
+		this.samplePositionY = y;
+		if(this.samplePositionX >= (this.sampleBounds.right | 0)) {
+			this.samplePositionX = 0;
+			this.samplePositionY++;
+		}
+	}
+	,finish: function() {
+	}
+	,isFinished: function() {
+		return Reflect.compareMethods(this.mainFunction,$bind(this,this.finish));
+	}
+	,__class__: jsx.palette_change._Converter.Scanner
+};
+jsx.palette_change._Converter.Painter = $hxClasses["jsx.palette_change._Converter.Painter"] = function() {
+};
+jsx.palette_change._Converter.Painter.__name__ = ["jsx","palette_change","_Converter","Painter"];
+jsx.palette_change._Converter.Painter.prototype = {
+	run: function() {
+		this.mainFunction();
+	}
+	,initialize: function(activeDocument,sampleLayer,conversionDataSet) {
+		this.activeDocument = activeDocument;
+		this.conversionDataSet = conversionDataSet;
+		this.sampleLayer = sampleLayer;
+		this.duplicatedPaintLayer = sampleLayer.duplicate();
+		this.mainFunction = $bind(this,this.setPaintedConversionData);
+	}
+	,setPaintedConversionData: function() {
+		if(this.conversionDataSet.length > 0) {
+			this.paintedConversionData = this.conversionDataSet.shift();
+			this.mainFunction = $bind(this,this.execute);
+		} else this.mergeLayer();
+	}
+	,execute: function() {
+		this.activeDocument.activeLayer = this.sampleLayer;
+		this.selectPixel(this.paintedConversionData.pixelX,this.paintedConversionData.pixelY);
+		this.activeDocument.selection.similar(0,false);
+		this.activeDocument.activeLayer = this.duplicatedPaintLayer;
+		var color = new SolidColor();
+		color.rgb.hexValue = this.paintedConversionData.rgbHexValue;
+		this.activeDocument.selection.fill(color);
+		this.activeDocument.selection.deselect();
+		this.mainFunction = $bind(this,this.setPaintedConversionData);
+	}
+	,selectPixel: function(x,y) {
+		this.activeDocument.selection.select([[x,y],[x + 1,y],[x + 1,y + 1],[x,y + 1]]);
+	}
+	,mergeLayer: function() {
+		this.activeDocument.selection.selectAll();
+		this.activeDocument.selection.copy(false);
+		this.activeDocument.activeLayer.remove();
+		this.activeDocument.activeLayer = this.sampleLayer;
+		this.activeDocument.selection.clear();
+		this.activeDocument.paste(true);
+		if(!(js.Boot.__cast(this.sampleLayer , ArtLayer)).isBackgroundLayer) this.sampleLayer.visible = false;
+		this.mainFunction = $bind(this,this.finish);
+	}
+	,finish: function() {
+	}
+	,isFinished: function() {
+		return Reflect.compareMethods(this.mainFunction,$bind(this,this.finish));
+	}
+	,__class__: jsx.palette_change._Converter.Painter
+};
 var PaletteChange = $hxClasses["PaletteChange"] = function() {
-	this.application = app;
+	this.application = psd.Lib.app;
 	if(jsx.palette_change.PaletteMap.instance == null) this.paletteMap = jsx.palette_change.PaletteMap.instance = new jsx.palette_change.PaletteMap(); else this.paletteMap = jsx.palette_change.PaletteMap.instance;
 	this.converter = new jsx.palette_change.Converter();
 };
@@ -1123,7 +1185,7 @@ PaletteChange.test = function() {
 		switch(Type.enumIndex(_g)) {
 		case 1:
 			var message = _g[2];
-			js.Lib.alert(message);
+			psd.Lib.alert(message);
 			return;
 		case 0:
 			"";
@@ -1145,7 +1207,7 @@ PaletteChange.test = function() {
 				"";
 				break;
 			case 1:
-				js.Lib.alert("success!");
+				psd.Lib.alert("success!");
 				throw "__break__";
 				break;
 			}
@@ -1269,6 +1331,17 @@ jsx.util.LayersDisplay.prototype = {
 };
 var LayerTypeName = $hxClasses["LayerTypeName"] = function() { };
 LayerTypeName.__name__ = ["LayerTypeName"];
+var psd = psd || {};
+psd.Lib = $hxClasses["psd.Lib"] = function() { };
+psd.Lib.__name__ = ["psd","Lib"];
+psd.Lib.alert = function(message) {
+	js.Lib.alert(message);
+};
+psd.Lib.writeIn = function(message) {
+	$.writeln(message);
+};
+psd.UnitType = $hxClasses["psd.UnitType"] = function() { };
+psd.UnitType.__name__ = ["psd","UnitType"];
 var $_, $fid = 0;
 function $bind(o,m) { if( m == null ) return null; if( m.__id__ == null ) m.__id__ = $fid++; var f; if( o.hx__closures__ == null ) o.hx__closures__ = {}; else f = o.hx__closures__[m.__id__]; if( f == null ) { f = function(){ return f.method.apply(f.scope, arguments); }; f.scope = o; f.method = m; o.hx__closures__[m.__id__] = f; } return f; }
 Math.NaN = Number.NaN;
@@ -1301,6 +1374,8 @@ haxe.Serializer.BASE64 = "ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz01
 haxe.Unserializer.DEFAULT_RESOLVER = Type;
 haxe.Unserializer.BASE64 = "ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz0123456789%:";
 haxe.ds.ObjectMap.count = 0;
-jsx.palette_change.Converter.ONCE_SCAN_PIXEL = 10;
+jsx.palette_change._Converter.Scanner.ONCE_SCAN_PIXEL = 10;
 LayerTypeName.LAYER_SET = "LayerSet";
+psd.Lib.app = psd.Lib.app;
+psd.UnitType.PIXEL = "px";
 PaletteChange.main();

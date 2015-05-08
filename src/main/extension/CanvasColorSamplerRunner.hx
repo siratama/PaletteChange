@@ -2,7 +2,6 @@ package extension;
 import common.JsxEvent;
 import haxe.Unserializer;
 import common.CanvasColorSamplerEvent;
-import csinterface.CSInterface.AbstractCSInterface;
 import extension.color_sampler.CanvasColorSamplerUI;
 import extension.overlay.OverlayWindow;
 import common.ClassName;

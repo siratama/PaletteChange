@@ -1,5 +1,6 @@
 package jsx.color_sampler;
 
+import psd.UnitValue;
 import jsx.util.Bounds;
 import psd.LayerTypeName;
 import common.CanvasColorSamplerEvent;
@@ -11,6 +12,8 @@ import jsx.util.LayersDisplay;
 import psd.Document;
 import psd.Layers;
 import psd.Application;
+import psd.Lib;
+import psd.Lib.app;
 
 using jsx.util.Bounds;
 
@@ -20,6 +23,7 @@ class CanvasColorSampler
 	private var mainFunction:Void->Void;
 	private var application:Application;
 	private var activeDocument:Document;
+	private var activeDocumentHeight:Float;
 	private var layersDisplay:LayersDisplay;
 	private var interruptCommand:Bool;
 
@@ -45,7 +49,7 @@ class CanvasColorSampler
 		var initialErrorEvent = Unserializer.run(canvasColorSampler.getInitialErrorEvent());
 		switch(initialErrorEvent){
 			case CanvasColorSamplerInitialErrorEvent.ERROR(message):
-				js.Lib.alert(message);
+				Lib.alert(message);
 				return;
 			case CanvasColorSamplerInitialErrorEvent.NONE:
 				"";
@@ -60,13 +64,13 @@ class CanvasColorSampler
 		{
 			case CanvasColorSamplerEvent.NONE: return;
 			case CanvasColorSamplerEvent.RESULT(rgbHexColorSet):
-				js.Lib.alert(rgbHexColorSet);
+				Lib.alert(rgbHexColorSet);
 		}
 	}
 
 	public function new()
 	{
-		application = untyped app;
+		application = app;
 	}
 	public function run()
 	{
@@ -86,6 +90,7 @@ class CanvasColorSampler
 	public function initialize()
 	{
 		activeDocument = application.activeDocument;
+		activeDocumentHeight = activeDocument.height;
 		var activeLayer = activeDocument.activeLayer;
 
 		layersDisplay = new LayersDisplay(activeDocument.layers);
@@ -108,40 +113,45 @@ class CanvasColorSampler
 		scanPixelCount = 0;
 		for (y in positionY...Std.int(bounds.bottom))
 		{
+			var adjustY = (y == activeDocumentHeight) ? y : y + 0.1;
+
 			for (x in positionX...Std.int(bounds.right))
 			{
-				var colorSampler = activeDocument.colorSamplers.add([x, y]);
+				//var colorSampler = activeDocument.colorSamplers.add([x, adjustY]);
+				var colorSampler = activeDocument.colorSamplers.add([new UnitValue(x, UnitType.PIXEL), new UnitValue(y, UnitType.PIXEL)]);
+				//var colorSampler = activeDocument.colorSamplers.add([new UnitValue(x, UnitType.PIXEL), new UnitValue(adjustY, UnitType.PIXEL)]);
 
 				try{
 					var rgbHexValue = colorSampler.color.rgb.hexValue;
-					js.Lib.alert(x + ":" + y + ":" + rgbHexValue);
+					Lib.alert(x + ":" + y + ":" + rgbHexValue);
 
 					//call Map.exists method is error from extension panel
 					if(!rgbHexValueMap[rgbHexValue])
 					{
 						rgbHexValueSet.push(rgbHexValue);
 						rgbHexValueMap.set(rgbHexValue, true);
-						js.Lib.alert(rgbHexValue);
+						Lib.alert(rgbHexValue);
 					}
 				//colorSampler.color is transparent
 				}catch(error:Dynamic){}
 
 				colorSampler.remove();
 
-				/*
-				if(++scanPixelCount >= ONCE_SCAN_PIXEL){
-					positionX = x + 1;
-					positionY = y;
-					if(positionX >= Std.int(bounds.right)){
-						positionX = 0;
-						positionY++;
-					}
-					return;
-				}
-				*/
+				if(++scanPixelCount < ONCE_SCAN_PIXEL) continue;
+				adjustPosition(x, y);
+				return;
 			}
 		}
 		mainFunction = finish;
+	}
+	private function adjustPosition(x:Int, y:Int)
+	{
+		positionX = x + 1;
+		positionY = y;
+		if(positionX >= Std.int(bounds.right)){
+			positionX = 0;
+			positionY++;
+		}
 	}
 	private function finish()
 	{

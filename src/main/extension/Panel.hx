@@ -1,16 +1,15 @@
 package extension;
 
+import adobe.cep.CSEventType;
+import adobe.cep.CSEventScope;
+import adobe.cep.CSEvent;
 import extension.overlay.OverlayWindow;
 import extension.option.Setting;
-import common.PaletteChangeEvent;
-import common.ClassName;
 import extension.color_sampler.palette.PaletteKind;
 import extension.palette_change.PaletteChangeUI;
 import extension.color_sampler.CanvasColorSamplerUI;
-import csinterface.CSInterface;
 import js.Browser;
 import haxe.Unserializer;
-import haxe.Serializer;
 import haxe.Timer;
 
 class Panel
@@ -35,6 +34,7 @@ class Panel
 	private function initialize(event)
 	{
 		csInterface = AbstractCSInterface.create();
+		setPersistent();
 		jsxLoader = new JsxLoader();
 
 		canvasColorSamplerUI = CanvasColorSamplerUI.instance;
@@ -48,6 +48,15 @@ class Panel
 		timer = new Timer(100);
 		timer.run = run;
 	}
+	private function setPersistent()
+	{
+		var csEvent = new CSEvent();
+		csEvent.type = CSEventType.PERSISTENT;
+		csEvent.scope = CSEventScope.APPLICATION;
+		csEvent.extensionId = untyped window.__adobe_cep__.getExtensionId();
+		csInterface.csInterface.dispatchEvent(csEvent);
+	}
+
 	private function run()
 	{
 		mainFunction();

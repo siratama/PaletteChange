@@ -975,7 +975,7 @@ js.Lib.alert = function(v) {
 	alert(js.Boot.__string_rec(v,""));
 };
 var CanvasColorSampler = $hxClasses["CanvasColorSampler"] = function() {
-	this.application = app;
+	this.application = psd.Lib.app;
 };
 CanvasColorSampler.__name__ = ["CanvasColorSampler"];
 CanvasColorSampler.main = function() {
@@ -986,7 +986,7 @@ CanvasColorSampler.test = function() {
 	switch(initialErrorEvent[1]) {
 	case 1:
 		var message = initialErrorEvent[2];
-		js.Lib.alert(message);
+		psd.Lib.alert(message);
 		return;
 	case 0:
 		"";
@@ -1002,7 +1002,7 @@ CanvasColorSampler.test = function() {
 		return;
 	case 1:
 		var rgbHexColorSet = event[2];
-		js.Lib.alert(rgbHexColorSet);
+		psd.Lib.alert(rgbHexColorSet);
 		break;
 	}
 };
@@ -1020,6 +1020,7 @@ CanvasColorSampler.prototype = {
 	}
 	,initialize: function() {
 		this.activeDocument = this.application.activeDocument;
+		this.activeDocumentHeight = this.activeDocument.height;
 		var activeLayer = this.activeDocument.activeLayer;
 		this.layersDisplay = new jsx.util.LayersDisplay(this.activeDocument.layers);
 		this.layersDisplay.hide();
@@ -1038,25 +1039,38 @@ CanvasColorSampler.prototype = {
 		var _g = this.bounds.bottom | 0;
 		while(_g1 < _g) {
 			var y = _g1++;
+			var adjustY;
+			if(y == this.activeDocumentHeight) adjustY = y; else adjustY = y + 0.1;
 			var _g3 = this.positionX;
 			var _g2 = this.bounds.right | 0;
 			while(_g3 < _g2) {
 				var x = _g3++;
-				var colorSampler = this.activeDocument.colorSamplers.add([x,y]);
+				var colorSampler = this.activeDocument.colorSamplers.add([new psd.UnitValue(x,"px"),new psd.UnitValue(y,"px")]);
 				try {
 					var rgbHexValue = colorSampler.color.rgb.hexValue;
-					js.Lib.alert(x + ":" + y + ":" + rgbHexValue);
+					psd.Lib.alert(x + ":" + y + ":" + rgbHexValue);
 					if(!this.rgbHexValueMap.get(rgbHexValue)) {
 						this.rgbHexValueSet.push(rgbHexValue);
 						this.rgbHexValueMap.set(rgbHexValue,true);
-						js.Lib.alert(rgbHexValue);
+						psd.Lib.alert(rgbHexValue);
 					}
 				} catch( error ) {
 				}
 				colorSampler.remove();
+				if(++this.scanPixelCount < 10) continue;
+				this.adjustPosition(x,y);
+				return;
 			}
 		}
 		this.mainFunction = $bind(this,this.finish);
+	}
+	,adjustPosition: function(x,y) {
+		this.positionX = x + 1;
+		this.positionY = y;
+		if(this.positionX >= (this.bounds.right | 0)) {
+			this.positionX = 0;
+			this.positionY++;
+		}
 	}
 	,finish: function() {
 		this.layersDisplay.restore();
@@ -1132,6 +1146,17 @@ jsx.util.LayersDisplay.prototype = {
 };
 var LayerTypeName = $hxClasses["LayerTypeName"] = function() { };
 LayerTypeName.__name__ = ["LayerTypeName"];
+var psd = psd || {};
+psd.Lib = $hxClasses["psd.Lib"] = function() { };
+psd.Lib.__name__ = ["psd","Lib"];
+psd.Lib.alert = function(message) {
+	js.Lib.alert(message);
+};
+psd.Lib.writeIn = function(message) {
+	$.writeln(message);
+};
+psd.UnitType = $hxClasses["psd.UnitType"] = function() { };
+psd.UnitType.__name__ = ["psd","UnitType"];
 var $_, $fid = 0;
 function $bind(o,m) { if( m == null ) return null; if( m.__id__ == null ) m.__id__ = $fid++; var f; if( o.hx__closures__ == null ) o.hx__closures__ = {}; else f = o.hx__closures__[m.__id__]; if( f == null ) { f = function(){ return f.method.apply(f.scope, arguments); }; f.scope = o; f.method = m; o.hx__closures__[m.__id__] = f; } return f; }
 Math.NaN = Number.NaN;
@@ -1166,4 +1191,6 @@ haxe.Unserializer.BASE64 = "ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz
 haxe.ds.ObjectMap.count = 0;
 CanvasColorSampler.ONCE_SCAN_PIXEL = 10;
 LayerTypeName.LAYER_SET = "LayerSet";
+psd.Lib.app = psd.Lib.app;
+psd.UnitType.PIXEL = "px";
 CanvasColorSampler.main();
