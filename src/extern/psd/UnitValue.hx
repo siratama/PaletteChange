@@ -1,4 +1,6 @@
 package psd;
+
+@:native("UnitValue")
 extern class UnitValue
 {
 	public var type(default, null):String;

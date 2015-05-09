@@ -1,5 +1,6 @@
 package jsx.palette_change;
 
+import psd.Lib;
 import psd.UnitValue;
 import jsx.util.Bounds;
 import psd.ColorSampler;
@@ -91,17 +92,23 @@ class Converter
 	//
 	private function initializeToPaint()
 	{
-		painter.initialize(activeDocument, sampleLayer, scanner.conversionDataSet);
-		mainFunction = paint;
+		if(scanner.conversionDataSet.length > 0){
+			painter.initialize(activeDocument, sampleLayer, scanner.conversionDataSet);
+			mainFunction = paint;
+		}
+		else
+			destroyToPaint();
 	}
 	private function paint()
 	{
 		painter.run();
 		if(painter.isFinished())
-		{
-			sampleLayerIndex++;
-			mainFunction = setSampleLayer;
-		}
+			destroyToPaint();
+	}
+	private function destroyToPaint()
+	{
+		sampleLayerIndex++;
+		mainFunction = setSampleLayer;
 	}
 
 	private function finish(){}
@@ -133,6 +140,7 @@ private class Scanner
 	private var paletteMap:PaletteMap;
 	private var activeDocument:Document;
 	private var activeDocumentHeight:Float;
+	private var activeDocumentWidth:Float;
 
 	private var scanPixelCount:Int;
 	private static inline var ONCE_SCAN_PIXEL = 10;
@@ -157,6 +165,7 @@ private class Scanner
 	{
 		this.activeDocument = activeDocument;
 		activeDocumentHeight = activeDocument.height;
+		activeDocumentWidth = activeDocument.width;
 
 		activeDocument.activeLayer = sampleLayer;
 
@@ -181,9 +190,8 @@ private class Scanner
 
 			for (x in samplePositionX...Std.int(sampleBounds.right))
 			{
-				//var colorSampler = activeDocument.colorSamplers.add([x, adjustY]);
-				//var colorSampler = activeDocument.colorSamplers.add([new UnitValue(x, UnitType.PIXEL), new UnitValue(adjustY, UnitType.PIXEL)]);
-				var colorSampler = activeDocument.colorSamplers.add([new UnitValue(x, UnitType.PIXEL), new UnitValue(y, UnitType.PIXEL)]);
+				var adjustX = (x == activeDocumentWidth) ? x : x + 0.1;
+				var colorSampler = activeDocument.colorSamplers.add([adjustX, adjustY]);
 
 				try{
 					var hexValue = colorSampler.color.rgb.hexValue;
@@ -202,7 +210,9 @@ private class Scanner
 
 				if(++scanPixelCount < ONCE_SCAN_PIXEL) continue;
 				adjustPosition(x, y);
+				return;
 			}
+			samplePositionX = Std.int(sampleBounds.left);
 		}
 		mainFunction = finish;
 	}
@@ -212,7 +222,7 @@ private class Scanner
 		samplePositionX = x + 1;
 		samplePositionY = y;
 		if(samplePositionX >= Std.int(sampleBounds.right)){
-			samplePositionX = 0;
+			samplePositionX = Std.int(sampleBounds.left);
 			samplePositionY++;
 		}
 	}
@@ -280,7 +290,11 @@ private class Painter
 	private function mergeLayer()
 	{
 		//don't use merge: Photoshop CC bug
+		//merged layer is displayed with all timeline frames
+		//https://forums.adobe.com/thread/1355933
 		//cast(duplicatedPaintLayer, ArtLayer).merge();
+
+		//fill for copy: [0, 0], [doc.width][doc.height]
 
 		//substitute
 		activeDocument.selection.selectAll();
@@ -288,7 +302,7 @@ private class Painter
 		activeDocument.activeLayer.remove();
 		activeDocument.activeLayer = sampleLayer;
 		activeDocument.selection.clear();
-		activeDocument.paste(true);
+		activeDocument.paste(false);
 
 		if(!cast(sampleLayer, ArtLayer).isBackgroundLayer)
 			sampleLayer.visible = false;

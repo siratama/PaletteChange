@@ -32,10 +32,10 @@ class PaletteContainer
 		var beforeLength = beforePalette.length;
 		var afterLength = afterPalette.length;
 		if(beforeLength > afterLength){
-			beforePalette.splice(0, afterLength);
+			beforePalette.splice(afterLength, beforeLength);
 		}
 		else if(afterLength > beforeLength){
-			afterPalette.splice(0, beforeLength);
+			afterPalette.splice(beforeLength, afterLength);
 		}
 
 		return [beforePalette, afterPalette];

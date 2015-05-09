@@ -23,4 +23,12 @@ class AbstractCSInterface
 	public function evalFile(filePath:String, ?callback:Dynamic->Void){
 		csInterface.evalScript('$.evalFile("$filePath");', callback);
 	}
+	public function showColorPicker(pickForeground:Bool = true, ?callback:Dynamic->Void)
+	{
+		return csInterface.evalScript('app.showColorPicker($pickForeground);', callback);
+	}
+	public function callColorPicker(?callback:Dynamic->Void)
+	{
+		return csInterface.evalScript('$.colorPicker();', callback);
+	}
 }

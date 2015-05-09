@@ -7,5 +7,5 @@ extern class ColorSamplers implements ArrayAccess<ColorSampler>
 	public function removeAll():Void;
 
 	@:overload(function (position:Array<UnitValue>):ColorSampler{})
-	public function add(position:Array<Int>):ColorSampler;
+	public function add(position:Array<Float>):ColorSampler;
 }

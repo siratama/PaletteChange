@@ -1024,15 +1024,18 @@ jsx.palette_change.Converter.prototype = {
 		if(this.scanner.isFinished()) this.initializeToPaint();
 	}
 	,initializeToPaint: function() {
-		this.painter.initialize(this.activeDocument,this.sampleLayer,this.scanner.conversionDataSet);
-		this.mainFunction = $bind(this,this.paint);
+		if(this.scanner.conversionDataSet.length > 0) {
+			this.painter.initialize(this.activeDocument,this.sampleLayer,this.scanner.conversionDataSet);
+			this.mainFunction = $bind(this,this.paint);
+		} else this.destroyToPaint();
 	}
 	,paint: function() {
 		this.painter.run();
-		if(this.painter.isFinished()) {
-			this.sampleLayerIndex++;
-			this.mainFunction = $bind(this,this.setSampleLayer);
-		}
+		if(this.painter.isFinished()) this.destroyToPaint();
+	}
+	,destroyToPaint: function() {
+		this.sampleLayerIndex++;
+		this.mainFunction = $bind(this,this.setSampleLayer);
 	}
 	,finish: function() {
 	}
@@ -1065,6 +1068,7 @@ jsx.palette_change._Converter.Scanner.prototype = {
 	,initialize: function(activeDocument,sampleLayer) {
 		this.activeDocument = activeDocument;
 		this.activeDocumentHeight = activeDocument.height;
+		this.activeDocumentWidth = activeDocument.width;
 		activeDocument.activeLayer = sampleLayer;
 		if(!(js.Boot.__cast(sampleLayer , ArtLayer)).isBackgroundLayer) sampleLayer.visible = true;
 		this.sampleBounds = jsx.util.Bounds.convert(sampleLayer.bounds);
@@ -1086,7 +1090,9 @@ jsx.palette_change._Converter.Scanner.prototype = {
 			var _g2 = this.sampleBounds.right | 0;
 			while(_g3 < _g2) {
 				var x = _g3++;
-				var colorSampler = this.activeDocument.colorSamplers.add([new psd.UnitValue(x,"px"),new psd.UnitValue(y,"px")]);
+				var adjustX;
+				if(x == this.activeDocumentWidth) adjustX = x; else adjustX = x + 0.1;
+				var colorSampler = this.activeDocument.colorSamplers.add([adjustX,adjustY]);
 				try {
 					var hexValue = colorSampler.color.rgb.hexValue;
 					if(!this.conversionRgbHexValueMap.get(hexValue) && this.paletteMap.map.get(hexValue) != null) {
@@ -1100,7 +1106,9 @@ jsx.palette_change._Converter.Scanner.prototype = {
 				colorSampler.remove();
 				if(++this.scanPixelCount < 10) continue;
 				this.adjustPosition(x,y);
+				return;
 			}
+			this.samplePositionX = this.sampleBounds.left | 0;
 		}
 		this.mainFunction = $bind(this,this.finish);
 	}
@@ -1108,7 +1116,7 @@ jsx.palette_change._Converter.Scanner.prototype = {
 		this.samplePositionX = x + 1;
 		this.samplePositionY = y;
 		if(this.samplePositionX >= (this.sampleBounds.right | 0)) {
-			this.samplePositionX = 0;
+			this.samplePositionX = this.sampleBounds.left | 0;
 			this.samplePositionY++;
 		}
 	}
@@ -1159,7 +1167,7 @@ jsx.palette_change._Converter.Painter.prototype = {
 		this.activeDocument.activeLayer.remove();
 		this.activeDocument.activeLayer = this.sampleLayer;
 		this.activeDocument.selection.clear();
-		this.activeDocument.paste(true);
+		this.activeDocument.paste(false);
 		if(!(js.Boot.__cast(this.sampleLayer , ArtLayer)).isBackgroundLayer) this.sampleLayer.visible = false;
 		this.mainFunction = $bind(this,this.finish);
 	}
@@ -1185,7 +1193,7 @@ PaletteChange.test = function() {
 		switch(Type.enumIndex(_g)) {
 		case 1:
 			var message = _g[2];
-			psd.Lib.alert(message);
+			js.Lib.alert(message);
 			return;
 		case 0:
 			"";
@@ -1207,7 +1215,7 @@ PaletteChange.test = function() {
 				"";
 				break;
 			case 1:
-				psd.Lib.alert("success!");
+				js.Lib.alert("success!");
 				throw "__break__";
 				break;
 			}
@@ -1262,7 +1270,6 @@ jsx.palette_change.PaletteMap.prototype = {
 			if(beforeRgbHexValue == afterRgbHexValue) continue;
 			this.map.set(beforeRgbHexValue,afterRgbHexValue);
 			afterRgbHexValue;
-			js.Lib.alert(beforeRgbHexValue + ":" + afterRgbHexValue);
 		}
 	}
 	,__class__: jsx.palette_change.PaletteMap
@@ -1334,10 +1341,7 @@ LayerTypeName.__name__ = ["LayerTypeName"];
 var psd = psd || {};
 psd.Lib = $hxClasses["psd.Lib"] = function() { };
 psd.Lib.__name__ = ["psd","Lib"];
-psd.Lib.alert = function(message) {
-	js.Lib.alert(message);
-};
-psd.Lib.writeIn = function(message) {
+psd.Lib.writeln = function(message) {
 	$.writeln(message);
 };
 psd.UnitType = $hxClasses["psd.UnitType"] = function() { };
@@ -1376,6 +1380,6 @@ haxe.Unserializer.BASE64 = "ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz
 haxe.ds.ObjectMap.count = 0;
 jsx.palette_change._Converter.Scanner.ONCE_SCAN_PIXEL = 10;
 LayerTypeName.LAYER_SET = "LayerSet";
-psd.Lib.app = psd.Lib.app;
+psd.Lib.app = app;
 psd.UnitType.PIXEL = "px";
 PaletteChange.main();

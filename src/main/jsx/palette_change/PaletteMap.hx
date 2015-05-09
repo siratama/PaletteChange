@@ -23,7 +23,6 @@ class PaletteMap
 			var afterRgbHexValue = afterRgbHexValueSet[i];
 			if(beforeRgbHexValue == afterRgbHexValue) continue;
 			map[beforeRgbHexValue] = afterRgbHexValue;
-			js.Lib.alert(beforeRgbHexValue + ":" + afterRgbHexValue);
 		}
 	}
 }

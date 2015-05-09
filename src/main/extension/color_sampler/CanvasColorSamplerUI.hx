@@ -1,4 +1,6 @@
 package extension.color_sampler;
+import extension.color_sampler.palette.Palette;
+import extension.color_sampler.palette.PaletteKind;
 import extension.parts.TitleBar;
 import extension.color_sampler.PageUI.PageMaximumChangeEvent;
 import extension.color_sampler.PageUI.PageUIEvent;
@@ -6,7 +8,7 @@ import jQuery.JQuery;
 class CanvasColorSamplerUI
 {
 	private var element:JQuery;
-	public var palletContainer(default, null):PaletteContainer;
+	public var paletteContainer(default, null):PaletteContainer;
 	private var pageUI:PageUI;
 
 	@:allow(extension) private static var instance(get, null):CanvasColorSamplerUI;
@@ -16,7 +18,7 @@ class CanvasColorSamplerUI
 	private function new()
 	{
 		element = new JQuery("#canvas_color_sampler");
-		palletContainer = new PaletteContainer(element);
+		paletteContainer = new PaletteContainer(element);
 		pageUI = PageUI.instance;
 		new TitleBar("title_canvas_color_sampler", element);
 	}
@@ -33,31 +35,41 @@ class CanvasColorSamplerUI
 		{
 			case PageUIEvent.NONE: return;
 			case PageUIEvent.SELECTED_PREV | PageUIEvent.SELECTED_NEXT:
-				palletContainer.changePage();
+				paletteContainer.changePage();
 		}
 	}
 	private function ovserveClearButton()
 	{
-		if(palletContainer.before.clearButton.isClicked())
+		if(paletteContainer.before.clearButton.isClicked())
 		{
-			palletContainer.before.palette.clear();
+			paletteContainer.before.palette.clear();
 			updatePageIndex();
 		}
-		else if(palletContainer.after.clearButton.isClicked())
+		else if(paletteContainer.after.clearButton.isClicked())
 		{
-			palletContainer.after.palette.clear();
+			paletteContainer.after.palette.clear();
 			updatePageIndex();
 		}
 	}
 	public function updatePageIndex()
 	{
-		var changedEvent = pageUI.changeMaximumIndex(palletContainer.getPageMaximumIndex());
+		var changedEvent = pageUI.changeMaximumIndex(paletteContainer.getPageMaximumIndex());
 		switch(changedEvent)
 		{
 			case PageMaximumChangeEvent.DOWN:
-				palletContainer.changePage();
+				paletteContainer.changePage();
 			case PageMaximumChangeEvent.UP | PageMaximumChangeEvent.NONE:
 				return;
 		}
+	}
+
+	public function changeCellColor(paletteKind:PaletteKind, rgbHexColor:String)
+	{
+		var palette:Palette = switch(paletteKind)
+		{
+			case PaletteKind.BEFORE: paletteContainer.before.palette;
+			case PaletteKind.AFTER: paletteContainer.after.palette;
+		}
+		palette.changeCellColor(rgbHexColor);
 	}
 }

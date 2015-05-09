@@ -3,8 +3,8 @@
 -cp src/main
 -cp src/extern
 -cp src/adobe_extension
+-cp C:/googledrive/workspace/haxelib/haxe-cep
 -lib jQueryExtern
--lib haxe-cep
 -debug
 
 --next

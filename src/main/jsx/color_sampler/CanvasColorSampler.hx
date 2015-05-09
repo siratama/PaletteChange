@@ -12,7 +12,6 @@ import jsx.util.LayersDisplay;
 import psd.Document;
 import psd.Layers;
 import psd.Application;
-import psd.Lib;
 import psd.Lib.app;
 
 using jsx.util.Bounds;
@@ -24,6 +23,7 @@ class CanvasColorSampler
 	private var application:Application;
 	private var activeDocument:Document;
 	private var activeDocumentHeight:Float;
+	private var activeDocumentWidth:Float;
 	private var layersDisplay:LayersDisplay;
 	private var interruptCommand:Bool;
 
@@ -49,7 +49,7 @@ class CanvasColorSampler
 		var initialErrorEvent = Unserializer.run(canvasColorSampler.getInitialErrorEvent());
 		switch(initialErrorEvent){
 			case CanvasColorSamplerInitialErrorEvent.ERROR(message):
-				Lib.alert(message);
+				js.Lib.alert(message);
 				return;
 			case CanvasColorSamplerInitialErrorEvent.NONE:
 				"";
@@ -64,7 +64,7 @@ class CanvasColorSampler
 		{
 			case CanvasColorSamplerEvent.NONE: return;
 			case CanvasColorSamplerEvent.RESULT(rgbHexColorSet):
-				Lib.alert(rgbHexColorSet);
+				js.Lib.alert(rgbHexColorSet);
 		}
 	}
 
@@ -91,6 +91,7 @@ class CanvasColorSampler
 	{
 		activeDocument = application.activeDocument;
 		activeDocumentHeight = activeDocument.height;
+		activeDocumentWidth = activeDocument.width;
 		var activeLayer = activeDocument.activeLayer;
 
 		layersDisplay = new LayersDisplay(activeDocument.layers);
@@ -117,20 +118,17 @@ class CanvasColorSampler
 
 			for (x in positionX...Std.int(bounds.right))
 			{
-				//var colorSampler = activeDocument.colorSamplers.add([x, adjustY]);
-				var colorSampler = activeDocument.colorSamplers.add([new UnitValue(x, UnitType.PIXEL), new UnitValue(y, UnitType.PIXEL)]);
-				//var colorSampler = activeDocument.colorSamplers.add([new UnitValue(x, UnitType.PIXEL), new UnitValue(adjustY, UnitType.PIXEL)]);
+				var adjustX = (x == activeDocumentWidth) ? x : x + 0.1;
+				var colorSampler = activeDocument.colorSamplers.add([adjustX, adjustY]);
 
 				try{
 					var rgbHexValue = colorSampler.color.rgb.hexValue;
-					Lib.alert(x + ":" + y + ":" + rgbHexValue);
 
 					//call Map.exists method is error from extension panel
 					if(!rgbHexValueMap[rgbHexValue])
 					{
 						rgbHexValueSet.push(rgbHexValue);
 						rgbHexValueMap.set(rgbHexValue, true);
-						Lib.alert(rgbHexValue);
 					}
 				//colorSampler.color is transparent
 				}catch(error:Dynamic){}
@@ -141,6 +139,7 @@ class CanvasColorSampler
 				adjustPosition(x, y);
 				return;
 			}
+			positionX = Std.int(bounds.left);
 		}
 		mainFunction = finish;
 	}
@@ -149,7 +148,7 @@ class CanvasColorSampler
 		positionX = x + 1;
 		positionY = y;
 		if(positionX >= Std.int(bounds.right)){
-			positionX = 0;
+			positionX = Std.int(bounds.left);
 			positionY++;
 		}
 	}

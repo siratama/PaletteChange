@@ -12,11 +12,13 @@ class Palette
 	public var rgbHexColorSet(default, null):Array<String>;
 	private var rgbHexColorMap:Map<String, Bool>;
 	private var allowDuplicateColor:Bool;
-
+	private var clickedCell:Cell;
 	private var element:JQuery;
+
 	public function new(parentElement:JQuery, kind:PaletteKind)
 	{
 		this.kind = kind;
+
 		PAGE_CELL_TOTAL = LINE_TOTAL * Line.CELL_TOTAL;
 		element = new JQuery(".palette", parentElement);
 
@@ -48,7 +50,6 @@ class Palette
 			case PaletteKind.AFTER:
 				Setting.instance.isAllowedDuplucatePalletColorInPalletAfter();
 		}
-		trace(allowDuplicateColor);
 	}
 	private function addRgbHexColorSet(addedRgbHexColorSet:Array<String>)
 	{
@@ -57,8 +58,7 @@ class Palette
 	}
 	private function addRgbHexColor(addedRgbHexColor:String)
 	{
-		var exists = rgbHexColorMap.exists(addedRgbHexColor);
-		if(exists && !allowDuplicateColor) return;
+		if(rgbHexColorMap.exists(addedRgbHexColor) && !allowDuplicateColor) return;
 
 		rgbHexColorMap.set(addedRgbHexColor, true);
 		rgbHexColorSet.push(addedRgbHexColor);
@@ -128,6 +128,44 @@ class Palette
 			return LastFilledLine.INDEX(Math.floor(coloringCellTotal / Line.CELL_TOTAL));
 		}
 	}
+
+	//
+	public function searchClickedCell():Bool
+	{
+		for (line in lines)
+		{
+			var cell = line.searchClickedCell();
+			if(cell != null){
+				clickedCell = cell;
+				return true;
+			}
+		}
+		return false;
+	}
+	public function changeCellColor(rgbHexColor:String)
+	{
+		updateAllowDuplicateColor();
+		if(!clickedCell.painted){
+			addRgbHexColor(rgbHexColor);
+		}
+		else{
+			if(rgbHexColorMap.exists(rgbHexColor) && !allowDuplicateColor) return;
+
+			var baseRgbHexColor = clickedCell.rgbHexColor;
+			rgbHexColorMap.remove(baseRgbHexColor);
+			rgbHexColorMap.set(rgbHexColor, true);
+
+			for (i in 0...rgbHexColorSet.length)
+			{
+				if(rgbHexColorSet[i] != baseRgbHexColor) continue;
+
+				rgbHexColorSet.splice(i, 1);
+				rgbHexColorSet.insert(i, rgbHexColor);
+				break;
+			}
+		}
+		update();
+	}
 }
 enum LastFilledLine
 {
@@ -173,13 +211,26 @@ class Line
 			break;
 		}
 	}
+	public function searchClickedCell():Cell
+	{
+		for (cell in cells)
+		{
+			if(cell.isClicked()){
+				return cell;
+			}
+		}
+		return null;
+	}
 }
 
 class Cell
 {
 	private var element:JQuery;
 	public var painted(default, null):Bool;
-	
+	private static inline var EDITABLE = "cell editable";
+	private static inline var ACTIVE = "cell active";
+	public var rgbHexColor(default, null):String;
+
 	private var clicked:Bool;
 	public function isClicked():Bool
 	{
@@ -194,24 +245,32 @@ class Cell
 			.attr("class", "cell")
 			.appendTo(parentElement);
 
-		element.click(function(event){
-			clicked = true;
+		element.mousedown(function(event)
+		{
+			if(
+				element.attr("class") == EDITABLE ||
+				element.attr("class") == ACTIVE
+			){
+				clicked = true;
+			}
 		});
 	}
 	public function fill(rgbHexColor:String)
 	{
+		this.rgbHexColor = rgbHexColor;
 		element.css("background-color", '#$rgbHexColor');
 		painted = true;
-		element.attr("class", "cell active");
+		element.attr("class", ACTIVE);
 	}
 	public function clear()
 	{
+		rgbHexColor = null;
 		element.css("background-color", 'transparent');
 		painted = false;
 		element.attr("class", "cell");
 	}
 	public function setEditabled()
 	{
-		element.attr("class", "cell editable");
+		element.attr("class", EDITABLE);
 	}
 }

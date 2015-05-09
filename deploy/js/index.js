@@ -231,6 +231,28 @@ Type["typeof"] = function(v) {
 		return ValueType.TUnknown;
 	}
 };
+var adobe = {};
+adobe.cep = {};
+adobe.cep._CSEventScope = {};
+adobe.cep._CSEventScope.CSEventScope_Impl_ = function() { };
+$hxClasses["adobe.cep._CSEventScope.CSEventScope_Impl_"] = adobe.cep._CSEventScope.CSEventScope_Impl_;
+adobe.cep._CSEventScope.CSEventScope_Impl_.__name__ = ["adobe","cep","_CSEventScope","CSEventScope_Impl_"];
+adobe.cep._CSEventType = {};
+adobe.cep._CSEventType.CSEventType_Impl_ = function() { };
+$hxClasses["adobe.cep._CSEventType.CSEventType_Impl_"] = adobe.cep._CSEventType.CSEventType_Impl_;
+adobe.cep._CSEventType.CSEventType_Impl_.__name__ = ["adobe","cep","_CSEventType","CSEventType_Impl_"];
+adobe.cep._OpenURLInDefaultBrowserCode = {};
+adobe.cep._OpenURLInDefaultBrowserCode.OpenURLInDefaultBrowserCode_Impl_ = function() { };
+$hxClasses["adobe.cep._OpenURLInDefaultBrowserCode.OpenURLInDefaultBrowserCode_Impl_"] = adobe.cep._OpenURLInDefaultBrowserCode.OpenURLInDefaultBrowserCode_Impl_;
+adobe.cep._OpenURLInDefaultBrowserCode.OpenURLInDefaultBrowserCode_Impl_.__name__ = ["adobe","cep","_OpenURLInDefaultBrowserCode","OpenURLInDefaultBrowserCode_Impl_"];
+adobe.cep._ScaleFactor = {};
+adobe.cep._ScaleFactor.ScaleFactor_Impl_ = function() { };
+$hxClasses["adobe.cep._ScaleFactor.ScaleFactor_Impl_"] = adobe.cep._ScaleFactor.ScaleFactor_Impl_;
+adobe.cep._ScaleFactor.ScaleFactor_Impl_.__name__ = ["adobe","cep","_ScaleFactor","ScaleFactor_Impl_"];
+adobe.cep._UIColorType = {};
+adobe.cep._UIColorType.UIColorType_Impl_ = function() { };
+$hxClasses["adobe.cep._UIColorType.UIColorType_Impl_"] = adobe.cep._UIColorType.UIColorType_Impl_;
+adobe.cep._UIColorType.UIColorType_Impl_.__name__ = ["adobe","cep","_UIColorType","UIColorType_Impl_"];
 var common = {};
 common.CanvasColorSamplerEvent = $hxClasses["common.CanvasColorSamplerEvent"] = { __ename__ : ["common","CanvasColorSamplerEvent"], __constructs__ : ["NONE","RESULT"] };
 common.CanvasColorSamplerEvent.NONE = ["NONE",0];
@@ -256,16 +278,16 @@ common.PaletteChangeInitialErrorEvent = $hxClasses["common.PaletteChangeInitialE
 common.PaletteChangeInitialErrorEvent.NONE = ["NONE",0];
 common.PaletteChangeInitialErrorEvent.NONE.__enum__ = common.PaletteChangeInitialErrorEvent;
 common.PaletteChangeInitialErrorEvent.ERROR = function(message) { var $x = ["ERROR",1,message]; $x.__enum__ = common.PaletteChangeInitialErrorEvent; return $x; };
-var csinterface = {};
-csinterface.AbstractCSInterface = function(csInterface) {
+var extension = {};
+extension.AbstractCSInterface = function(csInterface) {
 	this.csInterface = csInterface;
 };
-$hxClasses["csinterface.AbstractCSInterface"] = csinterface.AbstractCSInterface;
-csinterface.AbstractCSInterface.__name__ = ["csinterface","AbstractCSInterface"];
-csinterface.AbstractCSInterface.create = function() {
-	return new csinterface.AbstractCSInterface(new CSInterface());
+$hxClasses["extension.AbstractCSInterface"] = extension.AbstractCSInterface;
+extension.AbstractCSInterface.__name__ = ["extension","AbstractCSInterface"];
+extension.AbstractCSInterface.create = function() {
+	return new extension.AbstractCSInterface(new CSInterface());
 };
-csinterface.AbstractCSInterface.prototype = {
+extension.AbstractCSInterface.prototype = {
 	getExtensionUri: function() {
 		return "file:///" + this.csInterface.getSystemPath(SystemPath.EXTENSION);
 	}
@@ -278,11 +300,17 @@ csinterface.AbstractCSInterface.prototype = {
 	,evalFile: function(filePath,callback) {
 		this.csInterface.evalScript("$.evalFile(\"" + filePath + "\");",callback);
 	}
-	,__class__: csinterface.AbstractCSInterface
+	,showColorPicker: function(pickForeground,callback) {
+		if(pickForeground == null) pickForeground = true;
+		return this.csInterface.evalScript("app.showColorPicker(" + (pickForeground == null?"null":"" + pickForeground) + ");",callback);
+	}
+	,callColorPicker: function(callback) {
+		return this.csInterface.evalScript("$.colorPicker();",callback);
+	}
+	,__class__: extension.AbstractCSInterface
 };
-var extension = {};
 extension.CanvasColorSamplerRunner = function() {
-	this.csInterface = csinterface.AbstractCSInterface.create();
+	this.csInterface = extension.AbstractCSInterface.create();
 	if(extension.color_sampler.CanvasColorSamplerUI.instance == null) this.canvasColorSamplerUI = extension.color_sampler.CanvasColorSamplerUI.instance = new extension.color_sampler.CanvasColorSamplerUI(); else this.canvasColorSamplerUI = extension.color_sampler.CanvasColorSamplerUI.instance;
 	if(extension.overlay.OverlayWindow.instance == null) this.overlayWindow = extension.overlay.OverlayWindow.instance = new extension.overlay.OverlayWindow(); else this.overlayWindow = extension.overlay.OverlayWindow.instance;
 };
@@ -362,10 +390,10 @@ extension.CanvasColorSamplerRunner.prototype = {
 					var _g1 = this.clickedPaletteKind;
 					switch(_g1[1]) {
 					case 0:
-						this.canvasColorSamplerUI.palletContainer.before.palette.updateRgbHexColorSet(rgbHexColorSet);
+						this.canvasColorSamplerUI.paletteContainer.before.palette.updateRgbHexColorSet(rgbHexColorSet);
 						break;
 					case 1:
-						this.canvasColorSamplerUI.palletContainer.after.palette.updateRgbHexColorSet(rgbHexColorSet);
+						this.canvasColorSamplerUI.paletteContainer.after.palette.updateRgbHexColorSet(rgbHexColorSet);
 						break;
 					}
 					this.canvasColorSamplerUI.updatePageIndex();
@@ -393,7 +421,7 @@ extension.CanvasColorSamplerRunner.prototype = {
 	,__class__: extension.CanvasColorSamplerRunner
 };
 extension.JsxLoader = function() {
-	this.csInterface = csinterface.AbstractCSInterface.create();
+	this.csInterface = extension.AbstractCSInterface.create();
 	this.loadCanvasColorSampler();
 };
 $hxClasses["extension.JsxLoader"] = extension.JsxLoader;
@@ -437,7 +465,7 @@ extension.JsxLoader.prototype = {
 	,__class__: extension.JsxLoader
 };
 extension.PaletteChangeRunner = function() {
-	this.csInterface = csinterface.AbstractCSInterface.create();
+	this.csInterface = extension.AbstractCSInterface.create();
 	if(extension.palette_change.PaletteChangeUI.instance == null) this.paletteChangeUI = extension.palette_change.PaletteChangeUI.instance = new extension.palette_change.PaletteChangeUI(); else this.paletteChangeUI = extension.palette_change.PaletteChangeUI.instance;
 	if(extension.overlay.OverlayWindow.instance == null) this.overlayWindow = extension.overlay.OverlayWindow.instance = new extension.overlay.OverlayWindow(); else this.overlayWindow = extension.overlay.OverlayWindow.instance;
 };
@@ -547,7 +575,8 @@ extension.Panel.main = function() {
 };
 extension.Panel.prototype = {
 	initialize: function(event) {
-		this.csInterface = csinterface.AbstractCSInterface.create();
+		this.csInterface = extension.AbstractCSInterface.create();
+		this.setPersistent();
 		this.jsxLoader = new extension.JsxLoader();
 		if(extension.color_sampler.CanvasColorSamplerUI.instance == null) this.canvasColorSamplerUI = extension.color_sampler.CanvasColorSamplerUI.instance = new extension.color_sampler.CanvasColorSamplerUI(); else this.canvasColorSamplerUI = extension.color_sampler.CanvasColorSamplerUI.instance;
 		if(extension.palette_change.PaletteChangeUI.instance == null) this.paletteChangeUI = extension.palette_change.PaletteChangeUI.instance = new extension.palette_change.PaletteChangeUI(); else this.paletteChangeUI = extension.palette_change.PaletteChangeUI.instance;
@@ -555,8 +584,26 @@ extension.Panel.prototype = {
 		if(extension.overlay.OverlayWindow.instance == null) extension.overlay.OverlayWindow.instance = new extension.overlay.OverlayWindow(); else extension.overlay.OverlayWindow.instance;
 		this.canvasColorSamplerRunner = new extension.CanvasColorSamplerRunner();
 		this.paletteChangeRunner = new extension.PaletteChangeRunner();
-		this.mainFunction = $bind(this,this.loadJsx);
-		this.timer = new haxe.Timer(100);
+		this.colorPicker = new extension.color_picker.ColorPicker();
+		this.startRunning($bind(this,this.loadJsx),50);
+	}
+	,setPersistent: function() {
+		var csEvent = new CSEvent();
+		csEvent.type = "com.adobe.PhotoshopPersistent";
+		csEvent.scope = "APPLICATION";
+		csEvent.extensionId = window.__adobe_cep__.getExtensionId();
+		this.csInterface.csInterface.dispatchEvent(csEvent);
+	}
+	,startRunning: function(func,speed) {
+		this.mainFunction = func;
+		this.setTimer(speed);
+	}
+	,changeRunning: function(func,speed) {
+		this.timer.stop();
+		this.startRunning(func,speed);
+	}
+	,setTimer: function(speed) {
+		this.timer = new haxe.Timer(speed);
 		this.timer.run = $bind(this,this.run);
 	}
 	,run: function() {
@@ -564,35 +611,91 @@ extension.Panel.prototype = {
 	}
 	,loadJsx: function() {
 		this.jsxLoader.run();
-		if(this.jsxLoader.isFinished()) this.mainFunction = $bind(this,this.observeToClickUI);
+		if(this.jsxLoader.isFinished()) this.initializeToClickUI();
+	}
+	,initializeToClickUI: function() {
+		this.changeRunning($bind(this,this.observeToClickUI),250);
 	}
 	,observeToClickUI: function() {
 		this.canvasColorSamplerUI.run();
-		if(this.canvasColorSamplerUI.palletContainer.before.scanButton.isClicked()) this.initializeToCallCanvasColorSampler(extension.color_sampler.palette.PaletteKind.BEFORE); else if(this.canvasColorSamplerUI.palletContainer.after.scanButton.isClicked()) this.initializeToCallCanvasColorSampler(extension.color_sampler.palette.PaletteKind.AFTER); else if(this.paletteChangeUI.runButton.isClicked()) this.initializeToCallPaletteChange();
+		if(this.canvasColorSamplerUI.paletteContainer.before.scanButton.isClicked()) this.initializeToCallCanvasColorSampler(extension.color_sampler.palette.PaletteKind.BEFORE); else if(this.canvasColorSamplerUI.paletteContainer.after.scanButton.isClicked()) this.initializeToCallCanvasColorSampler(extension.color_sampler.palette.PaletteKind.AFTER); else if(this.paletteChangeUI.runButton.isClicked()) this.initializeToCallPaletteChange(); else if(this.canvasColorSamplerUI.paletteContainer.before.palette.searchClickedCell()) this.initializeToCallColorPicker(extension.color_sampler.palette.PaletteKind.BEFORE); else if(this.canvasColorSamplerUI.paletteContainer.after.palette.searchClickedCell()) this.initializeToCallColorPicker(extension.color_sampler.palette.PaletteKind.AFTER);
+	}
+	,initializeToCallColorPicker: function(paletteKind) {
+		this.selectedPaletteKind = paletteKind;
+		this.colorPicker.show();
+		this.changeRunning($bind(this,this.callColorPicker),50);
+	}
+	,callColorPicker: function() {
+		var event = this.colorPicker.getEvent();
+		switch(event[1]) {
+		case 0:
+			return;
+		case 1:
+			this.initializeToClickUI();
+			break;
+		case 2:
+			var rgbHexColor = event[2];
+			this.canvasColorSamplerUI.changeCellColor(this.selectedPaletteKind,rgbHexColor);
+			this.initializeToClickUI();
+			break;
+		}
 	}
 	,initializeToCallCanvasColorSampler: function(paletteKind) {
 		this.canvasColorSamplerRunner.call(paletteKind);
-		this.mainFunction = $bind(this,this.callCanvasColorSampler);
+		this.changeRunning($bind(this,this.callCanvasColorSampler),50);
 	}
 	,callCanvasColorSampler: function() {
 		this.canvasColorSamplerRunner.run();
-		if(this.canvasColorSamplerRunner.isFinished()) this.mainFunction = $bind(this,this.observeToClickUI);
+		if(this.canvasColorSamplerRunner.isFinished()) this.initializeToClickUI();
 	}
 	,initializeToCallPaletteChange: function() {
-		var rgbHexValueSets = this.canvasColorSamplerUI.palletContainer.getRgbHexValueSets();
+		var rgbHexValueSets = this.canvasColorSamplerUI.paletteContainer.getRgbHexValueSets();
 		this.paletteChangeRunner.call(rgbHexValueSets);
-		this.mainFunction = $bind(this,this.callPaletteChange);
+		this.changeRunning($bind(this,this.callPaletteChange),50);
 	}
 	,callPaletteChange: function() {
 		this.paletteChangeRunner.run();
-		if(this.paletteChangeRunner.isFinished()) this.mainFunction = $bind(this,this.observeToClickUI);
+		if(this.paletteChangeRunner.isFinished()) this.initializeToClickUI();
 	}
 	,__class__: extension.Panel
+};
+extension.color_picker = {};
+extension.color_picker.ColorPickerEvent = $hxClasses["extension.color_picker.ColorPickerEvent"] = { __ename__ : ["extension","color_picker","ColorPickerEvent"], __constructs__ : ["NONE","CANCELLED","GOTTEN"] };
+extension.color_picker.ColorPickerEvent.NONE = ["NONE",0];
+extension.color_picker.ColorPickerEvent.NONE.__enum__ = extension.color_picker.ColorPickerEvent;
+extension.color_picker.ColorPickerEvent.CANCELLED = ["CANCELLED",1];
+extension.color_picker.ColorPickerEvent.CANCELLED.__enum__ = extension.color_picker.ColorPickerEvent;
+extension.color_picker.ColorPickerEvent.GOTTEN = function(rgbHexValue) { var $x = ["GOTTEN",2,rgbHexValue]; $x.__enum__ = extension.color_picker.ColorPickerEvent; return $x; };
+extension.color_picker.ColorPicker = function() {
+	this.csInterface = extension.AbstractCSInterface.create();
+};
+$hxClasses["extension.color_picker.ColorPicker"] = extension.color_picker.ColorPicker;
+extension.color_picker.ColorPicker.__name__ = ["extension","color_picker","ColorPicker"];
+extension.color_picker.ColorPicker.prototype = {
+	getEvent: function() {
+		var n = this.event;
+		this.event = extension.color_picker.ColorPickerEvent.NONE;
+		return n;
+	}
+	,show: function() {
+		var _g = this;
+		this.event = extension.color_picker.ColorPickerEvent.NONE;
+		this.csInterface.showColorPicker(true,function(bool) {
+			if(bool == "false") _g.event = extension.color_picker.ColorPickerEvent.CANCELLED; else _g.observeGettingColor();
+		});
+	}
+	,observeGettingColor: function() {
+		var _g = this;
+		this.csInterface.evalScript("app.foregroundColor.rgb.hexValue;",function(data) {
+			_g.event = extension.color_picker.ColorPickerEvent.GOTTEN(data);
+		});
+	}
+	,__class__: extension.color_picker.ColorPicker
 };
 extension.color_sampler = {};
 extension.color_sampler.CanvasColorSamplerUI = function() {
 	this.element = new $("#canvas_color_sampler");
-	this.palletContainer = new extension.color_sampler.PaletteContainer(this.element);
+	this.paletteContainer = new extension.color_sampler.PaletteContainer(this.element);
 	if(extension.color_sampler.PageUI.instance == null) this.pageUI = extension.color_sampler.PageUI.instance = new extension.color_sampler.PageUI(); else this.pageUI = extension.color_sampler.PageUI.instance;
 	new extension.parts.TitleBar("title_canvas_color_sampler",this.element);
 };
@@ -613,28 +716,40 @@ extension.color_sampler.CanvasColorSamplerUI.prototype = {
 		case 0:
 			return;
 		case 2:case 1:
-			this.palletContainer.changePage();
+			this.paletteContainer.changePage();
 			break;
 		}
 	}
 	,ovserveClearButton: function() {
-		if(this.palletContainer.before.clearButton.isClicked()) {
-			this.palletContainer.before.palette.clear();
+		if(this.paletteContainer.before.clearButton.isClicked()) {
+			this.paletteContainer.before.palette.clear();
 			this.updatePageIndex();
-		} else if(this.palletContainer.after.clearButton.isClicked()) {
-			this.palletContainer.after.palette.clear();
+		} else if(this.paletteContainer.after.clearButton.isClicked()) {
+			this.paletteContainer.after.palette.clear();
 			this.updatePageIndex();
 		}
 	}
 	,updatePageIndex: function() {
-		var changedEvent = this.pageUI.changeMaximumIndex(this.palletContainer.getPageMaximumIndex());
+		var changedEvent = this.pageUI.changeMaximumIndex(this.paletteContainer.getPageMaximumIndex());
 		switch(changedEvent[1]) {
 		case 2:
-			this.palletContainer.changePage();
+			this.paletteContainer.changePage();
 			break;
 		case 1:case 0:
 			return;
 		}
+	}
+	,changeCellColor: function(paletteKind,rgbHexColor) {
+		var palette;
+		switch(paletteKind[1]) {
+		case 0:
+			palette = this.paletteContainer.before.palette;
+			break;
+		case 1:
+			palette = this.paletteContainer.after.palette;
+			break;
+		}
+		palette.changeCellColor(rgbHexColor);
 	}
 	,__class__: extension.color_sampler.CanvasColorSamplerUI
 };
@@ -798,7 +913,7 @@ extension.color_sampler.PaletteContainer.prototype = {
 		var afterPalette = this.after.palette.rgbHexColorSet.slice();
 		var beforeLength = beforePalette.length;
 		var afterLength = afterPalette.length;
-		if(beforeLength > afterLength) beforePalette.splice(0,afterLength); else if(afterLength > beforeLength) afterPalette.splice(0,beforeLength);
+		if(beforeLength > afterLength) beforePalette.splice(afterLength,beforeLength); else if(afterLength > beforeLength) afterPalette.splice(beforeLength,afterLength);
 		return [beforePalette,afterPalette];
 	}
 	,__class__: extension.color_sampler.PaletteContainer
@@ -850,7 +965,6 @@ extension.color_sampler.palette.Palette.prototype = {
 			this.allowDuplicateColor = (extension.option.Setting.instance == null?extension.option.Setting.instance = new extension.option.Setting():extension.option.Setting.instance).isAllowedDuplucatePalletColorInPalletAfter();
 			break;
 		}
-		console.log(this.allowDuplicateColor);
 	}
 	,addRgbHexColorSet: function(addedRgbHexColorSet) {
 		var _g1 = 0;
@@ -861,8 +975,7 @@ extension.color_sampler.palette.Palette.prototype = {
 		}
 	}
 	,addRgbHexColor: function(addedRgbHexColor) {
-		var exists = this.rgbHexColorMap.exists(addedRgbHexColor);
-		if(exists && !this.allowDuplicateColor) return;
+		if(this.rgbHexColorMap.exists(addedRgbHexColor) && !this.allowDuplicateColor) return;
 		this.rgbHexColorMap.set(addedRgbHexColor,true);
 		this.rgbHexColorSet.push(addedRgbHexColor);
 	}
@@ -907,6 +1020,42 @@ extension.color_sampler.palette.Palette.prototype = {
 		var coloringCellTotal = this.rgbHexColorSet.length - startPosition;
 		if(coloringCellTotal >= this.PAGE_CELL_TOTAL || coloringCellTotal < 0) return extension.color_sampler.palette.LastFilledLine.ANOTHER_PAGE; else return extension.color_sampler.palette.LastFilledLine.INDEX(Math.floor(coloringCellTotal / 10));
 	}
+	,searchClickedCell: function() {
+		var _g = 0;
+		var _g1 = this.lines;
+		while(_g < _g1.length) {
+			var line = _g1[_g];
+			++_g;
+			var cell = line.searchClickedCell();
+			if(cell != null) {
+				this.clickedCell = cell;
+				return true;
+			}
+		}
+		return false;
+	}
+	,changeCellColor: function(rgbHexColor) {
+		this.updateAllowDuplicateColor();
+		if(!this.clickedCell.painted) this.addRgbHexColor(rgbHexColor); else {
+			js.Lib.alert(rgbHexColor);
+			if(this.rgbHexColorMap.exists(rgbHexColor) && !this.allowDuplicateColor) return;
+			var baseRgbHexColor = this.clickedCell.rgbHexColor;
+			js.Lib.alert(baseRgbHexColor);
+			this.rgbHexColorMap.remove(baseRgbHexColor);
+			this.rgbHexColorMap.set(rgbHexColor,true);
+			var _g1 = 0;
+			var _g = this.rgbHexColorSet.length;
+			while(_g1 < _g) {
+				var i = _g1++;
+				if(this.rgbHexColorSet[i] != baseRgbHexColor) continue;
+				this.rgbHexColorSet.splice(i,1);
+				this.rgbHexColorSet.splice(i,0,rgbHexColor);
+				break;
+			}
+			js.Lib.alert(this.rgbHexColorSet);
+		}
+		this.update();
+	}
 	,__class__: extension.color_sampler.palette.Palette
 };
 extension.color_sampler.palette.LastFilledLine = $hxClasses["extension.color_sampler.palette.LastFilledLine"] = { __ename__ : ["extension","color_sampler","palette","LastFilledLine"], __constructs__ : ["ANOTHER_PAGE","INDEX"] };
@@ -943,13 +1092,23 @@ extension.color_sampler.palette.Line.prototype = {
 			break;
 		}
 	}
+	,searchClickedCell: function() {
+		var _g = 0;
+		var _g1 = this.cells;
+		while(_g < _g1.length) {
+			var cell = _g1[_g];
+			++_g;
+			if(cell.isClicked()) return cell;
+		}
+		return null;
+	}
 	,__class__: extension.color_sampler.palette.Line
 };
 extension.color_sampler.palette.Cell = function(parentElement) {
 	var _g = this;
 	this.element = new $("<td>").attr("class","cell").appendTo(parentElement);
-	this.element.click(function(event) {
-		_g.clicked = true;
+	this.element.mousedown(function(event) {
+		if(_g.element.attr("class") == "cell editable" || _g.element.attr("class") == "cell active") _g.clicked = true;
 	});
 };
 $hxClasses["extension.color_sampler.palette.Cell"] = extension.color_sampler.palette.Cell;
@@ -961,11 +1120,13 @@ extension.color_sampler.palette.Cell.prototype = {
 		return n;
 	}
 	,fill: function(rgbHexColor) {
+		this.rgbHexColor = rgbHexColor;
 		this.element.css("background-color","#" + rgbHexColor);
 		this.painted = true;
 		this.element.attr("class","cell active");
 	}
 	,clear: function() {
+		this.rgbHexColor = null;
 		this.element.css("background-color","transparent");
 		this.painted = false;
 		this.element.attr("class","cell");
@@ -1034,6 +1195,7 @@ extension.option.Setting.prototype = {
 extension.overlay = {};
 extension.overlay.OverlayWindow = function() {
 	this.element = new $("#overlay");
+	this.windowElement = new $(".window",this.element);
 	this.cancelButton = new extension.parts.Button(this.element,"cancel_button");
 	this.messageElement = new $(".message",this.element);
 };
@@ -1050,11 +1212,16 @@ extension.overlay.OverlayWindow.prototype = {
 		this.show("Palette changing...");
 	}
 	,show: function(message) {
+		this.windowElement.css("display","block");
 		this.messageElement.text(message);
 		this.element.fadeIn("fast");
 	}
 	,hide: function() {
 		this.element.fadeOut("fast");
+	}
+	,showExceptWindow: function() {
+		this.windowElement.css("display","none");
+		this.element.fadeIn("fast");
 	}
 	,__class__: extension.overlay.OverlayWindow
 };
@@ -1358,7 +1525,12 @@ haxe.Timer = function(time_ms) {
 $hxClasses["haxe.Timer"] = haxe.Timer;
 haxe.Timer.__name__ = ["haxe","Timer"];
 haxe.Timer.prototype = {
-	run: function() {
+	stop: function() {
+		if(this.id == null) return;
+		clearInterval(this.id);
+		this.id = null;
+	}
+	,run: function() {
 	}
 	,__class__: haxe.Timer
 };
@@ -1693,6 +1865,12 @@ haxe.ds.StringMap.prototype = {
 	,exists: function(key) {
 		return this.h.hasOwnProperty("$" + key);
 	}
+	,remove: function(key) {
+		key = "$" + key;
+		if(!this.h.hasOwnProperty(key)) return false;
+		delete(this.h[key]);
+		return true;
+	}
 	,keys: function() {
 		var a = [];
 		for( var key in this.h ) {
@@ -1831,6 +2009,18 @@ $hxClasses.Array = Array;
 Array.__name__ = ["Array"];
 Date.prototype.__class__ = $hxClasses.Date = Date;
 Date.__name__ = ["Date"];
+adobe.cep._CSEventScope.CSEventScope_Impl_.GLOBAL = "GLOBAL";
+adobe.cep._CSEventScope.CSEventScope_Impl_.APPLICATION = "APPLICATION";
+adobe.cep._CSEventType.CSEventType_Impl_.PERSISTENT = "com.adobe.PhotoshopPersistent";
+adobe.cep._OpenURLInDefaultBrowserCode.OpenURLInDefaultBrowserCode_Impl_.NO_ERROR = 0;
+adobe.cep._OpenURLInDefaultBrowserCode.OpenURLInDefaultBrowserCode_Impl_.ERR_UNKNOWN = 1;
+adobe.cep._OpenURLInDefaultBrowserCode.OpenURLInDefaultBrowserCode_Impl_.ERR_INVALID_PARAMS = 2;
+adobe.cep._OpenURLInDefaultBrowserCode.OpenURLInDefaultBrowserCode_Impl_.ERR_INVALID_URL = 201;
+adobe.cep._ScaleFactor.ScaleFactor_Impl_.FAIL = -1;
+adobe.cep._ScaleFactor.ScaleFactor_Impl_.NORMAL = 1;
+adobe.cep._ScaleFactor.ScaleFactor_Impl_.HiDPI = 2;
+adobe.cep._UIColorType.UIColorType_Impl_.RGB = 1;
+adobe.cep._UIColorType.UIColorType_Impl_.GRADATION = 2;
 common.ClassName.CANVAS_COLOR_SAMPLER = "CanvasColorSampler";
 common.ClassName.PALETTE_CHANGE = "PaletteChange";
 common.ClassName.INITIAL_ERROR_CHECK = "InitialErrorCheck";
@@ -1838,9 +2028,13 @@ extension.CanvasColorSamplerRunner.CANVAS_COLOR_SAMPLER_INSTANCE_NAME = "canvasC
 extension.JsxLoader.JSX_DIRECTORY = "/jsx/";
 extension.JsxLoader.JSX_EXTENSION = ".jsx";
 extension.PaletteChangeRunner.PALETTE_CHANGE_INSTANCE_NAME = "paletteChange";
+extension.Panel.TIMER_SPEED_CALM = 250;
+extension.Panel.TIMER_SPEED_RUNNING = 50;
 extension.color_sampler.PageNumber.DEFAULT_INDEX = 0;
 extension.color_sampler.palette.Palette.LINE_TOTAL = 5;
 extension.color_sampler.palette.Line.CELL_TOTAL = 10;
+extension.color_sampler.palette.Cell.EDITABLE = "cell editable";
+extension.color_sampler.palette.Cell.ACTIVE = "cell active";
 extension.overlay.OverlayWindow.FACE_SPEED = "fast";
 extension.parts.TitleBar.SLIDE_SPEED = "fast";
 haxe.Serializer.USE_CACHE = false;

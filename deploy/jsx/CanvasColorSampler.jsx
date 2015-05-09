@@ -986,7 +986,7 @@ CanvasColorSampler.test = function() {
 	switch(initialErrorEvent[1]) {
 	case 1:
 		var message = initialErrorEvent[2];
-		psd.Lib.alert(message);
+		js.Lib.alert(message);
 		return;
 	case 0:
 		"";
@@ -1002,7 +1002,7 @@ CanvasColorSampler.test = function() {
 		return;
 	case 1:
 		var rgbHexColorSet = event[2];
-		psd.Lib.alert(rgbHexColorSet);
+		js.Lib.alert(rgbHexColorSet);
 		break;
 	}
 };
@@ -1021,6 +1021,7 @@ CanvasColorSampler.prototype = {
 	,initialize: function() {
 		this.activeDocument = this.application.activeDocument;
 		this.activeDocumentHeight = this.activeDocument.height;
+		this.activeDocumentWidth = this.activeDocument.width;
 		var activeLayer = this.activeDocument.activeLayer;
 		this.layersDisplay = new jsx.util.LayersDisplay(this.activeDocument.layers);
 		this.layersDisplay.hide();
@@ -1045,14 +1046,14 @@ CanvasColorSampler.prototype = {
 			var _g2 = this.bounds.right | 0;
 			while(_g3 < _g2) {
 				var x = _g3++;
-				var colorSampler = this.activeDocument.colorSamplers.add([new psd.UnitValue(x,"px"),new psd.UnitValue(y,"px")]);
+				var adjustX;
+				if(x == this.activeDocumentWidth) adjustX = x; else adjustX = x + 0.1;
+				var colorSampler = this.activeDocument.colorSamplers.add([adjustX,adjustY]);
 				try {
 					var rgbHexValue = colorSampler.color.rgb.hexValue;
-					psd.Lib.alert(x + ":" + y + ":" + rgbHexValue);
 					if(!this.rgbHexValueMap.get(rgbHexValue)) {
 						this.rgbHexValueSet.push(rgbHexValue);
 						this.rgbHexValueMap.set(rgbHexValue,true);
-						psd.Lib.alert(rgbHexValue);
 					}
 				} catch( error ) {
 				}
@@ -1061,6 +1062,7 @@ CanvasColorSampler.prototype = {
 				this.adjustPosition(x,y);
 				return;
 			}
+			this.positionX = this.bounds.left | 0;
 		}
 		this.mainFunction = $bind(this,this.finish);
 	}
@@ -1068,7 +1070,7 @@ CanvasColorSampler.prototype = {
 		this.positionX = x + 1;
 		this.positionY = y;
 		if(this.positionX >= (this.bounds.right | 0)) {
-			this.positionX = 0;
+			this.positionX = this.bounds.left | 0;
 			this.positionY++;
 		}
 	}
@@ -1149,10 +1151,7 @@ LayerTypeName.__name__ = ["LayerTypeName"];
 var psd = psd || {};
 psd.Lib = $hxClasses["psd.Lib"] = function() { };
 psd.Lib.__name__ = ["psd","Lib"];
-psd.Lib.alert = function(message) {
-	js.Lib.alert(message);
-};
-psd.Lib.writeIn = function(message) {
+psd.Lib.writeln = function(message) {
 	$.writeln(message);
 };
 psd.UnitType = $hxClasses["psd.UnitType"] = function() { };
@@ -1191,6 +1190,6 @@ haxe.Unserializer.BASE64 = "ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz
 haxe.ds.ObjectMap.count = 0;
 CanvasColorSampler.ONCE_SCAN_PIXEL = 10;
 LayerTypeName.LAYER_SET = "LayerSet";
-psd.Lib.app = psd.Lib.app;
+psd.Lib.app = app;
 psd.UnitType.PIXEL = "px";
 CanvasColorSampler.main();

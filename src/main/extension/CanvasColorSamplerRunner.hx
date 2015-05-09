@@ -96,9 +96,9 @@ class CanvasColorSamplerRunner
 					case CanvasColorSamplerEvent.RESULT(rgbHexColorSet):
 						switch(clickedPaletteKind){
 							case PaletteKind.BEFORE:
-								canvasColorSamplerUI.palletContainer.before.palette.updateRgbHexColorSet(rgbHexColorSet);
+								canvasColorSamplerUI.paletteContainer.before.palette.updateRgbHexColorSet(rgbHexColorSet);
 							case PaletteKind.AFTER:
-								canvasColorSamplerUI.palletContainer.after.palette.updateRgbHexColorSet(rgbHexColorSet);
+								canvasColorSamplerUI.paletteContainer.after.palette.updateRgbHexColorSet(rgbHexColorSet);
 						}
 						canvasColorSamplerUI.updatePageIndex();
 						destroy();

@@ -1,6 +1,5 @@
 package extension;
 import common.ClassName;
-import csinterface.CSInterface.AbstractCSInterface;
 class JsxLoader
 {
 	private var mainFunction:Void->Void;

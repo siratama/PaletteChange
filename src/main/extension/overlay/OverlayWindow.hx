@@ -9,12 +9,14 @@ class OverlayWindow
 
 	private static inline var FACE_SPEED = "fast";
 	public var cancelButton(default, null):Button;
+	private var windowElement:JQuery;
 	private var messageElement:JQuery;
 
 	private var element:JQuery;
 	private function new()
 	{
 		element =  new JQuery("#overlay");
+		windowElement = new JQuery(".window", element);
 		cancelButton = new Button(element, "cancel_button");
 		messageElement = new JQuery(".message", element);
 	}
@@ -29,11 +31,18 @@ class OverlayWindow
 	}
 	private function show(message:String)
 	{
+		windowElement.css("display", "block");
 		messageElement.text(message);
 		element.fadeIn(FACE_SPEED);
 	}
 	public function hide()
 	{
 		element.fadeOut(FACE_SPEED);
+	}
+
+	public function showExceptWindow()
+	{
+		windowElement.css("display", "none");
+		element.fadeIn(FACE_SPEED);
 	}
 }
