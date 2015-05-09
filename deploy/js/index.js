@@ -919,15 +919,6 @@ extension.color_sampler.PaletteContainer.prototype = {
 	,__class__: extension.color_sampler.PaletteContainer
 };
 extension.color_sampler.palette = {};
-extension.color_sampler.palette.ClearButton = function(parentElement,className) {
-	extension.parts.Button.call(this,parentElement,className);
-};
-$hxClasses["extension.color_sampler.palette.ClearButton"] = extension.color_sampler.palette.ClearButton;
-extension.color_sampler.palette.ClearButton.__name__ = ["extension","color_sampler","palette","ClearButton"];
-extension.color_sampler.palette.ClearButton.__super__ = extension.parts.Button;
-extension.color_sampler.palette.ClearButton.prototype = $extend(extension.parts.Button.prototype,{
-	__class__: extension.color_sampler.palette.ClearButton
-});
 extension.color_sampler.palette.Palette = function(parentElement,kind) {
 	this.kind = kind;
 	this.PAGE_CELL_TOTAL = 50;
@@ -1037,10 +1028,8 @@ extension.color_sampler.palette.Palette.prototype = {
 	,changeCellColor: function(rgbHexColor) {
 		this.updateAllowDuplicateColor();
 		if(!this.clickedCell.painted) this.addRgbHexColor(rgbHexColor); else {
-			js.Lib.alert(rgbHexColor);
 			if(this.rgbHexColorMap.exists(rgbHexColor) && !this.allowDuplicateColor) return;
 			var baseRgbHexColor = this.clickedCell.rgbHexColor;
-			js.Lib.alert(baseRgbHexColor);
 			this.rgbHexColorMap.remove(baseRgbHexColor);
 			this.rgbHexColorMap.set(rgbHexColor,true);
 			var _g1 = 0;
@@ -1052,7 +1041,6 @@ extension.color_sampler.palette.Palette.prototype = {
 				this.rgbHexColorSet.splice(i,0,rgbHexColor);
 				break;
 			}
-			js.Lib.alert(this.rgbHexColorSet);
 		}
 		this.update();
 	}
@@ -1148,8 +1136,8 @@ extension.color_sampler.palette.PaletteArea = function(parentElement,kind) {
 	}
 	this.element = new $("." + idName,parentElement);
 	this.palette = new extension.color_sampler.palette.Palette(this.element,kind);
-	this.scanButton = new extension.color_sampler.palette.ScanButton(this.element,"scan_button");
-	this.clearButton = new extension.color_sampler.palette.ClearButton(this.element,"clear_button");
+	this.scanButton = new extension.parts.Button(this.element,"scan_button");
+	this.clearButton = new extension.parts.Button(this.element,"clear_button");
 };
 $hxClasses["extension.color_sampler.palette.PaletteArea"] = extension.color_sampler.palette.PaletteArea;
 extension.color_sampler.palette.PaletteArea.__name__ = ["extension","color_sampler","palette","PaletteArea"];
@@ -1161,15 +1149,6 @@ extension.color_sampler.palette.PaletteKind.BEFORE = ["BEFORE",0];
 extension.color_sampler.palette.PaletteKind.BEFORE.__enum__ = extension.color_sampler.palette.PaletteKind;
 extension.color_sampler.palette.PaletteKind.AFTER = ["AFTER",1];
 extension.color_sampler.palette.PaletteKind.AFTER.__enum__ = extension.color_sampler.palette.PaletteKind;
-extension.color_sampler.palette.ScanButton = function(parentElement,className) {
-	extension.parts.Button.call(this,parentElement,className);
-};
-$hxClasses["extension.color_sampler.palette.ScanButton"] = extension.color_sampler.palette.ScanButton;
-extension.color_sampler.palette.ScanButton.__name__ = ["extension","color_sampler","palette","ScanButton"];
-extension.color_sampler.palette.ScanButton.__super__ = extension.parts.Button;
-extension.color_sampler.palette.ScanButton.prototype = $extend(extension.parts.Button.prototype,{
-	__class__: extension.color_sampler.palette.ScanButton
-});
 extension.option = {};
 extension.option.Setting = function() {
 	this.element = new $("#setting");
@@ -1228,7 +1207,7 @@ extension.overlay.OverlayWindow.prototype = {
 extension.palette_change = {};
 extension.palette_change.PaletteChangeUI = function() {
 	this.element = new $("#palette_changer");
-	this.runButton = new extension.palette_change.RunButton(this.element,"run_button");
+	this.runButton = new extension.parts.Button(this.element,"run_button");
 };
 $hxClasses["extension.palette_change.PaletteChangeUI"] = extension.palette_change.PaletteChangeUI;
 extension.palette_change.PaletteChangeUI.__name__ = ["extension","palette_change","PaletteChangeUI"];
@@ -1238,15 +1217,6 @@ extension.palette_change.PaletteChangeUI.get_instance = function() {
 extension.palette_change.PaletteChangeUI.prototype = {
 	__class__: extension.palette_change.PaletteChangeUI
 };
-extension.palette_change.RunButton = function(parentElement,className) {
-	extension.parts.Button.call(this,parentElement,className);
-};
-$hxClasses["extension.palette_change.RunButton"] = extension.palette_change.RunButton;
-extension.palette_change.RunButton.__name__ = ["extension","palette_change","RunButton"];
-extension.palette_change.RunButton.__super__ = extension.parts.Button;
-extension.palette_change.RunButton.prototype = $extend(extension.parts.Button.prototype,{
-	__class__: extension.palette_change.RunButton
-});
 extension.parts.TitleBar = function(titleBarId,slideElement) {
 	var titleElement = new $("#" + titleBarId);
 	titleElement.mousedown(function(event) {

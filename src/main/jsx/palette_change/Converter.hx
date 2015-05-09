@@ -121,7 +121,7 @@ class Converter
 	}
 }
 
-class ConversionData
+private class ConversionData
 {
 	public var pixelX(default, null):Int;
 	public var pixelY(default, null):Int;

@@ -1047,16 +1047,16 @@ jsx.palette_change.Converter.prototype = {
 	}
 	,__class__: jsx.palette_change.Converter
 };
-jsx.palette_change.ConversionData = $hxClasses["jsx.palette_change.ConversionData"] = function(pixelX,pixelY,rgbHexValue) {
+if(!jsx.palette_change._Converter) jsx.palette_change._Converter = {};
+jsx.palette_change._Converter.ConversionData = $hxClasses["jsx.palette_change._Converter.ConversionData"] = function(pixelX,pixelY,rgbHexValue) {
 	this.pixelX = pixelX;
 	this.pixelY = pixelY;
 	this.rgbHexValue = rgbHexValue;
 };
-jsx.palette_change.ConversionData.__name__ = ["jsx","palette_change","ConversionData"];
-jsx.palette_change.ConversionData.prototype = {
-	__class__: jsx.palette_change.ConversionData
+jsx.palette_change._Converter.ConversionData.__name__ = ["jsx","palette_change","_Converter","ConversionData"];
+jsx.palette_change._Converter.ConversionData.prototype = {
+	__class__: jsx.palette_change._Converter.ConversionData
 };
-if(!jsx.palette_change._Converter) jsx.palette_change._Converter = {};
 jsx.palette_change._Converter.Scanner = $hxClasses["jsx.palette_change._Converter.Scanner"] = function() {
 	if(jsx.palette_change.PaletteMap.instance == null) this.paletteMap = jsx.palette_change.PaletteMap.instance = new jsx.palette_change.PaletteMap(); else this.paletteMap = jsx.palette_change.PaletteMap.instance;
 };
@@ -1096,7 +1096,7 @@ jsx.palette_change._Converter.Scanner.prototype = {
 				try {
 					var hexValue = colorSampler.color.rgb.hexValue;
 					if(!this.conversionRgbHexValueMap.get(hexValue) && this.paletteMap.map.get(hexValue) != null) {
-						var conversionData = new jsx.palette_change.ConversionData(x,y,this.paletteMap.map.get(hexValue));
+						var conversionData = new jsx.palette_change._Converter.ConversionData(x,y,this.paletteMap.map.get(hexValue));
 						this.conversionDataSet.push(conversionData);
 						this.conversionRgbHexValueMap.set(hexValue,true);
 						true;

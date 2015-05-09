@@ -1,4 +1,5 @@
 package extension.palette_change;
+import extension.parts.Button;
 import jQuery.JQuery;
 class PaletteChangeUI
 {
@@ -7,10 +8,10 @@ class PaletteChangeUI
 		return instance == null ? instance = new PaletteChangeUI(): instance;
 
 	private var element:JQuery;
-	public var runButton(default, null):RunButton;
+	public var runButton(default, null):Button;
 	private function new()
 	{
 		element =  new JQuery("#palette_changer");
-		runButton = new RunButton(element, "run_button");
+		runButton = new Button(element, "run_button");
 	}
 }
