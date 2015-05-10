@@ -1,5 +1,6 @@
 package jsx.color_sampler;
 
+import jsx.util.ColorSamplePosition;
 import psd.UnitValue;
 import jsx.util.Bounds;
 import psd.LayerTypeName;
@@ -22,8 +23,7 @@ class CanvasColorSampler
 	private var mainFunction:Void->Void;
 	private var application:Application;
 	private var activeDocument:Document;
-	private var activeDocumentHeight:Float;
-	private var activeDocumentWidth:Float;
+	private var colorSamplePosition:ColorSamplePosition;
 	private var layersDisplay:LayersDisplay;
 	private var interruptCommand:Bool;
 
@@ -71,6 +71,7 @@ class CanvasColorSampler
 	public function new()
 	{
 		application = app;
+		colorSamplePosition = new ColorSamplePosition();
 	}
 	public function run()
 	{
@@ -90,8 +91,7 @@ class CanvasColorSampler
 	public function initialize()
 	{
 		activeDocument = application.activeDocument;
-		activeDocumentHeight = activeDocument.height;
-		activeDocumentWidth = activeDocument.width;
+		colorSamplePosition.initialize(activeDocument);
 		var activeLayer = activeDocument.activeLayer;
 
 		layersDisplay = new LayersDisplay(activeDocument.layers);
@@ -114,11 +114,11 @@ class CanvasColorSampler
 		scanPixelCount = 0;
 		for (y in positionY...Std.int(bounds.bottom))
 		{
-			var adjustY = (y == activeDocumentHeight) ? y : y + 0.1;
+			var adjustY = colorSamplePosition.getAdjustY(y);
 
 			for (x in positionX...Std.int(bounds.right))
 			{
-				var adjustX = (x == activeDocumentWidth) ? x : x + 0.1;
+				var adjustX = colorSamplePosition.getAdjustX(x);
 				var colorSampler = activeDocument.colorSamplers.add([adjustX, adjustY]);
 
 				try{

@@ -987,7 +987,6 @@ js.Lib.alert = function(v) {
 var jsx = jsx || {};
 if(!jsx.palette_change) jsx.palette_change = {};
 jsx.palette_change.Converter = $hxClasses["jsx.palette_change.Converter"] = function() {
-	if(jsx.palette_change.PaletteMap.instance == null) this.paletteMap = jsx.palette_change.PaletteMap.instance = new jsx.palette_change.PaletteMap(); else this.paletteMap = jsx.palette_change.PaletteMap.instance;
 	this.application = psd.Lib.app;
 	this.painter = new jsx.palette_change._Converter.Painter();
 	this.scanner = new jsx.palette_change._Converter.Scanner();
@@ -997,9 +996,9 @@ jsx.palette_change.Converter.prototype = {
 	run: function() {
 		this.mainFunction();
 	}
-	,initialize: function() {
+	,initialize: function(ignoreLockedLayer) {
+		this.ignoreLockedLayer = ignoreLockedLayer;
 		this.activeDocument = this.application.activeDocument;
-		this.activeDocumentHeight = this.activeDocument.height;
 		this.layers = this.activeDocument.layers;
 		this.layersDisplay = new jsx.util.LayersDisplay(this.layers);
 		this.layersDisplay.hide();
@@ -1009,7 +1008,7 @@ jsx.palette_change.Converter.prototype = {
 	,setSampleLayer: function() {
 		if(this.sampleLayerIndex < this.layers.length) {
 			this.sampleLayer = this.layers[this.sampleLayerIndex];
-			if(this.sampleLayer.allLocked) this.sampleLayerIndex++; else this.initializeToScan();
+			if((js.Boot.__cast(this.sampleLayer , ArtLayer)).isBackgroundLayer) this.sampleLayerIndex++; else if(this.ignoreLockedLayer && this.sampleLayer.allLocked) this.sampleLayerIndex++; else this.initializeToScan();
 		} else {
 			this.layersDisplay.restore();
 			this.mainFunction = $bind(this,this.finish);
@@ -1059,6 +1058,7 @@ jsx.palette_change._Converter.ConversionData.prototype = {
 };
 jsx.palette_change._Converter.Scanner = $hxClasses["jsx.palette_change._Converter.Scanner"] = function() {
 	if(jsx.palette_change.PaletteMap.instance == null) this.paletteMap = jsx.palette_change.PaletteMap.instance = new jsx.palette_change.PaletteMap(); else this.paletteMap = jsx.palette_change.PaletteMap.instance;
+	this.colorSamplePosition = new jsx.util.ColorSamplePosition();
 };
 jsx.palette_change._Converter.Scanner.__name__ = ["jsx","palette_change","_Converter","Scanner"];
 jsx.palette_change._Converter.Scanner.prototype = {
@@ -1067,8 +1067,7 @@ jsx.palette_change._Converter.Scanner.prototype = {
 	}
 	,initialize: function(activeDocument,sampleLayer) {
 		this.activeDocument = activeDocument;
-		this.activeDocumentHeight = activeDocument.height;
-		this.activeDocumentWidth = activeDocument.width;
+		this.colorSamplePosition.initialize(activeDocument);
 		activeDocument.activeLayer = sampleLayer;
 		if(!(js.Boot.__cast(sampleLayer , ArtLayer)).isBackgroundLayer) sampleLayer.visible = true;
 		this.sampleBounds = jsx.util.Bounds.convert(sampleLayer.bounds);
@@ -1085,13 +1084,13 @@ jsx.palette_change._Converter.Scanner.prototype = {
 		while(_g1 < _g) {
 			var y = _g1++;
 			var adjustY;
-			if(y == this.activeDocumentHeight) adjustY = y; else adjustY = y + 0.1;
+			if(y == this.colorSamplePosition.activeDocumentHeight) adjustY = y; else adjustY = y + 0.1;
 			var _g3 = this.samplePositionX;
 			var _g2 = this.sampleBounds.right | 0;
 			while(_g3 < _g2) {
 				var x = _g3++;
 				var adjustX;
-				if(x == this.activeDocumentWidth) adjustX = x; else adjustX = x + 0.1;
+				if(x == this.colorSamplePosition.activeDocumentWidth) adjustX = x; else adjustX = x + 0.1;
 				var colorSampler = this.activeDocument.colorSamplers.add([adjustX,adjustY]);
 				try {
 					var hexValue = colorSampler.color.rgb.hexValue;
@@ -1128,6 +1127,7 @@ jsx.palette_change._Converter.Scanner.prototype = {
 	,__class__: jsx.palette_change._Converter.Scanner
 };
 jsx.palette_change._Converter.Painter = $hxClasses["jsx.palette_change._Converter.Painter"] = function() {
+	this.colorSamplePosition = new jsx.util.ColorSamplePosition();
 };
 jsx.palette_change._Converter.Painter.__name__ = ["jsx","palette_change","_Converter","Painter"];
 jsx.palette_change._Converter.Painter.prototype = {
@@ -1138,6 +1138,11 @@ jsx.palette_change._Converter.Painter.prototype = {
 		this.activeDocument = activeDocument;
 		this.conversionDataSet = conversionDataSet;
 		this.sampleLayer = sampleLayer;
+		if(sampleLayer.allLocked) {
+			sampleLayer.allLocked = false;
+			this.wasLocked = true;
+		}
+		this.colorSamplePosition.initialize(activeDocument);
 		this.duplicatedPaintLayer = sampleLayer.duplicate();
 		this.mainFunction = $bind(this,this.setPaintedConversionData);
 	}
@@ -1162,14 +1167,45 @@ jsx.palette_change._Converter.Painter.prototype = {
 		this.activeDocument.selection.select([[x,y],[x + 1,y],[x + 1,y + 1],[x,y + 1]]);
 	}
 	,mergeLayer: function() {
+		this.leftTopPixelWasTransparent = this.fillPixel(0,0);
+		this.rightBottomPixelWasTransparent = this.fillPixel((this.activeDocument.width | 0) - 1,(this.activeDocument.height | 0) - 1);
 		this.activeDocument.selection.selectAll();
 		this.activeDocument.selection.copy(false);
 		this.activeDocument.activeLayer.remove();
 		this.activeDocument.activeLayer = this.sampleLayer;
 		this.activeDocument.selection.clear();
 		this.activeDocument.paste(false);
+		if(this.leftTopPixelWasTransparent) this.clearPixel(0,0);
+		if(this.rightBottomPixelWasTransparent) this.clearPixel((this.activeDocument.width | 0) - 1,(this.activeDocument.height | 0) - 1);
 		if(!(js.Boot.__cast(this.sampleLayer , ArtLayer)).isBackgroundLayer) this.sampleLayer.visible = false;
+		if(this.wasLocked) this.sampleLayer.allLocked = true;
 		this.mainFunction = $bind(this,this.finish);
+	}
+	,fillPixel: function(x,y) {
+		var sampleX;
+		if(x == this.colorSamplePosition.activeDocumentWidth) sampleX = x; else sampleX = x + 0.1;
+		var sampleY;
+		if(y == this.colorSamplePosition.activeDocumentWidth) sampleY = y; else sampleY = y + 0.1;
+		var isTransparent = true;
+		var colorSampler = this.activeDocument.colorSamplers.add([sampleX,sampleY]);
+		try {
+			var hexValue = colorSampler.color.rgb.hexValue;
+			isTransparent = false;
+		} catch( error ) {
+		}
+		colorSampler.remove();
+		if(!isTransparent) return false;
+		this.selectPixel(x,y);
+		var color = new SolidColor();
+		color.rgb.hexValue = "ff0000";
+		this.activeDocument.selection.fill(color);
+		this.activeDocument.selection.deselect();
+		return true;
+	}
+	,clearPixel: function(x,y) {
+		this.selectPixel(x,y);
+		this.activeDocument.selection.clear();
+		this.activeDocument.selection.deselect();
 	}
 	,finish: function() {
 	}
@@ -1202,7 +1238,7 @@ PaletteChange.test = function() {
 	}
 	var arr = [["FF0000"],["0000FF"]];
 	var code = haxe.Serializer.run(arr);
-	paletteChange.execute(code);
+	paletteChange.execute(code,true);
 	var _g1 = 0;
 	try {
 		while(_g1 < 100) {
@@ -1234,10 +1270,10 @@ PaletteChange.prototype = {
 	,run: function() {
 		this.mainFunction();
 	}
-	,execute: function(code) {
+	,execute: function(code,ignoreLockedLayer) {
 		this.event = common.PaletteChangeEvent.NONE;
 		this.paletteMap.convert(code);
-		this.converter.initialize();
+		this.converter.initialize(ignoreLockedLayer);
 		this.mainFunction = $bind(this,this.convert);
 	}
 	,convert: function() {
@@ -1290,6 +1326,22 @@ jsx.util.Bounds.prototype = {
 		return [this.left,this.top,this.right,this.bottom].join(":");
 	}
 	,__class__: jsx.util.Bounds
+};
+jsx.util.ColorSamplePosition = $hxClasses["jsx.util.ColorSamplePosition"] = function() {
+};
+jsx.util.ColorSamplePosition.__name__ = ["jsx","util","ColorSamplePosition"];
+jsx.util.ColorSamplePosition.prototype = {
+	initialize: function(activeDocument) {
+		this.activeDocumentWidth = activeDocument.width;
+		this.activeDocumentHeight = activeDocument.height;
+	}
+	,getAdjustX: function(x) {
+		if(x == this.activeDocumentWidth) return x; else return x + 0.1;
+	}
+	,getAdjustY: function(y) {
+		if(y == this.activeDocumentHeight) return y; else return y + 0.1;
+	}
+	,__class__: jsx.util.ColorSamplePosition
 };
 jsx.util.LayersDisplay = $hxClasses["jsx.util.LayersDisplay"] = function(layers) {
 	this.layers = layers;

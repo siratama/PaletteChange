@@ -12,6 +12,7 @@ class PaletteChange
 	private var mainFunction:Void->Void;
 	private var application:Application;
 	private var converter:Converter;
+	//private var converter:ConverterType2;
 	private var paletteMap:PaletteMap;
 
 	private var event:PaletteChangeEvent;
@@ -37,7 +38,8 @@ class PaletteChange
 		var arr = [["FF0000"], ["0000FF"]];
 		//var arr = [[], []];
 		var code = Serializer.run(arr);
-		paletteChange.execute(code);
+		//paletteChange.execute(code, false);
+		paletteChange.execute(code, true);
 
 		for (i in 0...100)
 		{
@@ -59,6 +61,7 @@ class PaletteChange
 		application = app;
 		paletteMap = PaletteMap.instance;
 		converter = new Converter();
+		//converter = new ConverterType2();
 	}
 	public function getInitialErrorEvent():String
 	{
@@ -75,11 +78,11 @@ class PaletteChange
 	/**
 	 * @code serialized: [["000000","000000","000000", ...], ["000000","000000","000000", ...]]
 	 */
-	public function execute(code:String)
+	public function execute(code:String, ignoreLockedLayer:Bool)
 	{
 		event = PaletteChangeEvent.NONE;
 		paletteMap.convert(code);
-		converter.initialize();
+		converter.initialize(ignoreLockedLayer);
 		mainFunction = convert;
 	}
 	private function convert()

@@ -511,7 +511,7 @@ extension.PaletteChangeRunner.prototype = {
 	}
 	,initializeToChangePalette: function() {
 		var data = haxe.Serializer.run(this.rgbHexValueSets);
-		this.csInterface.evalScript("" + "paletteChange" + ".execute(\"" + data + "\");");
+		this.csInterface.evalScript("" + "paletteChange" + ".execute(\"" + data + "\", " + Std.string((extension.option.Setting.instance == null?extension.option.Setting.instance = new extension.option.Setting():extension.option.Setting.instance).isIgnoredLockedLayerPaint()) + ");");
 		this.mainFunction = $bind(this,this.changePalette);
 	}
 	,changePalette: function() {
@@ -618,11 +618,11 @@ extension.Panel.prototype = {
 	}
 	,observeToClickUI: function() {
 		this.canvasColorSamplerUI.run();
-		if(this.canvasColorSamplerUI.paletteContainer.before.scanButton.isClicked()) this.initializeToCallCanvasColorSampler(extension.color_sampler.palette.PaletteKind.BEFORE); else if(this.canvasColorSamplerUI.paletteContainer.after.scanButton.isClicked()) this.initializeToCallCanvasColorSampler(extension.color_sampler.palette.PaletteKind.AFTER); else if(this.paletteChangeUI.runButton.isClicked()) this.initializeToCallPaletteChange(); else if(this.canvasColorSamplerUI.paletteContainer.before.palette.searchClickedCell()) this.initializeToCallColorPicker(extension.color_sampler.palette.PaletteKind.BEFORE); else if(this.canvasColorSamplerUI.paletteContainer.after.palette.searchClickedCell()) this.initializeToCallColorPicker(extension.color_sampler.palette.PaletteKind.AFTER);
+		if(this.canvasColorSamplerUI.paletteContainer.before.scanButton.isClicked()) this.initializeToCallCanvasColorSampler(extension.color_sampler.palette.PaletteKind.BEFORE); else if(this.canvasColorSamplerUI.paletteContainer.after.scanButton.isClicked()) this.initializeToCallCanvasColorSampler(extension.color_sampler.palette.PaletteKind.AFTER); else if(this.paletteChangeUI.runButton.isClicked()) this.initializeToCallPaletteChange(); else if(this.canvasColorSamplerUI.paletteContainer.before.palette.searchClickedCell()) this.initializeToCallColorPicker(extension.color_sampler.palette.PaletteKind.BEFORE,this.canvasColorSamplerUI.paletteContainer.before.palette.clickedCell.rgbHexColor); else if(this.canvasColorSamplerUI.paletteContainer.after.palette.searchClickedCell()) this.initializeToCallColorPicker(extension.color_sampler.palette.PaletteKind.AFTER,this.canvasColorSamplerUI.paletteContainer.after.palette.clickedCell.rgbHexColor);
 	}
-	,initializeToCallColorPicker: function(paletteKind) {
+	,initializeToCallColorPicker: function(paletteKind,rgbHexColor) {
 		this.selectedPaletteKind = paletteKind;
-		this.colorPicker.show();
+		this.colorPicker.show(rgbHexColor);
 		this.changeRunning($bind(this,this.callColorPicker),50);
 	}
 	,callColorPicker: function() {
@@ -677,8 +677,9 @@ extension.color_picker.ColorPicker.prototype = {
 		this.event = extension.color_picker.ColorPickerEvent.NONE;
 		return n;
 	}
-	,show: function() {
+	,show: function(rgbHexValue) {
 		var _g = this;
+		if(rgbHexValue != null) this.csInterface.evalScript("app.foregroundColor.rgb.hexValue = \"" + rgbHexValue + "\";");
 		this.event = extension.color_picker.ColorPickerEvent.NONE;
 		this.csInterface.showColorPicker(true,function(bool) {
 			if(bool == "false") _g.event = extension.color_picker.ColorPickerEvent.CANCELLED; else _g.observeGettingColor();
@@ -750,6 +751,7 @@ extension.color_sampler.CanvasColorSamplerUI.prototype = {
 			break;
 		}
 		palette.changeCellColor(rgbHexColor);
+		this.updatePageIndex();
 	}
 	,__class__: extension.color_sampler.CanvasColorSamplerUI
 };
@@ -929,7 +931,7 @@ extension.color_sampler.palette.Palette = function(parentElement,kind) {
 	var _g = 0;
 	while(_g < 5) {
 		var i = _g++;
-		this.lines.push(new extension.color_sampler.palette.Line(this.element));
+		this.lines.push(new extension.color_sampler.palette.Line(this.element,i));
 	}
 	this.setEditableLastCell();
 };
@@ -1032,15 +1034,10 @@ extension.color_sampler.palette.Palette.prototype = {
 			var baseRgbHexColor = this.clickedCell.rgbHexColor;
 			this.rgbHexColorMap.remove(baseRgbHexColor);
 			this.rgbHexColorMap.set(rgbHexColor,true);
-			var _g1 = 0;
-			var _g = this.rgbHexColorSet.length;
-			while(_g1 < _g) {
-				var i = _g1++;
-				if(this.rgbHexColorSet[i] != baseRgbHexColor) continue;
-				this.rgbHexColorSet.splice(i,1);
-				this.rgbHexColorSet.splice(i,0,rgbHexColor);
-				break;
-			}
+			var displayedFirstCellIndex = (extension.color_sampler.PageUI.instance == null?extension.color_sampler.PageUI.instance = new extension.color_sampler.PageUI():extension.color_sampler.PageUI.instance).pageNumber.index * this.PAGE_CELL_TOTAL;
+			var registeredIndex = this.clickedCell.index + displayedFirstCellIndex;
+			this.rgbHexColorSet.splice(registeredIndex,1);
+			this.rgbHexColorSet.splice(registeredIndex,0,rgbHexColor);
 		}
 		this.update();
 	}
@@ -1050,13 +1047,15 @@ extension.color_sampler.palette.LastFilledLine = $hxClasses["extension.color_sam
 extension.color_sampler.palette.LastFilledLine.ANOTHER_PAGE = ["ANOTHER_PAGE",0];
 extension.color_sampler.palette.LastFilledLine.ANOTHER_PAGE.__enum__ = extension.color_sampler.palette.LastFilledLine;
 extension.color_sampler.palette.LastFilledLine.INDEX = function(index) { var $x = ["INDEX",1,index]; $x.__enum__ = extension.color_sampler.palette.LastFilledLine; return $x; };
-extension.color_sampler.palette.Line = function(parentElement) {
+extension.color_sampler.palette.Line = function(parentElement,lineIndex) {
 	this.element = new $("<tr>").attr("class","line").appendTo(parentElement);
 	this.cells = [];
 	var _g = 0;
 	while(_g < 10) {
 		var i = _g++;
-		this.cells.push(new extension.color_sampler.palette.Cell(this.element));
+		var cellIndex = lineIndex * 10 + i;
+		var cell = new extension.color_sampler.palette.Cell(this.element,cellIndex);
+		this.cells.push(cell);
 	}
 };
 $hxClasses["extension.color_sampler.palette.Line"] = extension.color_sampler.palette.Line;
@@ -1081,19 +1080,20 @@ extension.color_sampler.palette.Line.prototype = {
 		}
 	}
 	,searchClickedCell: function() {
-		var _g = 0;
-		var _g1 = this.cells;
-		while(_g < _g1.length) {
-			var cell = _g1[_g];
-			++_g;
+		var _g1 = 0;
+		var _g = this.cells.length;
+		while(_g1 < _g) {
+			var i = _g1++;
+			var cell = this.cells[i];
 			if(cell.isClicked()) return cell;
 		}
 		return null;
 	}
 	,__class__: extension.color_sampler.palette.Line
 };
-extension.color_sampler.palette.Cell = function(parentElement) {
+extension.color_sampler.palette.Cell = function(parentElement,index) {
 	var _g = this;
+	this.index = index;
 	this.element = new $("<td>").attr("class","cell").appendTo(parentElement);
 	this.element.mousedown(function(event) {
 		if(_g.element.attr("class") == "cell editable" || _g.element.attr("class") == "cell active") _g.clicked = true;

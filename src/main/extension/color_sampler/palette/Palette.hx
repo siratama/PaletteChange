@@ -12,7 +12,7 @@ class Palette
 	public var rgbHexColorSet(default, null):Array<String>;
 	private var rgbHexColorMap:Map<String, Bool>;
 	private var allowDuplicateColor:Bool;
-	private var clickedCell:Cell;
+	public var clickedCell(default, null):Cell;
 	private var element:JQuery;
 
 	public function new(parentElement:JQuery, kind:PaletteKind)
@@ -25,7 +25,7 @@ class Palette
 		rgbHexColorMap = new Map();
 		rgbHexColorSet = [];
 		lines = [];
-		for (i in 0...LINE_TOTAL) lines.push(new Line(element));
+		for (i in 0...LINE_TOTAL) lines.push(new Line(element, i));
 		setEditableLastCell();
 	}
 
@@ -155,14 +155,11 @@ class Palette
 			rgbHexColorMap.remove(baseRgbHexColor);
 			rgbHexColorMap.set(rgbHexColor, true);
 
-			for (i in 0...rgbHexColorSet.length)
-			{
-				if(rgbHexColorSet[i] != baseRgbHexColor) continue;
+			var displayedFirstCellIndex = PageUI.instance.pageNumber.index * PAGE_CELL_TOTAL;
+			var registeredIndex = clickedCell.index + displayedFirstCellIndex;
 
-				rgbHexColorSet.splice(i, 1);
-				rgbHexColorSet.insert(i, rgbHexColor);
-				break;
-			}
+			rgbHexColorSet.splice(registeredIndex, 1);
+			rgbHexColorSet.insert(registeredIndex, rgbHexColor);
 		}
 		update();
 	}
@@ -179,14 +176,19 @@ class Line
 	public var cells(default, null):Array<Cell>;
 	private var element:JQuery;
 
-	public function new(parentElement:JQuery)
+	public function new(parentElement:JQuery, lineIndex:Int)
 	{
 		element = new JQuery("<tr>")
 			.attr("class", "line")
 			.appendTo(parentElement);
 
 		cells = [];
-		for (i in 0...CELL_TOTAL) cells.push(new Cell(element));
+		for (i in 0...CELL_TOTAL)
+		{
+			var cellIndex = lineIndex * CELL_TOTAL + i;
+			var cell = new Cell(element, cellIndex);
+			cells.push(cell);
+		}
 	}
 	public function update(rgbHexColorSet:Array<String>)
 	{
@@ -213,8 +215,9 @@ class Line
 	}
 	public function searchClickedCell():Cell
 	{
-		for (cell in cells)
+		for (i in 0...cells.length)
 		{
+			var cell = cells[i];
 			if(cell.isClicked()){
 				return cell;
 			}
@@ -225,6 +228,7 @@ class Line
 
 class Cell
 {
+	public var index(default, null):Int;
 	private var element:JQuery;
 	public var painted(default, null):Bool;
 	private static inline var EDITABLE = "cell editable";
@@ -239,8 +243,10 @@ class Cell
 		return n;
 	}
 
-	public function new(parentElement:JQuery)
+	public function new(parentElement:JQuery, index:Int)
 	{
+		this.index = index;
+
 		element = new JQuery("<td>")
 			.attr("class", "cell")
 			.appendTo(parentElement);

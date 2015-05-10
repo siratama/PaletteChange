@@ -21,8 +21,11 @@ class ColorPicker
 	{
 		csInterface = AbstractCSInterface.create();
 	}
-	public function show()
+	public function show(rgbHexValue:String)
 	{
+		if(rgbHexValue != null)
+			csInterface.evalScript('app.foregroundColor.rgb.hexValue = "$rgbHexValue";');
+
 		event = ColorPickerEvent.NONE;
 		csInterface.showColorPicker(true, function(bool)
 		{

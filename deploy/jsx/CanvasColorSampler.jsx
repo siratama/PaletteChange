@@ -976,6 +976,7 @@ js.Lib.alert = function(v) {
 };
 var CanvasColorSampler = $hxClasses["CanvasColorSampler"] = function() {
 	this.application = psd.Lib.app;
+	this.colorSamplePosition = new jsx.util.ColorSamplePosition();
 };
 CanvasColorSampler.__name__ = ["CanvasColorSampler"];
 CanvasColorSampler.main = function() {
@@ -1020,8 +1021,7 @@ CanvasColorSampler.prototype = {
 	}
 	,initialize: function() {
 		this.activeDocument = this.application.activeDocument;
-		this.activeDocumentHeight = this.activeDocument.height;
-		this.activeDocumentWidth = this.activeDocument.width;
+		this.colorSamplePosition.initialize(this.activeDocument);
 		var activeLayer = this.activeDocument.activeLayer;
 		this.layersDisplay = new jsx.util.LayersDisplay(this.activeDocument.layers);
 		this.layersDisplay.hide();
@@ -1041,13 +1041,13 @@ CanvasColorSampler.prototype = {
 		while(_g1 < _g) {
 			var y = _g1++;
 			var adjustY;
-			if(y == this.activeDocumentHeight) adjustY = y; else adjustY = y + 0.1;
+			if(y == this.colorSamplePosition.activeDocumentHeight) adjustY = y; else adjustY = y + 0.1;
 			var _g3 = this.positionX;
 			var _g2 = this.bounds.right | 0;
 			while(_g3 < _g2) {
 				var x = _g3++;
 				var adjustX;
-				if(x == this.activeDocumentWidth) adjustX = x; else adjustX = x + 0.1;
+				if(x == this.colorSamplePosition.activeDocumentWidth) adjustX = x; else adjustX = x + 0.1;
 				var colorSampler = this.activeDocument.colorSamplers.add([adjustX,adjustY]);
 				try {
 					var rgbHexValue = colorSampler.color.rgb.hexValue;
@@ -1100,6 +1100,22 @@ jsx.util.Bounds.prototype = {
 		return [this.left,this.top,this.right,this.bottom].join(":");
 	}
 	,__class__: jsx.util.Bounds
+};
+jsx.util.ColorSamplePosition = $hxClasses["jsx.util.ColorSamplePosition"] = function() {
+};
+jsx.util.ColorSamplePosition.__name__ = ["jsx","util","ColorSamplePosition"];
+jsx.util.ColorSamplePosition.prototype = {
+	initialize: function(activeDocument) {
+		this.activeDocumentWidth = activeDocument.width;
+		this.activeDocumentHeight = activeDocument.height;
+	}
+	,getAdjustX: function(x) {
+		if(x == this.activeDocumentWidth) return x; else return x + 0.1;
+	}
+	,getAdjustY: function(y) {
+		if(y == this.activeDocumentHeight) return y; else return y + 0.1;
+	}
+	,__class__: jsx.util.ColorSamplePosition
 };
 jsx.util.LayersDisplay = $hxClasses["jsx.util.LayersDisplay"] = function(layers) {
 	this.layers = layers;

@@ -1,4 +1,5 @@
 package extension;
+import extension.option.Setting;
 import common.PaletteChangeEvent.PaletteChangeInitialErrorEvent;
 import haxe.Unserializer;
 import common.ClassName;
@@ -62,7 +63,7 @@ class PaletteChangeRunner
 	private function initializeToChangePalette()
 	{
 		var data = Serializer.run(rgbHexValueSets);
-		csInterface.evalScript('$PALETTE_CHANGE_INSTANCE_NAME.execute("$data");');
+		csInterface.evalScript('$PALETTE_CHANGE_INSTANCE_NAME.execute("$data", ${Setting.instance.isIgnoredLockedLayerPaint()});');
 		mainFunction = changePalette;
 	}
 	private function changePalette()

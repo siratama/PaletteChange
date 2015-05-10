@@ -1,5 +1,6 @@
 package jsx.palette_change;
 
+import jsx.util.ColorSamplePosition;
 import psd.Lib;
 import psd.UnitValue;
 import jsx.util.Bounds;
@@ -19,14 +20,13 @@ using jsx.util.Bounds;
 class Converter
 {
 	private var mainFunction:Void->Void;
-	private var paletteMap:PaletteMap;
-	private var painter:Painter;
+	private var ignoreLockedLayer:Bool;
 	private var layersDisplay:LayersDisplay;
+	private var painter:Painter;
 	private var scanner:Scanner;
 
 	private var application:Application;
 	private var activeDocument:Document;
-	private var activeDocumentHeight:Float;
 	private var layers:Layers;
 
 	private var sampleLayerIndex:Int;
@@ -34,7 +34,6 @@ class Converter
 
 	public function new()
 	{
-		paletteMap = PaletteMap.instance;
 		application = app;
 		painter = new Painter();
 		scanner = new Scanner();
@@ -45,10 +44,10 @@ class Converter
 	}
 
 	//
-	public function initialize()
+	public function initialize(ignoreLockedLayer:Bool)
 	{
+		this.ignoreLockedLayer = ignoreLockedLayer;
 		activeDocument = application.activeDocument;
-		activeDocumentHeight = activeDocument.height;
 		layers = activeDocument.layers;
 
 		layersDisplay = new LayersDisplay(layers);
@@ -62,7 +61,11 @@ class Converter
 		if(sampleLayerIndex < layers.length)
 		{
 			sampleLayer = layers[sampleLayerIndex];
-			if(sampleLayer.allLocked){
+
+			if(cast(sampleLayer, ArtLayer).isBackgroundLayer){
+				sampleLayerIndex++;
+			}
+			else if(ignoreLockedLayer && sampleLayer.allLocked){
 				sampleLayerIndex++;
 			}
 			else{
@@ -139,8 +142,6 @@ private class Scanner
 	private var mainFunction:Void->Void;
 	private var paletteMap:PaletteMap;
 	private var activeDocument:Document;
-	private var activeDocumentHeight:Float;
-	private var activeDocumentWidth:Float;
 
 	private var scanPixelCount:Int;
 	private static inline var ONCE_SCAN_PIXEL = 10;
@@ -149,6 +150,7 @@ private class Scanner
 	private var sampleBounds:Bounds;
 	private var samplePositionX:Int;
 	private var samplePositionY:Int;
+	private var colorSamplePosition:ColorSamplePosition;
 
 	public var conversionDataSet(default, null):Array<ConversionData>;
 	private var conversionRgbHexValueMap:Map<String, Bool>;
@@ -156,6 +158,7 @@ private class Scanner
 	public function new()
 	{
 		paletteMap = PaletteMap.instance;
+		colorSamplePosition = new ColorSamplePosition();
 	}
 	public function run()
 	{
@@ -164,8 +167,7 @@ private class Scanner
 	public function initialize(activeDocument:Document, sampleLayer:Layer)
 	{
 		this.activeDocument = activeDocument;
-		activeDocumentHeight = activeDocument.height;
-		activeDocumentWidth = activeDocument.width;
+		colorSamplePosition.initialize(activeDocument);
 
 		activeDocument.activeLayer = sampleLayer;
 
@@ -186,11 +188,11 @@ private class Scanner
 		scanPixelCount = 0;
 		for (y in samplePositionY...Std.int(sampleBounds.bottom))
 		{
-			var adjustY = (y == activeDocumentHeight) ? y : y + 0.1;
+			var adjustY = colorSamplePosition.getAdjustY(y);
 
 			for (x in samplePositionX...Std.int(sampleBounds.right))
 			{
-				var adjustX = (x == activeDocumentWidth) ? x : x + 0.1;
+				var adjustX = colorSamplePosition.getAdjustX(x);
 				var colorSampler = activeDocument.colorSamplers.add([adjustX, adjustY]);
 
 				try{
@@ -241,9 +243,16 @@ private class Painter
 
 	private var conversionDataSet:Array<ConversionData>;
 	private var paintedConversionData:ConversionData;
+	private var colorSamplePosition:ColorSamplePosition;
+	
+	private var leftTopPixelWasTransparent:Bool;
+	private var rightBottomPixelWasTransparent:Bool;
+
+	private var wasLocked:Bool;
 
 	public function new()
 	{
+		colorSamplePosition = new ColorSamplePosition();
 	}
 	public function run()
 	{
@@ -254,6 +263,13 @@ private class Painter
 		this.activeDocument = activeDocument;
 		this.conversionDataSet = conversionDataSet;
 		this.sampleLayer = sampleLayer;
+
+		if(sampleLayer.allLocked){
+			sampleLayer.allLocked = false;
+			wasLocked = true;
+		}
+
+		colorSamplePosition.initialize(activeDocument);
 
 		duplicatedPaintLayer = sampleLayer.duplicate();
 		mainFunction = setPaintedConversionData;
@@ -294,9 +310,9 @@ private class Painter
 		//https://forums.adobe.com/thread/1355933
 		//cast(duplicatedPaintLayer, ArtLayer).merge();
 
-		//fill for copy: [0, 0], [doc.width][doc.height]
+		leftTopPixelWasTransparent = fillPixel(0, 0);
+		rightBottomPixelWasTransparent = fillPixel(Std.int(activeDocument.width) - 1, Std.int(activeDocument.height) - 1);
 
-		//substitute
 		activeDocument.selection.selectAll();
 		activeDocument.selection.copy(false);
 		activeDocument.activeLayer.remove();
@@ -304,10 +320,47 @@ private class Painter
 		activeDocument.selection.clear();
 		activeDocument.paste(false);
 
+		if(leftTopPixelWasTransparent) clearPixel(0, 0);
+		if(rightBottomPixelWasTransparent) clearPixel(Std.int(activeDocument.width) - 1, Std.int(activeDocument.height) - 1);
+
 		if(!cast(sampleLayer, ArtLayer).isBackgroundLayer)
 			sampleLayer.visible = false;
 
+		if(wasLocked){
+			sampleLayer.allLocked = true;
+		}
 		mainFunction = finish;
+	}
+	private function fillPixel(x:Int, y:Int):Bool
+	{
+		var sampleX = colorSamplePosition.getAdjustX(x);
+		var sampleY = colorSamplePosition.getAdjustX(y);
+
+		var isTransparent:Bool = true;
+		var colorSampler = activeDocument.colorSamplers.add([sampleX, sampleY]);
+		try{
+			var hexValue = colorSampler.color.rgb.hexValue;
+			isTransparent = false;
+		}
+		//colorSampler.color is transparent
+		catch(error:Dynamic){}
+
+		colorSampler.remove();
+		if(!isTransparent) return false;
+
+		selectPixel(x, y);
+		var color = new SolidColor();
+		color.rgb.hexValue = "ff0000";
+		activeDocument.selection.fill(color);
+		activeDocument.selection.deselect();
+
+		return true;
+	}
+	private function clearPixel(x:Int, y:Int)
+	{
+		selectPixel(x, y);
+		activeDocument.selection.clear();
+		activeDocument.selection.deselect();
 	}
 
 	private function finish(){}

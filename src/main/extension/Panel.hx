@@ -106,17 +106,19 @@ class Panel
 			initializeToCallPaletteChange();
 		}
 		else if(canvasColorSamplerUI.paletteContainer.before.palette.searchClickedCell()){
-			initializeToCallColorPicker(PaletteKind.BEFORE);
+			initializeToCallColorPicker(PaletteKind.BEFORE,
+				canvasColorSamplerUI.paletteContainer.before.palette.clickedCell.rgbHexColor);
 		}
 		else if(canvasColorSamplerUI.paletteContainer.after.palette.searchClickedCell()){
-			initializeToCallColorPicker(PaletteKind.AFTER);
+			initializeToCallColorPicker(PaletteKind.AFTER,
+				canvasColorSamplerUI.paletteContainer.after.palette.clickedCell.rgbHexColor);
 		}
 	}
 	//
-	private function initializeToCallColorPicker(paletteKind:PaletteKind)
+	private function initializeToCallColorPicker(paletteKind:PaletteKind, rgbHexColor:String)
 	{
 		this.selectedPaletteKind = paletteKind;
-		colorPicker.show();
+		colorPicker.show(rgbHexColor);
 		changeRunning(callColorPicker, TIMER_SPEED_RUNNING);
 	}
 	private function callColorPicker()

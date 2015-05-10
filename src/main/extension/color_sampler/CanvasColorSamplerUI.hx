@@ -71,5 +71,6 @@ class CanvasColorSamplerUI
 			case PaletteKind.AFTER: paletteContainer.after.palette;
 		}
 		palette.changeCellColor(rgbHexColor);
+		updatePageIndex();
 	}
 }
