@@ -21,39 +21,7 @@ class PaletteChange
 	}
 
 	public static function main(){
-		//test();
-	}
-	public static function test()
-	{
-		var paletteChange = new PaletteChange();
-		switch(Unserializer.run(paletteChange.getInitialErrorEvent()))
-		{
-			case PaletteChangeInitialErrorEvent.ERROR(message):
-				js.Lib.alert(message);
-				return;
-			case PaletteChangeInitialErrorEvent.NONE:
-				"";
-		}
-
-		var arr = [["FF0000"], ["0000FF"]];
-		//var arr = [[], []];
-		var code = Serializer.run(arr);
-		//paletteChange.execute(code, false);
-		paletteChange.execute(code, true);
-
-		for (i in 0...100)
-		{
-			paletteChange.run();
-			var result = paletteChange.getSerializedEvent();
-			var event:PaletteChangeEvent = Unserializer.run(result);
-			switch(event)
-			{
-				case PaletteChangeEvent.NONE: "";
-				case PaletteChangeEvent.SUCCESS:
-					js.Lib.alert("success!");
-					break;
-			}
-		}
+		//PaletteChangeTest.execute();
 	}
 
 	public function new()
@@ -95,5 +63,41 @@ class PaletteChange
 	public function interrupt()
 	{
 		converter.interrupt();
+	}
+}
+
+private class PaletteChangeTest
+{
+	public static function execute()
+	{
+		var paletteChange = new PaletteChange();
+		switch(Unserializer.run(paletteChange.getInitialErrorEvent()))
+		{
+			case PaletteChangeInitialErrorEvent.ERROR(message):
+				js.Lib.alert(message);
+				return;
+			case PaletteChangeInitialErrorEvent.NONE:
+				"";
+		}
+
+		var arr = [["FF0000"], ["0000FF"]];
+		//var arr = [[], []];
+		var code = Serializer.run(arr);
+		//paletteChange.execute(code, false);
+		paletteChange.execute(code, true);
+
+		for (i in 0...100)
+		{
+			paletteChange.run();
+			var result = paletteChange.getSerializedEvent();
+			var event:PaletteChangeEvent = Unserializer.run(result);
+			switch(event)
+			{
+				case PaletteChangeEvent.NONE: "";
+				case PaletteChangeEvent.SUCCESS:
+					js.Lib.alert("success!");
+					break;
+			}
+		}
 	}
 }

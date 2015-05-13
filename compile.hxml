@@ -23,4 +23,18 @@
 -cp src/extern
 -D js-classic
 
+--next
 
+-js deploy/jsx/PixelSelecter.jsx
+-main jsx.color_picker.PixelSelecter
+-cp src/main
+-cp src/extern
+-D js-classic
+
+--next
+
+-js deploy/jsx/PixelColorSearch.jsx
+-main jsx.color_picker.PixelColorSearch
+-cp src/main
+-cp src/extern
+-D js-classic

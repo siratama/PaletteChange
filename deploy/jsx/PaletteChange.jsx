@@ -1222,7 +1222,37 @@ var PaletteChange = $hxClasses["PaletteChange"] = function() {
 PaletteChange.__name__ = ["PaletteChange"];
 PaletteChange.main = function() {
 };
-PaletteChange.test = function() {
+PaletteChange.prototype = {
+	getSerializedEvent: function() {
+		return haxe.Serializer.run(this.event);
+	}
+	,getInitialErrorEvent: function() {
+		var event;
+		if(this.application.documents.length == 0) event = common.PaletteChangeInitialErrorEvent.ERROR("Open document."); else event = common.PaletteChangeInitialErrorEvent.NONE;
+		return haxe.Serializer.run(event);
+	}
+	,run: function() {
+		this.mainFunction();
+	}
+	,execute: function(code,ignoreLockedLayer) {
+		this.event = common.PaletteChangeEvent.NONE;
+		this.paletteMap.convert(code);
+		this.converter.initialize(ignoreLockedLayer);
+		this.mainFunction = $bind(this,this.convert);
+	}
+	,convert: function() {
+		this.converter.run();
+		if(this.converter.isFinished()) this.event = common.PaletteChangeEvent.SUCCESS;
+	}
+	,interrupt: function() {
+		this.converter.interrupt();
+	}
+	,__class__: PaletteChange
+};
+if(!jsx.palette_change._PaletteChange) jsx.palette_change._PaletteChange = {};
+jsx.palette_change._PaletteChange.PaletteChangeTest = $hxClasses["jsx.palette_change._PaletteChange.PaletteChangeTest"] = function() { };
+jsx.palette_change._PaletteChange.PaletteChangeTest.__name__ = ["jsx","palette_change","_PaletteChange","PaletteChangeTest"];
+jsx.palette_change._PaletteChange.PaletteChangeTest.execute = function() {
 	var paletteChange = new PaletteChange();
 	{
 		var _g = haxe.Unserializer.run(paletteChange.getInitialErrorEvent());
@@ -1257,33 +1287,6 @@ PaletteChange.test = function() {
 			}
 		}
 	} catch( e ) { if( e != "__break__" ) throw e; }
-};
-PaletteChange.prototype = {
-	getSerializedEvent: function() {
-		return haxe.Serializer.run(this.event);
-	}
-	,getInitialErrorEvent: function() {
-		var event;
-		if(this.application.documents.length == 0) event = common.PaletteChangeInitialErrorEvent.ERROR("Open document."); else event = common.PaletteChangeInitialErrorEvent.NONE;
-		return haxe.Serializer.run(event);
-	}
-	,run: function() {
-		this.mainFunction();
-	}
-	,execute: function(code,ignoreLockedLayer) {
-		this.event = common.PaletteChangeEvent.NONE;
-		this.paletteMap.convert(code);
-		this.converter.initialize(ignoreLockedLayer);
-		this.mainFunction = $bind(this,this.convert);
-	}
-	,convert: function() {
-		this.converter.run();
-		if(this.converter.isFinished()) this.event = common.PaletteChangeEvent.SUCCESS;
-	}
-	,interrupt: function() {
-		this.converter.interrupt();
-	}
-	,__class__: PaletteChange
 };
 jsx.palette_change.PaletteMap = $hxClasses["jsx.palette_change.PaletteMap"] = function() {
 };

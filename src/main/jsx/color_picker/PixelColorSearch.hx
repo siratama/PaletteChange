@@ -1,48 +1,45 @@
-package jsx.color_sampler;
+package jsx.color_picker;
 
-import jsx.util.ColorSamplePosition;
+import common.PixelSelecterEvent.PixelSelecterInitialErrorEvent;
+import common.PixelColorSearchEvent;
 import jsx.util.Bounds;
-import psd.LayerTypeName;
-import common.CanvasColorSamplerEvent;
 import psd.ArtLayer;
-import haxe.Unserializer;
-import haxe.Serializer;
-import psd.Layer;
 import jsx.util.LayersDisplay;
-import psd.Document;
-import psd.Layers;
+import common.PixelColorSearchEvent.PixelColorSearchInitialErrorEvent;
+import haxe.Serializer;
+import haxe.Unserializer;
+import jsx.util.ColorSamplePosition;
 import psd.Application;
+import psd.Document;
 import psd.Lib.app;
 
 using jsx.util.Bounds;
 
-@:native("CanvasColorSampler")
-class CanvasColorSampler
+@:native("PixelColorSearch")
+class PixelColorSearch
 {
 	private var mainFunction:Void->Void;
 	private var application:Application;
 	private var activeDocument:Document;
 	private var colorSamplePosition:ColorSamplePosition;
 	private var layersDisplay:LayersDisplay;
-	private var interruptCommand:Bool;
 
-	private var rgbHexValueSet:Array<String>;
-	private var rgbHexValueMap:Map<String, Bool>;
+	private var checkedRgbHexValue:String;
 	private var bounds:Bounds;
 	private var positionX:Int;
 	private var positionY:Int;
 	private var scanPixelCount:Int;
 	private static inline var ONCE_SCAN_PIXEL = 10;
 
-	private var event:CanvasColorSamplerEvent;
+	private var event:PixelColorSearchEvent;
 	public function getSerializedEvent():String{
 		return Serializer.run(event);
 	}
 
-	public static function main(){
-		//CanvasColorSamplerTest.execute();
+	public static function main()
+	{
+		PixelColorSearchTest.execute();
 	}
-
 	public function new()
 	{
 		application = app;
@@ -56,15 +53,15 @@ class CanvasColorSampler
 	{
 		var event =
 			(application.documents.length == 0) ?
-				CanvasColorSamplerInitialErrorEvent.ERROR("Open document."):
-			(application.activeDocument.activeLayer.typename == LayerTypeName.LAYER_SET) ?
-				CanvasColorSamplerInitialErrorEvent.ERROR("Select layer."):
-				CanvasColorSamplerInitialErrorEvent.NONE;
+				PixelColorSearchInitialErrorEvent.ERROR("Open document."):
+				PixelColorSearchInitialErrorEvent.NONE;
 
 		return Serializer.run(event);
 	}
-	public function initialize()
+	public function initialize(checkedRgbHexValue:String)
 	{
+		this.checkedRgbHexValue = checkedRgbHexValue;
+
 		activeDocument = application.activeDocument;
 		colorSamplePosition.initialize(activeDocument);
 		var activeLayer = activeDocument.activeLayer;
@@ -77,11 +74,9 @@ class CanvasColorSampler
 
 		bounds = activeLayer.bounds.convert();
 
-		rgbHexValueSet = [];
-		rgbHexValueMap = new Map();
 		positionX = Std.int(bounds.left);
 		positionY = Std.int(bounds.top);
-		event = CanvasColorSamplerEvent.NONE;
+		event = PixelColorSearchEvent.NONE;
 		mainFunction = scan;
 	}
 	private function scan()
@@ -98,13 +93,14 @@ class CanvasColorSampler
 
 				try{
 					var rgbHexValue = colorSampler.color.rgb.hexValue;
-
-					//call Map.exists method is error from extension panel
-					if(!rgbHexValueMap[rgbHexValue])
+					if(rgbHexValue == checkedRgbHexValue)
 					{
-						rgbHexValueSet.push(rgbHexValue);
-						rgbHexValueMap.set(rgbHexValue, true);
+						selectSimilar(x, y);
+						event = PixelColorSearchEvent.SELECTED(x, y);
+						mainFunction = finish;
+						return;
 					}
+
 				//colorSampler.color is transparent
 				}catch(error:Dynamic){}
 
@@ -116,6 +112,7 @@ class CanvasColorSampler
 			}
 			positionX = Std.int(bounds.left);
 		}
+		event = PixelColorSearchEvent.UNSELECTED;
 		mainFunction = finish;
 	}
 	private function adjustPosition(x:Int, y:Int)
@@ -127,10 +124,19 @@ class CanvasColorSampler
 			positionY++;
 		}
 	}
+	private function selectSimilar(x:Int, y:Int)
+	{
+		activeDocument.selection.deselect();
+		selectPixel(x, y);
+		activeDocument.selection.similar(0, false);
+	}
+	private function selectPixel(x:Int, y:Int)
+	{
+		activeDocument.selection.select([[x, y], [x+1, y], [x+1, y+1], [x, y+1]]);
+	}
 	private function finish()
 	{
 		layersDisplay.restore();
-		event = CanvasColorSamplerEvent.RESULT(rgbHexValueSet);
 	}
 	public function interrupt()
 	{
@@ -138,30 +144,38 @@ class CanvasColorSampler
 	}
 }
 
-private class CanvasColorSamplerTest
+private class PixelColorSearchTest
 {
 	public static function execute()
 	{
-		var canvasColorSampler = new CanvasColorSampler();
-		var initialErrorEvent = Unserializer.run(canvasColorSampler.getInitialErrorEvent());
-		switch(initialErrorEvent){
-			case CanvasColorSamplerInitialErrorEvent.ERROR(message):
+		var pixelColorSearch = new PixelColorSearch();
+		var errorEvent:PixelSelecterInitialErrorEvent = Unserializer.run(pixelColorSearch.getInitialErrorEvent());
+		switch(errorEvent)
+		{
+			case PixelSelecterInitialErrorEvent.ERROR(message):
 				js.Lib.alert(message);
 				return;
-			case CanvasColorSamplerInitialErrorEvent.NONE:
-				"";
+			case PixelSelecterInitialErrorEvent.NONE: "";
 		}
 
-		canvasColorSampler.initialize();
-		canvasColorSampler.run();
-		canvasColorSampler.run();
-		var result = canvasColorSampler.getSerializedEvent();
-		var event:CanvasColorSamplerEvent = Unserializer.run(result);
-		switch(event)
-		{
-			case CanvasColorSamplerEvent.NONE: return;
-			case CanvasColorSamplerEvent.RESULT(rgbHexColorSet):
-				js.Lib.alert(rgbHexColorSet);
+		var checkedRgbHexColor = "FF0000";
+		pixelColorSearch.initialize(checkedRgbHexColor);
+
+		var i = 0;
+		while(i < 100){
+			pixelColorSearch.run();
+			var result = pixelColorSearch.getSerializedEvent();
+			var event:PixelColorSearchEvent = Unserializer.run(result);
+			switch(event)
+			{
+				case PixelColorSearchEvent.NONE: "";
+				case PixelColorSearchEvent.UNSELECTED:
+					js.Lib.alert("unselected");
+					break;
+				case PixelColorSearchEvent.SELECTED:
+					js.Lib.alert("selected!");
+					break;
+			}
 		}
 	}
 }

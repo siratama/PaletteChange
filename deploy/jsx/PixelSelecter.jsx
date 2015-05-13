@@ -219,16 +219,18 @@ Type["typeof"] = function(v) {
 	}
 };
 var common = common || {};
-common.CanvasColorSamplerEvent = $hxClasses["common.CanvasColorSamplerEvent"] = { __ename__ : ["common","CanvasColorSamplerEvent"], __constructs__ : ["NONE","RESULT"] };
-common.CanvasColorSamplerEvent.NONE = ["NONE",0];
-common.CanvasColorSamplerEvent.NONE.toString = $estr;
-common.CanvasColorSamplerEvent.NONE.__enum__ = common.CanvasColorSamplerEvent;
-common.CanvasColorSamplerEvent.RESULT = function(rgbHexColorSet) { var $x = ["RESULT",1,rgbHexColorSet]; $x.__enum__ = common.CanvasColorSamplerEvent; $x.toString = $estr; return $x; };
-common.CanvasColorSamplerInitialErrorEvent = $hxClasses["common.CanvasColorSamplerInitialErrorEvent"] = { __ename__ : ["common","CanvasColorSamplerInitialErrorEvent"], __constructs__ : ["NONE","ERROR"] };
-common.CanvasColorSamplerInitialErrorEvent.NONE = ["NONE",0];
-common.CanvasColorSamplerInitialErrorEvent.NONE.toString = $estr;
-common.CanvasColorSamplerInitialErrorEvent.NONE.__enum__ = common.CanvasColorSamplerInitialErrorEvent;
-common.CanvasColorSamplerInitialErrorEvent.ERROR = function(message) { var $x = ["ERROR",1,message]; $x.__enum__ = common.CanvasColorSamplerInitialErrorEvent; $x.toString = $estr; return $x; };
+common.PixelSelecterEvent = $hxClasses["common.PixelSelecterEvent"] = { __ename__ : ["common","PixelSelecterEvent"], __constructs__ : ["SELECTED","UNSELECTED"] };
+common.PixelSelecterEvent.SELECTED = ["SELECTED",0];
+common.PixelSelecterEvent.SELECTED.toString = $estr;
+common.PixelSelecterEvent.SELECTED.__enum__ = common.PixelSelecterEvent;
+common.PixelSelecterEvent.UNSELECTED = ["UNSELECTED",1];
+common.PixelSelecterEvent.UNSELECTED.toString = $estr;
+common.PixelSelecterEvent.UNSELECTED.__enum__ = common.PixelSelecterEvent;
+common.PixelSelecterInitialErrorEvent = $hxClasses["common.PixelSelecterInitialErrorEvent"] = { __ename__ : ["common","PixelSelecterInitialErrorEvent"], __constructs__ : ["NONE","ERROR"] };
+common.PixelSelecterInitialErrorEvent.NONE = ["NONE",0];
+common.PixelSelecterInitialErrorEvent.NONE.toString = $estr;
+common.PixelSelecterInitialErrorEvent.NONE.__enum__ = common.PixelSelecterInitialErrorEvent;
+common.PixelSelecterInitialErrorEvent.ERROR = function(message) { var $x = ["ERROR",1,message]; $x.__enum__ = common.PixelSelecterInitialErrorEvent; $x.toString = $estr; return $x; };
 var haxe = haxe || {};
 haxe.Serializer = $hxClasses["haxe.Serializer"] = function() {
 	this.buf = new StringBuf();
@@ -854,9 +856,6 @@ haxe.io.Eof.prototype = {
 var js = js || {};
 js.Boot = $hxClasses["js.Boot"] = function() { };
 js.Boot.__name__ = ["js","Boot"];
-js.Boot.getClass = function(o) {
-	if((o instanceof Array) && o.__enum__ == null) return Array; else return o.__class__;
-};
 js.Boot.__string_rec = function(o,s) {
 	if(o == null) return "null";
 	if(s.length >= 5) return "<...>";
@@ -924,187 +923,74 @@ js.Boot.__string_rec = function(o,s) {
 		return String(o);
 	}
 };
-js.Boot.__interfLoop = function(cc,cl) {
-	if(cc == null) return false;
-	if(cc == cl) return true;
-	var intf = cc.__interfaces__;
-	if(intf != null) {
-		var _g1 = 0;
-		var _g = intf.length;
-		while(_g1 < _g) {
-			var i = _g1++;
-			var i1 = intf[i];
-			if(i1 == cl || js.Boot.__interfLoop(i1,cl)) return true;
-		}
-	}
-	return js.Boot.__interfLoop(cc.__super__,cl);
-};
-js.Boot.__instanceof = function(o,cl) {
-	if(cl == null) return false;
-	switch(cl) {
-	case Int:
-		return (o|0) === o;
-	case Float:
-		return typeof(o) == "number";
-	case Bool:
-		return typeof(o) == "boolean";
-	case String:
-		return typeof(o) == "string";
-	case Array:
-		return (o instanceof Array) && o.__enum__ == null;
-	case Dynamic:
-		return true;
-	default:
-		if(o != null) {
-			if(typeof(cl) == "function") {
-				if(o instanceof cl) return true;
-				if(js.Boot.__interfLoop(js.Boot.getClass(o),cl)) return true;
-			}
-		} else return false;
-		if(cl == Class && o.__name__ != null) return true;
-		if(cl == Enum && o.__ename__ != null) return true;
-		return o.__enum__ == cl;
-	}
-};
-js.Boot.__cast = function(o,t) {
-	if(js.Boot.__instanceof(o,t)) return o; else throw "Cannot cast " + Std.string(o) + " to " + Std.string(t);
-};
 js.Lib = $hxClasses["js.Lib"] = function() { };
 js.Lib.__name__ = ["js","Lib"];
 js.Lib.alert = function(v) {
 	alert(js.Boot.__string_rec(v,""));
 };
-var CanvasColorSampler = $hxClasses["CanvasColorSampler"] = function() {
+var PixelSelecter = $hxClasses["PixelSelecter"] = function() {
 	this.application = psd.Lib.app;
 	this.colorSamplePosition = new jsx.util.ColorSamplePosition();
 };
-CanvasColorSampler.__name__ = ["CanvasColorSampler"];
-CanvasColorSampler.main = function() {
+PixelSelecter.__name__ = ["PixelSelecter"];
+PixelSelecter.main = function() {
+	jsx.color_picker._PixelSelecter.PixelSelecterTest.execute();
 };
-CanvasColorSampler.prototype = {
-	getSerializedEvent: function() {
-		return haxe.Serializer.run(this.event);
-	}
-	,run: function() {
-		this.mainFunction();
-	}
-	,getInitialErrorEvent: function() {
+PixelSelecter.prototype = {
+	getInitialErrorEvent: function() {
 		var event;
-		if(this.application.documents.length == 0) event = common.CanvasColorSamplerInitialErrorEvent.ERROR("Open document."); else if(this.application.activeDocument.activeLayer.typename == LayerTypeName.LAYER_SET) event = common.CanvasColorSamplerInitialErrorEvent.ERROR("Select layer."); else event = common.CanvasColorSamplerInitialErrorEvent.NONE;
+		if(this.application.documents.length == 0) event = common.PixelSelecterInitialErrorEvent.ERROR("Open document."); else event = common.PixelSelecterInitialErrorEvent.NONE;
 		return haxe.Serializer.run(event);
 	}
-	,initialize: function() {
+	,execute: function(rgbHexValue,positionX,positionY) {
 		this.activeDocument = this.application.activeDocument;
 		this.colorSamplePosition.initialize(this.activeDocument);
-		var activeLayer = this.activeDocument.activeLayer;
-		this.layersDisplay = new jsx.util.LayersDisplay(this.activeDocument.layers);
-		this.layersDisplay.hide();
-		if(!(js.Boot.__cast(activeLayer , ArtLayer)).isBackgroundLayer) activeLayer.visible = true;
-		this.bounds = jsx.util.Bounds.convert(activeLayer.bounds);
-		this.rgbHexValueSet = [];
-		this.rgbHexValueMap = new haxe.ds.StringMap();
-		this.positionX = this.bounds.left | 0;
-		this.positionY = this.bounds.top | 0;
-		this.event = common.CanvasColorSamplerEvent.NONE;
-		this.mainFunction = $bind(this,this.scan);
-	}
-	,scan: function() {
-		this.scanPixelCount = 0;
-		var _g1 = this.positionY;
-		var _g = this.bounds.bottom | 0;
-		while(_g1 < _g) {
-			var y = _g1++;
-			var adjustY;
-			if(y == this.colorSamplePosition.activeDocumentHeight) adjustY = y; else adjustY = y + 0.1;
-			var _g3 = this.positionX;
-			var _g2 = this.bounds.right | 0;
-			while(_g3 < _g2) {
-				var x = _g3++;
-				var adjustX;
-				if(x == this.colorSamplePosition.activeDocumentWidth) adjustX = x; else adjustX = x + 0.1;
-				var colorSampler = this.activeDocument.colorSamplers.add([adjustX,adjustY]);
-				try {
-					var rgbHexValue = colorSampler.color.rgb.hexValue;
-					if(!this.rgbHexValueMap.get(rgbHexValue)) {
-						this.rgbHexValueSet.push(rgbHexValue);
-						this.rgbHexValueMap.set(rgbHexValue,true);
-					}
-				} catch( error ) {
-				}
-				colorSampler.remove();
-				if(++this.scanPixelCount < 10) continue;
-				this.adjustPosition(x,y);
-				return;
+		var event = common.PixelSelecterEvent.UNSELECTED;
+		var adjustX;
+		if(positionX == this.colorSamplePosition.activeDocumentWidth) adjustX = positionX; else adjustX = positionX + 0.1;
+		var adjustY;
+		if(positionY == this.colorSamplePosition.activeDocumentHeight) adjustY = positionY; else adjustY = positionY + 0.1;
+		var colorSampler = this.activeDocument.colorSamplers.add([adjustX,adjustY]);
+		try {
+			var checkedRgbHexValue = colorSampler.color.rgb.hexValue;
+			if(rgbHexValue == checkedRgbHexValue) {
+				this.activeDocument.selection.deselect();
+				this.selectPixel(positionX,positionX);
+				this.activeDocument.selection.similar(0,false);
+				event = common.PixelSelecterEvent.SELECTED;
 			}
-			this.positionX = this.bounds.left | 0;
+		} catch( error ) {
 		}
-		this.mainFunction = $bind(this,this.finish);
+		colorSampler.remove();
+		return haxe.Serializer.run(event);
 	}
-	,adjustPosition: function(x,y) {
-		this.positionX = x + 1;
-		this.positionY = y;
-		if(this.positionX >= (this.bounds.right | 0)) {
-			this.positionX = this.bounds.left | 0;
-			this.positionY++;
-		}
+	,selectPixel: function(x,y) {
+		this.activeDocument.selection.select([[x,y],[x + 1,y],[x + 1,y + 1],[x,y + 1]]);
 	}
-	,finish: function() {
-		this.layersDisplay.restore();
-		this.event = common.CanvasColorSamplerEvent.RESULT(this.rgbHexValueSet);
-	}
-	,interrupt: function() {
-		this.layersDisplay.restore();
-	}
-	,__class__: CanvasColorSampler
+	,__class__: PixelSelecter
 };
 var jsx = jsx || {};
-if(!jsx.color_sampler) jsx.color_sampler = {};
-if(!jsx.color_sampler._CanvasColorSampler) jsx.color_sampler._CanvasColorSampler = {};
-jsx.color_sampler._CanvasColorSampler.CanvasColorSamplerTest = $hxClasses["jsx.color_sampler._CanvasColorSampler.CanvasColorSamplerTest"] = function() { };
-jsx.color_sampler._CanvasColorSampler.CanvasColorSamplerTest.__name__ = ["jsx","color_sampler","_CanvasColorSampler","CanvasColorSamplerTest"];
-jsx.color_sampler._CanvasColorSampler.CanvasColorSamplerTest.execute = function() {
-	var canvasColorSampler = new CanvasColorSampler();
-	var initialErrorEvent = haxe.Unserializer.run(canvasColorSampler.getInitialErrorEvent());
-	switch(initialErrorEvent[1]) {
+if(!jsx.color_picker) jsx.color_picker = {};
+if(!jsx.color_picker._PixelSelecter) jsx.color_picker._PixelSelecter = {};
+jsx.color_picker._PixelSelecter.PixelSelecterTest = $hxClasses["jsx.color_picker._PixelSelecter.PixelSelecterTest"] = function() { };
+jsx.color_picker._PixelSelecter.PixelSelecterTest.__name__ = ["jsx","color_picker","_PixelSelecter","PixelSelecterTest"];
+jsx.color_picker._PixelSelecter.PixelSelecterTest.execute = function() {
+	var pixelSelecter = new PixelSelecter();
+	var errorEvent = haxe.Unserializer.run(pixelSelecter.getInitialErrorEvent());
+	switch(errorEvent[1]) {
 	case 1:
-		var message = initialErrorEvent[2];
+		var message = errorEvent[2];
 		js.Lib.alert(message);
 		return;
 	case 0:
 		"";
 		break;
 	}
-	canvasColorSampler.initialize();
-	canvasColorSampler.run();
-	canvasColorSampler.run();
-	var result = canvasColorSampler.getSerializedEvent();
+	var result = pixelSelecter.execute("FF0000",0,0);
 	var event = haxe.Unserializer.run(result);
-	switch(event[1]) {
-	case 0:
-		return;
-	case 1:
-		var rgbHexColorSet = event[2];
-		js.Lib.alert(rgbHexColorSet);
-		break;
-	}
+	js.Lib.alert(event);
 };
 if(!jsx.util) jsx.util = {};
-jsx.util.Bounds = $hxClasses["jsx.util.Bounds"] = function(left,top,right,bottom) {
-	this.left = left;
-	this.top = top;
-	this.right = right;
-	this.bottom = bottom;
-};
-jsx.util.Bounds.__name__ = ["jsx","util","Bounds"];
-jsx.util.Bounds.convert = function(bounds) {
-	return new jsx.util.Bounds(bounds[0].value,bounds[1].value,bounds[2].value,bounds[3].value);
-};
-jsx.util.Bounds.prototype = {
-	toString: function() {
-		return [this.left,this.top,this.right,this.bottom].join(":");
-	}
-	,__class__: jsx.util.Bounds
-};
 jsx.util.ColorSamplePosition = $hxClasses["jsx.util.ColorSamplePosition"] = function() {
 };
 jsx.util.ColorSamplePosition.__name__ = ["jsx","util","ColorSamplePosition"];
@@ -1121,51 +1007,6 @@ jsx.util.ColorSamplePosition.prototype = {
 	}
 	,__class__: jsx.util.ColorSamplePosition
 };
-jsx.util.LayersDisplay = $hxClasses["jsx.util.LayersDisplay"] = function(layers) {
-	this.layers = layers;
-	this.defaultLayerVisibleSet = [];
-	this.layersDisplayMap = new haxe.ds.ObjectMap();
-};
-jsx.util.LayersDisplay.__name__ = ["jsx","util","LayersDisplay"];
-jsx.util.LayersDisplay.prototype = {
-	hide: function() {
-		var _g1 = 0;
-		var _g = this.layers.length;
-		while(_g1 < _g) {
-			var i = _g1++;
-			var layer = this.layers[i];
-			if(layer.typename == LayerTypeName.LAYER_SET) {
-				var layerSet;
-				layerSet = js.Boot.__cast(layer , LayerSet);
-				var layersDisplay = new jsx.util.LayersDisplay(layerSet.layers);
-				layersDisplay.hide();
-				this.layersDisplayMap.set(layerSet,layersDisplay);
-				continue;
-			}
-			if((js.Boot.__cast(layer , ArtLayer)).isBackgroundLayer) continue;
-			this.defaultLayerVisibleSet[i] = layer.visible;
-			layer.visible = false;
-		}
-	}
-	,restore: function() {
-		var _g1 = 0;
-		var _g = this.layers.length;
-		while(_g1 < _g) {
-			var i = _g1++;
-			var layer = this.layers[i];
-			if(layer.typename == LayerTypeName.LAYER_SET) {
-				var layerSet;
-				layerSet = js.Boot.__cast(layer , LayerSet);
-				var layersDisplay = this.layersDisplayMap.h[layerSet.__id__];
-				layersDisplay.restore();
-				continue;
-			}
-			if((js.Boot.__cast(layer , ArtLayer)).isBackgroundLayer) continue;
-			layer.visible = this.defaultLayerVisibleSet[i];
-		}
-	}
-	,__class__: jsx.util.LayersDisplay
-};
 var LayerTypeName = $hxClasses["LayerTypeName"] = function() { };
 LayerTypeName.__name__ = ["LayerTypeName"];
 var psd = psd || {};
@@ -1176,8 +1017,6 @@ psd.Lib.writeln = function(message) {
 };
 psd.UnitType = $hxClasses["psd.UnitType"] = function() { };
 psd.UnitType.__name__ = ["psd","UnitType"];
-var $_, $fid = 0;
-function $bind(o,m) { if( m == null ) return null; if( m.__id__ == null ) m.__id__ = $fid++; var f; if( o.hx__closures__ == null ) o.hx__closures__ = {}; else f = o.hx__closures__[m.__id__]; if( f == null ) { f = function(){ return f.method.apply(f.scope, arguments); }; f.scope = o; f.method = m; o.hx__closures__[m.__id__] = f; } return f; }
 Math.NaN = Number.NaN;
 Math.NEGATIVE_INFINITY = Number.NEGATIVE_INFINITY;
 Math.POSITIVE_INFINITY = Number.POSITIVE_INFINITY;
@@ -1194,22 +1033,13 @@ $hxClasses.Array = Array;
 Array.__name__ = ["Array"];
 Date.prototype.__class__ = $hxClasses.Date = Date;
 Date.__name__ = ["Date"];
-var Int = $hxClasses.Int = { __name__ : ["Int"]};
-var Dynamic = $hxClasses.Dynamic = { __name__ : ["Dynamic"]};
-var Float = $hxClasses.Float = Number;
-Float.__name__ = ["Float"];
-var Bool = $hxClasses.Bool = Boolean;
-Bool.__ename__ = ["Bool"];
-var Class = $hxClasses.Class = { __name__ : ["Class"]};
-var Enum = { };
 haxe.Serializer.USE_CACHE = false;
 haxe.Serializer.USE_ENUM_INDEX = false;
 haxe.Serializer.BASE64 = "ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz0123456789%:";
 haxe.Unserializer.DEFAULT_RESOLVER = Type;
 haxe.Unserializer.BASE64 = "ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz0123456789%:";
 haxe.ds.ObjectMap.count = 0;
-CanvasColorSampler.ONCE_SCAN_PIXEL = 10;
 LayerTypeName.LAYER_SET = "LayerSet";
 psd.Lib.app = app;
 psd.UnitType.PIXEL = "px";
-CanvasColorSampler.main();
+PixelSelecter.main();
