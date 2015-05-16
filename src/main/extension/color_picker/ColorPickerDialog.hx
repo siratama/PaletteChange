@@ -1,36 +1,32 @@
 package extension.color_picker;
 
-enum ColorPickerEvent
+enum ColorPickerDialogEvent
 {
 	NONE;
 	CANCELLED;
 	GOTTEN(rgbHexValue:String);
 }
-class ColorPicker
+class ColorPickerDialog
 {
 	private var csInterface:AbstractCSInterface;
-	private var event:ColorPickerEvent;
-	public function getEvent():ColorPickerEvent
+	private var event:ColorPickerDialogEvent;
+	public function getEvent():ColorPickerDialogEvent
 	{
 		var n = event;
-		event = ColorPickerEvent.NONE;
+		event = ColorPickerDialogEvent.NONE;
 		return n;
 	}
-
 	public function new()
 	{
 		csInterface = AbstractCSInterface.create();
 	}
-	public function show(rgbHexValue:String)
+	public function show()
 	{
-		if(rgbHexValue != null)
-			csInterface.evalScript('app.foregroundColor.rgb.hexValue = "$rgbHexValue";');
-
-		event = ColorPickerEvent.NONE;
+		event = ColorPickerDialogEvent.NONE;
 		csInterface.showColorPicker(true, function(bool)
 		{
 			if(bool == "false"){
-				event = ColorPickerEvent.CANCELLED;
+				event = ColorPickerDialogEvent.CANCELLED;
 			}
 			else{
 				observeGettingColor();
@@ -40,7 +36,7 @@ class ColorPicker
 	private function observeGettingColor()
 	{
 		csInterface.evalScript("app.foregroundColor.rgb.hexValue;", function(data){
-			event = ColorPickerEvent.GOTTEN(data);
+			event = ColorPickerDialogEvent.GOTTEN(data);
 		});
 	}
 }

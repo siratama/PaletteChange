@@ -25,8 +25,8 @@
 
 --next
 
--js deploy/jsx/PixelSelecter.jsx
--main jsx.color_picker.PixelSelecter
+-js deploy/jsx/PixelSelector.jsx
+-main jsx.color_picker.PixelSelector
 -cp src/main
 -cp src/extern
 -D js-classic

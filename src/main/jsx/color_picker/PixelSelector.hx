@@ -1,19 +1,20 @@
 package jsx.color_picker;
 
-import common.PixelSelecterEvent;
+import common.PixelColor;
+import common.PixelSelectorEvent;
 import haxe.Serializer;
 import haxe.Unserializer;
-import jsx.color_picker.PixelSelecter;
-import common.PixelSelecterEvent;
+import jsx.color_picker.PixelSelector;
+import common.PixelSelectorEvent;
 import haxe.Serializer;
-import common.PixelSelecterEvent.PixelSelecterInitialErrorEvent;
+import common.PixelSelectorEvent.PixelSelectorInitialErrorEvent;
 import jsx.util.ColorSamplePosition;
 import psd.Application;
 import psd.Document;
 import psd.Lib.app;
 
-@:native("PixelSelecter")
-class PixelSelecter
+@:native("PixelSelector")
+class PixelSelector
 {
 	private var application:Application;
 	private var activeDocument:Document;
@@ -21,7 +22,7 @@ class PixelSelecter
 
 	public static function main()
 	{
-		PixelSelecterTest.execute();
+		PixelSelectorTest.execute();
 	}
 	public function new()
 	{
@@ -32,31 +33,33 @@ class PixelSelecter
 	{
 		var event =
 			(application.documents.length == 0) ?
-				PixelSelecterInitialErrorEvent.ERROR("Open document."):
-				PixelSelecterInitialErrorEvent.NONE;
+				PixelSelectorInitialErrorEvent.ERROR("Open document."):
+				PixelSelectorInitialErrorEvent.NONE;
 
 		return Serializer.run(event);
 	}
-	public function execute(rgbHexValue:String, positionX:Int, positionY:Int):String
+	public function execute(serializedPixelColor:String):String
 	{
+		var pixelColor:PixelColor = Unserializer.run(serializedPixelColor);
+
 		activeDocument = application.activeDocument;
 		colorSamplePosition.initialize(activeDocument);
 
-		var event = PixelSelecterEvent.UNSELECTED;
+		var event = PixelSelectorEvent.UNSELECTED;
 
-		var adjustX = colorSamplePosition.getAdjustX(positionX);
-		var adjustY = colorSamplePosition.getAdjustY(positionY);
+		var adjustX = colorSamplePosition.getAdjustX(pixelColor.x);
+		var adjustY = colorSamplePosition.getAdjustY(pixelColor.y);
 		var colorSampler = activeDocument.colorSamplers.add([adjustX, adjustY]);
 
 		try{
 			var checkedRgbHexValue = colorSampler.color.rgb.hexValue;
-			if(rgbHexValue == checkedRgbHexValue){
+			if(pixelColor.rgbHexValue == checkedRgbHexValue){
 
 				activeDocument.selection.deselect();
-				selectPixel(positionX, positionX);
+				selectPixel(pixelColor.x, pixelColor.x);
 				activeDocument.selection.similar(0, false);
 
-				event = PixelSelecterEvent.SELECTED;
+				event = PixelSelectorEvent.SELECTED;
 			}
 
 		//colorSampler.color is transparent
@@ -72,22 +75,24 @@ class PixelSelecter
 	}
 }
 
-private class PixelSelecterTest
+private class PixelSelectorTest
 {
 	public static function execute()
 	{
-		var pixelSelecter = new PixelSelecter();
-		var errorEvent:PixelSelecterInitialErrorEvent = Unserializer.run(pixelSelecter.getInitialErrorEvent());
+		var pixelSelecter = new PixelSelector();
+		var errorEvent:PixelSelectorInitialErrorEvent = Unserializer.run(pixelSelecter.getInitialErrorEvent());
 		switch(errorEvent)
 		{
-			case PixelSelecterInitialErrorEvent.ERROR(message):
+			case PixelSelectorInitialErrorEvent.ERROR(message):
 				js.Lib.alert(message);
 				return;
-			case PixelSelecterInitialErrorEvent.NONE: "";
+			case PixelSelectorInitialErrorEvent.NONE: "";
 		}
 
-		var result = pixelSelecter.execute("FF0000", 0, 0);
-		var event:PixelSelecterEvent = Unserializer.run(result);
+		var pixelColor = new PixelColor("FF0000", 0, 0);
+		var serializedPixelColor = Serializer.run(pixelColor);
+		var result = pixelSelecter.execute(serializedPixelColor);
+		var event:PixelSelectorEvent = Unserializer.run(result);
 		js.Lib.alert(event);
 	}
 }

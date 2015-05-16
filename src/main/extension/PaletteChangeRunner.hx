@@ -16,7 +16,7 @@ class PaletteChangeRunner
 	private var jsxEvent:JsxEvent;
 	private var paletteChangeUI:PaletteChangeUI;
 	private var rgbHexValueSets:Array<Array<String>>;
-	private static inline var PALETTE_CHANGE_INSTANCE_NAME = "paletteChange";
+	private static inline var INSTANCE_NAME = "paletteChange";
 
 	public function new()
 	{
@@ -36,8 +36,8 @@ class PaletteChangeRunner
 		overlayWindow.showPaletteChangeRunning();
 
 		jsxEvent = JsxEvent.NONE;
-		csInterface.evalScript('var $PALETTE_CHANGE_INSTANCE_NAME = new ${ClassName.PALETTE_CHANGE}();');
-		csInterface.evalScript('$PALETTE_CHANGE_INSTANCE_NAME.getInitialErrorEvent();', function(result){
+		csInterface.evalScript('var $INSTANCE_NAME = new ${ClassName.PALETTE_CHANGE}();');
+		csInterface.evalScript('$INSTANCE_NAME.getInitialErrorEvent();', function(result){
 			jsxEvent = JsxEvent.GOTTEN(result);
 		});
 		mainFunction = observeToRecieveInitialErrorEvent;
@@ -63,20 +63,20 @@ class PaletteChangeRunner
 	private function initializeToChangePalette()
 	{
 		var data = Serializer.run(rgbHexValueSets);
-		csInterface.evalScript('$PALETTE_CHANGE_INSTANCE_NAME.execute("$data", ${Setting.instance.isIgnoredLockedLayerPaint()});');
+		csInterface.evalScript('$INSTANCE_NAME.execute("$data", ${Setting.instance.isIgnoredLockedLayerPaint()});');
 		mainFunction = changePalette;
 	}
 	private function changePalette()
 	{
 		if(overlayWindow.cancelButton.isClicked())
 		{
-			csInterface.evalScript('$PALETTE_CHANGE_INSTANCE_NAME.interrupt();');
+			csInterface.evalScript('$INSTANCE_NAME.interrupt();');
 			destroy();
 		}
 		else{
 			jsxEvent = JsxEvent.NONE;
-			csInterface.evalScript('$PALETTE_CHANGE_INSTANCE_NAME.run();');
-			csInterface.evalScript('$PALETTE_CHANGE_INSTANCE_NAME.getSerializedEvent();', function(result){
+			csInterface.evalScript('$INSTANCE_NAME.run();');
+			csInterface.evalScript('$INSTANCE_NAME.getSerializedEvent();', function(result){
 				jsxEvent = JsxEvent.GOTTEN(result);
 			});
 			mainFunction = observeToChangePalette;

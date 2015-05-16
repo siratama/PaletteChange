@@ -1,4 +1,5 @@
 package extension.color_sampler;
+import common.PixelColor;
 import extension.color_sampler.palette.Palette;
 import extension.color_sampler.palette.PaletteKind;
 import extension.parts.TitleBar;
@@ -63,14 +64,14 @@ class CanvasColorSamplerUI
 		}
 	}
 
-	public function changeCellColor(paletteKind:PaletteKind, rgbHexColor:String)
+	public function changeCellColor(paletteKind:PaletteKind, pixelColor:PixelColor)
 	{
 		var palette:Palette = switch(paletteKind)
 		{
 			case PaletteKind.BEFORE: paletteContainer.before.palette;
 			case PaletteKind.AFTER: paletteContainer.after.palette;
 		}
-		palette.changeCellColor(rgbHexColor);
+		palette.changeCellColor(pixelColor);
 		updatePageIndex();
 	}
 }

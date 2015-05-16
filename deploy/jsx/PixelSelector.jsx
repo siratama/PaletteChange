@@ -219,19 +219,15 @@ Type["typeof"] = function(v) {
 	}
 };
 var common = common || {};
-common.PixelColorSearchEvent = $hxClasses["common.PixelColorSearchEvent"] = { __ename__ : ["common","PixelColorSearchEvent"], __constructs__ : ["NONE","SELECTED","UNSELECTED"] };
-common.PixelColorSearchEvent.NONE = ["NONE",0];
-common.PixelColorSearchEvent.NONE.toString = $estr;
-common.PixelColorSearchEvent.NONE.__enum__ = common.PixelColorSearchEvent;
-common.PixelColorSearchEvent.SELECTED = function(x,y) { var $x = ["SELECTED",1,x,y]; $x.__enum__ = common.PixelColorSearchEvent; $x.toString = $estr; return $x; };
-common.PixelColorSearchEvent.UNSELECTED = ["UNSELECTED",2];
-common.PixelColorSearchEvent.UNSELECTED.toString = $estr;
-common.PixelColorSearchEvent.UNSELECTED.__enum__ = common.PixelColorSearchEvent;
-common.PixelColorSearchInitialErrorEvent = $hxClasses["common.PixelColorSearchInitialErrorEvent"] = { __ename__ : ["common","PixelColorSearchInitialErrorEvent"], __constructs__ : ["NONE","ERROR"] };
-common.PixelColorSearchInitialErrorEvent.NONE = ["NONE",0];
-common.PixelColorSearchInitialErrorEvent.NONE.toString = $estr;
-common.PixelColorSearchInitialErrorEvent.NONE.__enum__ = common.PixelColorSearchInitialErrorEvent;
-common.PixelColorSearchInitialErrorEvent.ERROR = function(message) { var $x = ["ERROR",1,message]; $x.__enum__ = common.PixelColorSearchInitialErrorEvent; $x.toString = $estr; return $x; };
+common.PixelColor = $hxClasses["common.PixelColor"] = function(rgbHexValue,x,y) {
+	this.rgbHexValue = rgbHexValue;
+	this.x = x;
+	this.y = y;
+};
+common.PixelColor.__name__ = ["common","PixelColor"];
+common.PixelColor.prototype = {
+	__class__: common.PixelColor
+};
 common.PixelSelectorEvent = $hxClasses["common.PixelSelectorEvent"] = { __ename__ : ["common","PixelSelectorEvent"], __constructs__ : ["SELECTED","UNSELECTED"] };
 common.PixelSelectorEvent.SELECTED = ["SELECTED",0];
 common.PixelSelectorEvent.SELECTED.toString = $estr;
@@ -869,9 +865,6 @@ haxe.io.Eof.prototype = {
 var js = js || {};
 js.Boot = $hxClasses["js.Boot"] = function() { };
 js.Boot.__name__ = ["js","Boot"];
-js.Boot.getClass = function(o) {
-	if((o instanceof Array) && o.__enum__ == null) return Array; else return o.__class__;
-};
 js.Boot.__string_rec = function(o,s) {
 	if(o == null) return "null";
 	if(s.length >= 5) return "<...>";
@@ -939,157 +932,59 @@ js.Boot.__string_rec = function(o,s) {
 		return String(o);
 	}
 };
-js.Boot.__interfLoop = function(cc,cl) {
-	if(cc == null) return false;
-	if(cc == cl) return true;
-	var intf = cc.__interfaces__;
-	if(intf != null) {
-		var _g1 = 0;
-		var _g = intf.length;
-		while(_g1 < _g) {
-			var i = _g1++;
-			var i1 = intf[i];
-			if(i1 == cl || js.Boot.__interfLoop(i1,cl)) return true;
-		}
-	}
-	return js.Boot.__interfLoop(cc.__super__,cl);
-};
-js.Boot.__instanceof = function(o,cl) {
-	if(cl == null) return false;
-	switch(cl) {
-	case Int:
-		return (o|0) === o;
-	case Float:
-		return typeof(o) == "number";
-	case Bool:
-		return typeof(o) == "boolean";
-	case String:
-		return typeof(o) == "string";
-	case Array:
-		return (o instanceof Array) && o.__enum__ == null;
-	case Dynamic:
-		return true;
-	default:
-		if(o != null) {
-			if(typeof(cl) == "function") {
-				if(o instanceof cl) return true;
-				if(js.Boot.__interfLoop(js.Boot.getClass(o),cl)) return true;
-			}
-		} else return false;
-		if(cl == Class && o.__name__ != null) return true;
-		if(cl == Enum && o.__ename__ != null) return true;
-		return o.__enum__ == cl;
-	}
-};
-js.Boot.__cast = function(o,t) {
-	if(js.Boot.__instanceof(o,t)) return o; else throw "Cannot cast " + Std.string(o) + " to " + Std.string(t);
-};
 js.Lib = $hxClasses["js.Lib"] = function() { };
 js.Lib.__name__ = ["js","Lib"];
 js.Lib.alert = function(v) {
 	alert(js.Boot.__string_rec(v,""));
 };
-var PixelColorSearch = $hxClasses["PixelColorSearch"] = function() {
+var PixelSelector = $hxClasses["PixelSelector"] = function() {
 	this.application = psd.Lib.app;
 	this.colorSamplePosition = new jsx.util.ColorSamplePosition();
 };
-PixelColorSearch.__name__ = ["PixelColorSearch"];
-PixelColorSearch.main = function() {
-	jsx.color_picker._PixelColorSearch.PixelColorSearchTest.execute();
+PixelSelector.__name__ = ["PixelSelector"];
+PixelSelector.main = function() {
+	jsx.color_picker._PixelSelector.PixelSelectorTest.execute();
 };
-PixelColorSearch.prototype = {
-	getSerializedEvent: function() {
-		return haxe.Serializer.run(this.event);
-	}
-	,run: function() {
-		this.mainFunction();
-	}
-	,getInitialErrorEvent: function() {
+PixelSelector.prototype = {
+	getInitialErrorEvent: function() {
 		var event;
-		if(this.application.documents.length == 0) event = common.PixelColorSearchInitialErrorEvent.ERROR("Open document."); else event = common.PixelColorSearchInitialErrorEvent.NONE;
+		if(this.application.documents.length == 0) event = common.PixelSelectorInitialErrorEvent.ERROR("Open document."); else event = common.PixelSelectorInitialErrorEvent.NONE;
 		return haxe.Serializer.run(event);
 	}
-	,initialize: function(checkedRgbHexValue) {
-		this.checkedRgbHexValue = checkedRgbHexValue;
+	,execute: function(serializedPixelColor) {
+		var pixelColor = haxe.Unserializer.run(serializedPixelColor);
 		this.activeDocument = this.application.activeDocument;
 		this.colorSamplePosition.initialize(this.activeDocument);
-		var activeLayer = this.activeDocument.activeLayer;
-		this.layersDisplay = new jsx.util.LayersDisplay(this.activeDocument.layers);
-		this.layersDisplay.hide();
-		if(!(js.Boot.__cast(activeLayer , ArtLayer)).isBackgroundLayer) activeLayer.visible = true;
-		this.bounds = jsx.util.Bounds.convert(activeLayer.bounds);
-		this.positionX = this.bounds.left | 0;
-		this.positionY = this.bounds.top | 0;
-		this.event = common.PixelColorSearchEvent.NONE;
-		this.mainFunction = $bind(this,this.scan);
-	}
-	,scan: function() {
-		this.scanPixelCount = 0;
-		var _g1 = this.positionY;
-		var _g = this.bounds.bottom | 0;
-		while(_g1 < _g) {
-			var y = _g1++;
-			var adjustY;
-			if(y == this.colorSamplePosition.activeDocumentHeight) adjustY = y; else adjustY = y + 0.1;
-			var _g3 = this.positionX;
-			var _g2 = this.bounds.right | 0;
-			while(_g3 < _g2) {
-				var x = _g3++;
-				var adjustX;
-				if(x == this.colorSamplePosition.activeDocumentWidth) adjustX = x; else adjustX = x + 0.1;
-				var colorSampler = this.activeDocument.colorSamplers.add([adjustX,adjustY]);
-				try {
-					var rgbHexValue = colorSampler.color.rgb.hexValue;
-					if(rgbHexValue == this.checkedRgbHexValue) {
-						this.selectSimilar(x,y);
-						this.event = common.PixelColorSearchEvent.SELECTED(x,y);
-						this.mainFunction = $bind(this,this.finish);
-						return;
-					}
-				} catch( error ) {
-				}
-				colorSampler.remove();
-				if(++this.scanPixelCount < 10) continue;
-				this.adjustPosition(x,y);
-				return;
+		var event = common.PixelSelectorEvent.UNSELECTED;
+		var adjustX = this.colorSamplePosition.getAdjustX(pixelColor.x);
+		var adjustY = this.colorSamplePosition.getAdjustY(pixelColor.y);
+		var colorSampler = this.activeDocument.colorSamplers.add([adjustX,adjustY]);
+		try {
+			var checkedRgbHexValue = colorSampler.color.rgb.hexValue;
+			if(pixelColor.rgbHexValue == checkedRgbHexValue) {
+				this.activeDocument.selection.deselect();
+				this.selectPixel(pixelColor.x,pixelColor.x);
+				this.activeDocument.selection.similar(0,false);
+				event = common.PixelSelectorEvent.SELECTED;
 			}
-			this.positionX = this.bounds.left | 0;
+		} catch( error ) {
 		}
-		this.event = common.PixelColorSearchEvent.UNSELECTED;
-		this.mainFunction = $bind(this,this.finish);
-	}
-	,adjustPosition: function(x,y) {
-		this.positionX = x + 1;
-		this.positionY = y;
-		if(this.positionX >= (this.bounds.right | 0)) {
-			this.positionX = this.bounds.left | 0;
-			this.positionY++;
-		}
-	}
-	,selectSimilar: function(x,y) {
-		this.activeDocument.selection.deselect();
-		this.selectPixel(x,y);
-		this.activeDocument.selection.similar(0,false);
+		colorSampler.remove();
+		return haxe.Serializer.run(event);
 	}
 	,selectPixel: function(x,y) {
 		this.activeDocument.selection.select([[x,y],[x + 1,y],[x + 1,y + 1],[x,y + 1]]);
 	}
-	,finish: function() {
-		this.layersDisplay.restore();
-	}
-	,interrupt: function() {
-		this.layersDisplay.restore();
-	}
-	,__class__: PixelColorSearch
+	,__class__: PixelSelector
 };
 var jsx = jsx || {};
 if(!jsx.color_picker) jsx.color_picker = {};
-if(!jsx.color_picker._PixelColorSearch) jsx.color_picker._PixelColorSearch = {};
-jsx.color_picker._PixelColorSearch.PixelColorSearchTest = $hxClasses["jsx.color_picker._PixelColorSearch.PixelColorSearchTest"] = function() { };
-jsx.color_picker._PixelColorSearch.PixelColorSearchTest.__name__ = ["jsx","color_picker","_PixelColorSearch","PixelColorSearchTest"];
-jsx.color_picker._PixelColorSearch.PixelColorSearchTest.execute = function() {
-	var pixelColorSearch = new PixelColorSearch();
-	var errorEvent = haxe.Unserializer.run(pixelColorSearch.getInitialErrorEvent());
+if(!jsx.color_picker._PixelSelector) jsx.color_picker._PixelSelector = {};
+jsx.color_picker._PixelSelector.PixelSelectorTest = $hxClasses["jsx.color_picker._PixelSelector.PixelSelectorTest"] = function() { };
+jsx.color_picker._PixelSelector.PixelSelectorTest.__name__ = ["jsx","color_picker","_PixelSelector","PixelSelectorTest"];
+jsx.color_picker._PixelSelector.PixelSelectorTest.execute = function() {
+	var pixelSelecter = new PixelSelector();
+	var errorEvent = haxe.Unserializer.run(pixelSelecter.getInitialErrorEvent());
 	switch(errorEvent[1]) {
 	case 1:
 		var message = errorEvent[2];
@@ -1099,47 +994,13 @@ jsx.color_picker._PixelColorSearch.PixelColorSearchTest.execute = function() {
 		"";
 		break;
 	}
-	var checkedRgbHexColor = "FF0000";
-	pixelColorSearch.initialize(checkedRgbHexColor);
-	var i = 0;
-	try {
-		while(i < 100) {
-			pixelColorSearch.run();
-			var result = pixelColorSearch.getSerializedEvent();
-			var event = haxe.Unserializer.run(result);
-			switch(event[1]) {
-			case 0:
-				"";
-				break;
-			case 2:
-				js.Lib.alert("unselected");
-				throw "__break__";
-				break;
-			case 1:
-				js.Lib.alert("selected!");
-				throw "__break__";
-				break;
-			}
-		}
-	} catch( e ) { if( e != "__break__" ) throw e; }
+	var pixelColor = new common.PixelColor("FF0000",0,0);
+	var serializedPixelColor = haxe.Serializer.run(pixelColor);
+	var result = pixelSelecter.execute(serializedPixelColor);
+	var event = haxe.Unserializer.run(result);
+	js.Lib.alert(event);
 };
 if(!jsx.util) jsx.util = {};
-jsx.util.Bounds = $hxClasses["jsx.util.Bounds"] = function(left,top,right,bottom) {
-	this.left = left;
-	this.top = top;
-	this.right = right;
-	this.bottom = bottom;
-};
-jsx.util.Bounds.__name__ = ["jsx","util","Bounds"];
-jsx.util.Bounds.convert = function(bounds) {
-	return new jsx.util.Bounds(bounds[0].value,bounds[1].value,bounds[2].value,bounds[3].value);
-};
-jsx.util.Bounds.prototype = {
-	toString: function() {
-		return [this.left,this.top,this.right,this.bottom].join(":");
-	}
-	,__class__: jsx.util.Bounds
-};
 jsx.util.ColorSamplePosition = $hxClasses["jsx.util.ColorSamplePosition"] = function() {
 };
 jsx.util.ColorSamplePosition.__name__ = ["jsx","util","ColorSamplePosition"];
@@ -1156,51 +1017,6 @@ jsx.util.ColorSamplePosition.prototype = {
 	}
 	,__class__: jsx.util.ColorSamplePosition
 };
-jsx.util.LayersDisplay = $hxClasses["jsx.util.LayersDisplay"] = function(layers) {
-	this.layers = layers;
-	this.defaultLayerVisibleSet = [];
-	this.layersDisplayMap = new haxe.ds.ObjectMap();
-};
-jsx.util.LayersDisplay.__name__ = ["jsx","util","LayersDisplay"];
-jsx.util.LayersDisplay.prototype = {
-	hide: function() {
-		var _g1 = 0;
-		var _g = this.layers.length;
-		while(_g1 < _g) {
-			var i = _g1++;
-			var layer = this.layers[i];
-			if(layer.typename == LayerTypeName.LAYER_SET) {
-				var layerSet;
-				layerSet = js.Boot.__cast(layer , LayerSet);
-				var layersDisplay = new jsx.util.LayersDisplay(layerSet.layers);
-				layersDisplay.hide();
-				this.layersDisplayMap.set(layerSet,layersDisplay);
-				continue;
-			}
-			if((js.Boot.__cast(layer , ArtLayer)).isBackgroundLayer) continue;
-			this.defaultLayerVisibleSet[i] = layer.visible;
-			layer.visible = false;
-		}
-	}
-	,restore: function() {
-		var _g1 = 0;
-		var _g = this.layers.length;
-		while(_g1 < _g) {
-			var i = _g1++;
-			var layer = this.layers[i];
-			if(layer.typename == LayerTypeName.LAYER_SET) {
-				var layerSet;
-				layerSet = js.Boot.__cast(layer , LayerSet);
-				var layersDisplay = this.layersDisplayMap.h[layerSet.__id__];
-				layersDisplay.restore();
-				continue;
-			}
-			if((js.Boot.__cast(layer , ArtLayer)).isBackgroundLayer) continue;
-			layer.visible = this.defaultLayerVisibleSet[i];
-		}
-	}
-	,__class__: jsx.util.LayersDisplay
-};
 var LayerTypeName = $hxClasses["LayerTypeName"] = function() { };
 LayerTypeName.__name__ = ["LayerTypeName"];
 var psd = psd || {};
@@ -1211,8 +1027,6 @@ psd.Lib.writeln = function(message) {
 };
 psd.UnitType = $hxClasses["psd.UnitType"] = function() { };
 psd.UnitType.__name__ = ["psd","UnitType"];
-var $_, $fid = 0;
-function $bind(o,m) { if( m == null ) return null; if( m.__id__ == null ) m.__id__ = $fid++; var f; if( o.hx__closures__ == null ) o.hx__closures__ = {}; else f = o.hx__closures__[m.__id__]; if( f == null ) { f = function(){ return f.method.apply(f.scope, arguments); }; f.scope = o; f.method = m; o.hx__closures__[m.__id__] = f; } return f; }
 Math.NaN = Number.NaN;
 Math.NEGATIVE_INFINITY = Number.NEGATIVE_INFINITY;
 Math.POSITIVE_INFINITY = Number.POSITIVE_INFINITY;
@@ -1229,22 +1043,13 @@ $hxClasses.Array = Array;
 Array.__name__ = ["Array"];
 Date.prototype.__class__ = $hxClasses.Date = Date;
 Date.__name__ = ["Date"];
-var Int = $hxClasses.Int = { __name__ : ["Int"]};
-var Dynamic = $hxClasses.Dynamic = { __name__ : ["Dynamic"]};
-var Float = $hxClasses.Float = Number;
-Float.__name__ = ["Float"];
-var Bool = $hxClasses.Bool = Boolean;
-Bool.__ename__ = ["Bool"];
-var Class = $hxClasses.Class = { __name__ : ["Class"]};
-var Enum = { };
 haxe.Serializer.USE_CACHE = false;
 haxe.Serializer.USE_ENUM_INDEX = false;
 haxe.Serializer.BASE64 = "ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz0123456789%:";
 haxe.Unserializer.DEFAULT_RESOLVER = Type;
 haxe.Unserializer.BASE64 = "ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz0123456789%:";
 haxe.ds.ObjectMap.count = 0;
-PixelColorSearch.ONCE_SCAN_PIXEL = 10;
 LayerTypeName.LAYER_SET = "LayerSet";
 psd.Lib.app = app;
 psd.UnitType.PIXEL = "px";
-PixelColorSearch.main();
+PixelSelector.main();

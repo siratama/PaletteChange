@@ -8,10 +8,19 @@ class JsxLoader
 	private static inline var JSX_EXTENSION = ".jsx";
 	private var loaded:Bool;
 
+	private static var LOAD_JSX_SET = [
+		ClassName.CANVAS_COLOR_SAMPLER,
+		ClassName.PALETTE_CHANGE,
+		ClassName.PIXEL_SELECTOR,
+		ClassName.PIXEL_COLOR_SEARCH
+	];
+	private var loadIndex:Int;
+
 	public function new()
 	{
 		csInterface = AbstractCSInterface.create();
-		loadCanvasColorSampler();
+		loadIndex = 0;
+		load();
 	}
 	private function getJsxPath(fileName:String):String
 	{
@@ -21,6 +30,28 @@ class JsxLoader
 	{
 		mainFunction();
 	}
+	private function load()
+	{
+		var fileName = LOAD_JSX_SET[loadIndex];
+		var filePath = csInterface.getExtensionSystemPath() + JSX_DIRECTORY + fileName + JSX_EXTENSION;
+
+		loaded = false;
+		csInterface.evalFile(filePath, function(result){
+			loaded = true;
+		});
+		mainFunction = observeToLoad;
+	}
+	private function observeToLoad()
+	{
+		if(!loaded) return;
+
+		if(++loadIndex < LOAD_JSX_SET.length)
+			load();
+		else
+			mainFunction = finish;
+	}
+
+	/*
 	private function loadCanvasColorSampler()
 	{
 		loaded = false;
@@ -50,6 +81,7 @@ class JsxLoader
 		if(loaded)
 			mainFunction = finish;
 	}
+	*/
 	private function finish(){}
 	public function isFinished():Bool
 		return Reflect.compareMethods(mainFunction, finish);

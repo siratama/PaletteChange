@@ -1,10 +1,10 @@
 package common;
-enum PixelSelecterEvent
+enum PixelSelectorEvent
 {
 	SELECTED;
 	UNSELECTED;
 }
-enum PixelSelecterInitialErrorEvent
+enum PixelSelectorInitialErrorEvent
 {
 	NONE;
 	ERROR(message:String);

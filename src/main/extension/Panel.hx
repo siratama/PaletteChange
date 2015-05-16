@@ -1,6 +1,7 @@
 package extension;
 
-import extension.color_picker.ColorPicker;
+import common.PixelColor;
+import extension.color_picker.ColorPickerUI;
 import adobe.cep.CSEventType;
 import adobe.cep.CSEventScope;
 import adobe.cep.CSEvent;
@@ -22,7 +23,7 @@ class Panel
 	private var csInterface:AbstractCSInterface;
 	private var jsxLoader:JsxLoader;
 
-	private var colorPicker:ColorPicker;
+	private var colorPicker:ColorPickerUI;
 	private var selectedPaletteKind:PaletteKind;
 
 	private var canvasColorSamplerRunner:CanvasColorSamplerRunner;
@@ -49,7 +50,7 @@ class Panel
 		OverlayWindow.instance;
 		canvasColorSamplerRunner = new CanvasColorSamplerRunner();
 		paletteChangeRunner = new PaletteChangeRunner();
-		colorPicker = new ColorPicker();
+		colorPicker = new ColorPickerUI();
 
 		startRunning(loadJsx, TIMER_SPEED_RUNNING);
 	}
@@ -107,29 +108,33 @@ class Panel
 		}
 		else if(canvasColorSamplerUI.paletteContainer.before.palette.searchClickedCell()){
 			initializeToCallColorPicker(PaletteKind.BEFORE,
-				canvasColorSamplerUI.paletteContainer.before.palette.clickedCell.rgbHexColor);
+				canvasColorSamplerUI.paletteContainer.before.palette.clickedCell.pixelColor);
 		}
 		else if(canvasColorSamplerUI.paletteContainer.after.palette.searchClickedCell()){
 			initializeToCallColorPicker(PaletteKind.AFTER,
-				canvasColorSamplerUI.paletteContainer.after.palette.clickedCell.rgbHexColor);
+				canvasColorSamplerUI.paletteContainer.after.palette.clickedCell.pixelColor);
 		}
 	}
 	//
-	private function initializeToCallColorPicker(paletteKind:PaletteKind, rgbHexColor:String)
+	private function initializeToCallColorPicker(paletteKind:PaletteKind, pixelColor:PixelColor)
 	{
 		this.selectedPaletteKind = paletteKind;
-		colorPicker.show(rgbHexColor);
+		colorPicker.show(pixelColor);
 		changeRunning(callColorPicker, TIMER_SPEED_RUNNING);
 	}
 	private function callColorPicker()
 	{
 		var event = colorPicker.getEvent();
 		switch(event){
-			case ColorPickerEvent.NONE: return;
-			case ColorPickerEvent.CANCELLED:
+			case ColorPickerUIEvent.NONE: return;
+
+			case ColorPickerUIEvent.ERROR(message):
+				js.Lib.alert(message);
+			case ColorPickerUIEvent.DIALOG_CANCELLED_STILL_TRANSPARENT:
 				initializeToClickUI();
-			case ColorPickerEvent.GOTTEN(rgbHexColor):
-				canvasColorSamplerUI.changeCellColor(selectedPaletteKind, rgbHexColor);
+
+			case ColorPickerUIEvent.CLOSED(pixelColor):
+				canvasColorSamplerUI.changeCellColor(selectedPaletteKind, pixelColor);
 				initializeToClickUI();
 		}
 	}

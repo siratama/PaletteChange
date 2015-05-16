@@ -17,7 +17,7 @@ class CanvasColorSamplerRunner
 	private var jsxEvent:JsxEvent;
 	private var clickedPaletteKind:PaletteKind;
 
-	private static inline var CANVAS_COLOR_SAMPLER_INSTANCE_NAME = "canvasColorSampler";
+	private static inline var INSTANCE_NAME = "canvasColorSampler";
 
 	public function new()
 	{
@@ -36,8 +36,8 @@ class CanvasColorSamplerRunner
 		overlayWindow.showCanvasColorSamplerRunning();
 
 		jsxEvent = JsxEvent.NONE;
-		csInterface.evalScript('var $CANVAS_COLOR_SAMPLER_INSTANCE_NAME = new ${ClassName.CANVAS_COLOR_SAMPLER}();');
-		csInterface.evalScript('$CANVAS_COLOR_SAMPLER_INSTANCE_NAME.getInitialErrorEvent();', function(result){
+		csInterface.evalScript('var $INSTANCE_NAME = new ${ClassName.CANVAS_COLOR_SAMPLER}();');
+		csInterface.evalScript('$INSTANCE_NAME.getInitialErrorEvent();', function(result){
 			jsxEvent = JsxEvent.GOTTEN(result);
 		});
 
@@ -62,20 +62,20 @@ class CanvasColorSamplerRunner
 	}
 	private function initializeToSample()
 	{
-		csInterface.evalScript('$CANVAS_COLOR_SAMPLER_INSTANCE_NAME.initialize();');
+		csInterface.evalScript('$INSTANCE_NAME.initialize();');
 		mainFunction = sample;
 	}
 	private function sample()
 	{
 		if(overlayWindow.cancelButton.isClicked())
 		{
-			csInterface.evalScript('$CANVAS_COLOR_SAMPLER_INSTANCE_NAME.interrupt();');
+			csInterface.evalScript('$INSTANCE_NAME.interrupt();');
 			destroy();
 		}
 		else{
 			jsxEvent = JsxEvent.NONE;
-			csInterface.evalScript('$CANVAS_COLOR_SAMPLER_INSTANCE_NAME.run();');
-			csInterface.evalScript('$CANVAS_COLOR_SAMPLER_INSTANCE_NAME.getSerializedEvent();', function(result){
+			csInterface.evalScript('$INSTANCE_NAME.run();');
+			csInterface.evalScript('$INSTANCE_NAME.getSerializedEvent();', function(result){
 				jsxEvent = JsxEvent.GOTTEN(result);
 			});
 			mainFunction = observeToSample;
