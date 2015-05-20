@@ -74,7 +74,7 @@ class PixelColorSearchRunner
 	private function initializeToSearch()
 	{
 		event = PixelColorSearchRunnerEvent.NONE;
-		csInterface.evalScript('$INSTANCE_NAME.initialize($searchedRgbHexValue);');
+		csInterface.evalScript('$INSTANCE_NAME.initialize("$searchedRgbHexValue");');
 		mainFunction = search;
 	}
 	private function search()
@@ -100,7 +100,6 @@ class PixelColorSearchRunner
 			case JsxEvent.NONE: return;
 			case JsxEvent.GOTTEN(serializedEvent):
 				var pixelColorSearchEvent:PixelColorSearchEvent = Unserializer.run(serializedEvent);
-
 				switch(pixelColorSearchEvent){
 					case PixelColorSearchEvent.NONE:
 						mainFunction = search;
@@ -109,7 +108,7 @@ class PixelColorSearchRunner
 						destroy(PixelColorSearchRunnerEvent.UNSELECTED);
 
 					case PixelColorSearchEvent.SELECTED(x, y):
-						var pixelColor = new PixelColor(searchedRgbHexValue, x, y);
+						var pixelColor = PixelColor.create(searchedRgbHexValue, x, y);
 						destroy(PixelColorSearchRunnerEvent.SELECTED(pixelColor));
 				}
 		}

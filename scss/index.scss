@@ -1,9 +1,14 @@
 $gradient_first: #535353;
 $gradient_end: #3e3e3e;
 
+$Z_INDEX_COLOR_PICKER: 2;
+$Z_INDEX_OVERLAY: $Z_INDEX_COLOR_PICKER + 1;
+
 *{
   margin: 0;
   padding: 0;
+  user_select: none;
+  -webkit-user-select: none;
 }
 html, body{
   min-height: 100%;
@@ -15,41 +20,6 @@ body{
   overflow: hidden;
   font: 11px arial, helvetica, "メイリオ", Meiryo, "ＭＳ Ｐゴシック", clean, sans-serif;
   position: relative;
-}
-#overlay{
-  display: none;
-  position: absolute;
-  top: 0;
-  left: 0;
-  width: 100%;
-  height: 100%;
-  z-index: 10;
-  background-color: rgba(0,0,0,0.7);
-
-  $window_width: 130px;
-  $window_height: 100px;
-  .window{
-    position: fixed;
-    top: 50%;
-    left: 50%;
-    width: $window_width;
-    height: $window_height;
-    margin-left: -($window_width / 2);
-    margin-top: -($window_height / 2);
-    background-color: #454545;
-    border-radius: 6px;
-
-    .message{
-      width: 100%;
-      margin: 20px 0 10px 0;
-      text-align: center;
-      font-size: 12px;
-    }
-    .cancel_button{
-      width: 80px;
-      margin-left: 25px;
-    }
-  }
 }
 
 button{
@@ -76,6 +46,76 @@ button{
   }
 }
 
+@mixin overlay($z_index)
+{
+  display: none;
+  position: absolute;
+  top: 0;
+  left: 0;
+  width: 100%;
+  height: 100%;
+  z-index: $z_index;
+  background-color: rgba(0,0,0,0.7);
+}
+@mixin overlay_window($window_width, $window_height)
+{
+  position: fixed;
+  top: 50%;
+  left: 50%;
+  width: $window_width;
+  height: $window_height;
+  margin-left: -($window_width / 2);
+  margin-top: -($window_height / 2);
+  background-color: #454545;
+  border-radius: 6px;
+}
+
+#overlay
+{
+  @include overlay($Z_INDEX_OVERLAY);
+
+  .window{
+    @include overlay_window(130px, 100px);
+
+    .message{
+      width: 100%;
+      margin: 20px 0 10px 0;
+      text-align: center;
+      font-size: 12px;
+    }
+    .cancel_button{
+      width: 80px;
+      margin-left: 25px;
+    }
+  }
+}
+
+#color_picker
+{
+  @include overlay($Z_INDEX_COLOR_PICKER);
+
+  .window{
+    $window_width: 130px;
+    @include overlay_window($window_width, 150px);
+    text-align: center;
+
+    ul{
+      list-style: none;
+    }
+    li{
+    }
+    .display{
+      width: 20px;
+      height: 20px;
+      //background-color: #252525;
+      border: 1px solid #252525;
+      margin: 10px auto auto auto;
+    }
+    button{
+      width: $window_width - 20px;
+    }
+  }
+}
 #container{
   //padding: 6px 0 0 10px;
 }

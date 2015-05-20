@@ -2,7 +2,7 @@ package common;
 enum CanvasColorSamplerEvent
 {
 	NONE;
-	RESULT(rgbHexColorSet:Array<String>);
+	RESULT(pixelColorSet:Array<PixelColor>);
 }
 enum CanvasColorSamplerInitialErrorEvent
 {

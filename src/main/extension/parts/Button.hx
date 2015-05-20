@@ -16,7 +16,7 @@ class Button
 	public function new(parentElement:JQuery, className:String)
 	{
 		element = new JQuery('.$className', parentElement);
-		element.mousedown(function(event){
+		element.click(function(event){
 			clicked = true;
 		});
 	}

@@ -38,7 +38,7 @@ class PixelColorSearch
 
 	public static function main()
 	{
-		PixelColorSearchTest.execute();
+		//PixelColorSearchTest.execute();
 	}
 	public function new()
 	{
@@ -95,9 +95,9 @@ class PixelColorSearch
 					var rgbHexValue = colorSampler.color.rgb.hexValue;
 					if(rgbHexValue == checkedRgbHexValue)
 					{
+						colorSampler.remove();
 						selectSimilar(x, y);
-						event = PixelColorSearchEvent.SELECTED(x, y);
-						mainFunction = finish;
+						destroy(PixelColorSearchEvent.SELECTED(x, y));
 						return;
 					}
 
@@ -112,8 +112,7 @@ class PixelColorSearch
 			}
 			positionX = Std.int(bounds.left);
 		}
-		event = PixelColorSearchEvent.UNSELECTED;
-		mainFunction = finish;
+		destroy(PixelColorSearchEvent.UNSELECTED);
 	}
 	private function adjustPosition(x:Int, y:Int)
 	{
@@ -134,10 +133,14 @@ class PixelColorSearch
 	{
 		activeDocument.selection.select([[x, y], [x+1, y], [x+1, y+1], [x, y+1]]);
 	}
-	private function finish()
+
+	private function destroy(event:PixelColorSearchEvent)
 	{
+		this.event = event;
 		layersDisplay.restore();
+		mainFunction = finish;
 	}
+	private function finish(){}
 	public function interrupt()
 	{
 		layersDisplay.restore();

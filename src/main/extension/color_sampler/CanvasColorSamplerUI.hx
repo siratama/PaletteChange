@@ -64,14 +64,29 @@ class CanvasColorSamplerUI
 		}
 	}
 
-	public function changeCellColor(paletteKind:PaletteKind, pixelColor:PixelColor)
+	//
+	public function isUnregisterableColor(paletteKind:PaletteKind, rgbHexValue:String):Bool
 	{
-		var palette:Palette = switch(paletteKind)
+		var palette = getPalette(paletteKind);
+		return palette.isUnregisterableColor(rgbHexValue);
+	}
+	public function changeClickedCellColor(paletteKind:PaletteKind, pixelColor:PixelColor)
+	{
+		var palette = getPalette(paletteKind);
+		palette.changeClickedCellColor(pixelColor);
+		updatePageIndex();
+	}
+	public function updateClickedCellScanPosition(paletteKind:PaletteKind, x:Int, y:Int)
+	{
+		var palette = getPalette(paletteKind);
+		palette.updateClickedCellScanPosition(x, y);
+	}
+	private function getPalette(paletteKind:PaletteKind):Palette
+	{
+		return switch(paletteKind)
 		{
 			case PaletteKind.BEFORE: paletteContainer.before.palette;
 			case PaletteKind.AFTER: paletteContainer.after.palette;
 		}
-		palette.changeCellColor(pixelColor);
-		updatePageIndex();
 	}
 }

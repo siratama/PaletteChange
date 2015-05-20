@@ -74,7 +74,7 @@ class PixelSelectorRunner
 
 		jsxEvent = JsxEvent.NONE;
 		event = PixelSelectorRunnerEvent.NONE;
-		csInterface.evalScript('$INSTANCE_NAME.execute($serializedPixelColor);', function(result){
+		csInterface.evalScript('$INSTANCE_NAME.execute("$serializedPixelColor");', function(result){
 			jsxEvent = JsxEvent.GOTTEN(result);
 		});
 		mainFunction = observeToSelect;

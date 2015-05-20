@@ -11,8 +11,7 @@ class Palette
 	private var kind:PaletteKind;
 	private var lines:Array<Line>;
 	public var pixelColorSet(default, null):Array<PixelColor>;
-	private var rgbHexColorMap:Map<String, Bool>;
-	private var allowDuplicateColor:Bool;
+	private var rgbHexValueMap:Map<String, Bool>;
 	public var clickedCell(default, null):Cell;
 	private var element:JQuery;
 
@@ -23,7 +22,7 @@ class Palette
 		PAGE_CELL_TOTAL = LINE_TOTAL * Line.CELL_TOTAL;
 		element = new JQuery(".palette", parentElement);
 
-		rgbHexColorMap = new Map();
+		rgbHexValueMap = new Map();
 		pixelColorSet = [];
 		lines = [];
 		for (i in 0...LINE_TOTAL) lines.push(new Line(element, i));
@@ -31,50 +30,66 @@ class Palette
 	}
 
 	//
-	public function updateRgbHexColor(addedRgbHexColor:String)
+	public function getRgbHexValueSet():Array<String>
 	{
-		updateAllowDuplicateColor();
-		addRgbHexColor(addedRgbHexColor);
-		update();
-	}
-	public function updateRgbHexColorSet(addedPixelColorSet:Array<PixelColor>)
-	{
-		updateAllowDuplicateColor();
-		addRgbHexColorSet(addedPixelColorSet);
-		update();
-	}
-	private function updateAllowDuplicateColor()
-	{
-		allowDuplicateColor = switch(kind)
+		var rgbHexValueSet = new Array<String>();
+		for (pixelColor in pixelColorSet)
 		{
-			case PaletteKind.BEFORE: false;
-			case PaletteKind.AFTER:
-				Setting.instance.isAllowedDuplucatePalletColorInPalletAfter();
+			rgbHexValueSet.push(pixelColor.rgbHexValue);
 		}
+		return rgbHexValueSet;
 	}
-	private function addRgbHexColorSet(addedPixelColorSet:Array<PixelColor>)
+	public function isUnregisterableColor(rgbHexValue:String):Bool
 	{
-		for (i in 0...addedPixelColorSet.length)
-			addRgbHexColor(addedPixelColorSet[i]);
+		return (rgbHexValueMap.exists(rgbHexValue) && !isAllowedDuplicateColor());
 	}
-	private function addRgbHexColor(pixelColor:PixelColor)
-	{
-		if(rgbHexColorMap.exists(pixelColor.rgbHexValue) && !allowDuplicateColor) return;
-
-		rgbHexColorMap.set(pixelColor.rgbHexValue, true);
-		pixelColorSet.push(pixelColor);
-	}
-
 	public function clear()
 	{
 		pixelColorSet = [];
-		rgbHexColorMap = new Map();
+		rgbHexValueMap = new Map();
 		update();
 	}
 	public function getMaximumIndex():Int
 	{
 		return (pixelColorSet.length < PAGE_CELL_TOTAL) ?
-			0: Math.floor(pixelColorSet.length / PAGE_CELL_TOTAL);
+		0: Math.floor(pixelColorSet.length / PAGE_CELL_TOTAL);
+	}
+
+
+	//
+	public function addColorSet(addedPixelColorSet:Array<PixelColor>)
+	{
+		var isAllowedDuplicateColor = isAllowedDuplicateColor();
+		for (pixelColor in addedPixelColorSet)
+		{
+			if(rgbHexValueMap.exists(pixelColor.rgbHexValue) && !isAllowedDuplicateColor) continue;
+
+			rgbHexValueMap.set(pixelColor.rgbHexValue, true);
+			pixelColorSet.push(pixelColor);
+		}
+		updateAllPixelColorPosition(addedPixelColorSet);
+		update();
+	}
+	private function updateAllPixelColorPosition(scannedPixelColorSet:Array<PixelColor>)
+	{
+		for (scannedPixelColor in scannedPixelColorSet)
+		{
+			for (pixelColor in pixelColorSet)
+			{
+				if(scannedPixelColor.rgbHexValue == pixelColor.rgbHexValue){
+					pixelColor.updatePosition(scannedPixelColor.x, scannedPixelColor.y);
+				}
+			}
+		}
+	}
+	private function isAllowedDuplicateColor():Bool
+	{
+		return switch(kind)
+		{
+			case PaletteKind.BEFORE: false;
+			case PaletteKind.AFTER:
+				Setting.instance.isAllowedDuplucatePalletColorInPalletAfter();
+		}
 	}
 
 	//
@@ -91,7 +106,7 @@ class Palette
 		{
 			var splicedStartPosition = displayedFirstCellIndex + (i * Line.CELL_TOTAL);
 
-			var lineRgbHexColorSet =
+			var linePixelColorSet =
 				(splicedStartPosition > pixelColorSet.length) ? []:
 
 				(splicedStartPosition + Line.CELL_TOTAL < pixelColorSet.length) ?
@@ -99,7 +114,7 @@ class Palette
 					pixelColorSet.slice(splicedStartPosition);
 
 			var line = lines[i];
-			line.update(lineRgbHexColorSet);
+			line.update(linePixelColorSet);
 		}
 	}
 	private function setEditableLastCell()
@@ -143,26 +158,30 @@ class Palette
 		}
 		return false;
 	}
-	public function changeCellColor(pixelColor:PixelColor)
+	public function changeClickedCellColor(pixelColor:PixelColor)
 	{
-		updateAllowDuplicateColor();
-		if(!clickedCell.painted){
-			addRgbHexColor(pixelColor);
+		if(!clickedCell.painted)
+		{
+			rgbHexValueMap.set(pixelColor.rgbHexValue, true);
+			pixelColorSet.push(pixelColor);
 		}
-		else{
-			if(rgbHexColorMap.exists(pixelColor.rgbHexValue) && !allowDuplicateColor) return;
-
-			var baseRgbHexColor = clickedCell.rgbHexColor;
-			rgbHexColorMap.remove(baseRgbHexColor);
-			rgbHexColorMap.set(pixelColor.rgbHexValue, true);
+		else
+		{
+			var baseRgbHexValue = clickedCell.pixelColor.rgbHexValue;
+			rgbHexValueMap.remove(baseRgbHexValue);
+			rgbHexValueMap.set(pixelColor.rgbHexValue, true);
 
 			var displayedFirstCellIndex = PageUI.instance.pageNumber.index * PAGE_CELL_TOTAL;
 			var registeredIndex = clickedCell.index + displayedFirstCellIndex;
 
 			pixelColorSet.splice(registeredIndex, 1);
-			pixelColorSet.insert(registeredIndex, pixelColor.rgbHexValue);
+			pixelColorSet.insert(registeredIndex, pixelColor);
 		}
 		update();
+	}
+	public function updateClickedCellScanPosition(x:Int, y:Int)
+	{
+		clickedCell.pixelColor.updatePosition(x, y);
 	}
 }
 enum LastFilledLine
@@ -171,7 +190,7 @@ enum LastFilledLine
 	INDEX(index:Int);
 }
 
-class Line
+private class Line
 {
 	public static inline var CELL_TOTAL = 10;
 	public var cells(default, null):Array<Cell>;
@@ -191,13 +210,13 @@ class Line
 			cells.push(cell);
 		}
 	}
-	public function update(rgbHexColorSet:Array<String>)
+	public function update(pixelColorSet:Array<PixelColor>)
 	{
 		for (i in 0...CELL_TOTAL)
 		{
 			var cell = cells[i];
-			if(i < rgbHexColorSet.length){
-				cell.fill(rgbHexColorSet[i]);
+			if(i < pixelColorSet.length){
+				cell.fill(pixelColorSet[i]);
 			}
 			else{
 				cell.clear();
@@ -216,9 +235,7 @@ class Line
 	}
 	public function searchClickedCell():Cell
 	{
-		for (i in 0...cells.length)
-		{
-			var cell = cells[i];
+		for (cell in cells){
 			if(cell.isClicked()){
 				return cell;
 			}
@@ -227,14 +244,13 @@ class Line
 	}
 }
 
-class Cell
+private class Cell
 {
 	public var index(default, null):Int;
 	private var element:JQuery;
 	public var painted(default, null):Bool;
 	private static inline var EDITABLE = "cell editable";
 	private static inline var ACTIVE = "cell active";
-	//public var rgbHexColor(default, null):String;
 	public var pixelColor(default, null):PixelColor;
 
 	private var clicked:Bool;

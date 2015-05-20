@@ -1,5 +1,7 @@
 package jsx.color_picker;
 
+import psd.ArtLayer;
+import jsx.util.LayersDisplay;
 import common.PixelColor;
 import common.PixelSelectorEvent;
 import haxe.Serializer;
@@ -19,10 +21,11 @@ class PixelSelector
 	private var application:Application;
 	private var activeDocument:Document;
 	private var colorSamplePosition:ColorSamplePosition;
+	private var layersDisplay:LayersDisplay;
 
 	public static function main()
 	{
-		PixelSelectorTest.execute();
+		//PixelSelectorTest.execute();
 	}
 	public function new()
 	{
@@ -44,6 +47,13 @@ class PixelSelector
 
 		activeDocument = application.activeDocument;
 		colorSamplePosition.initialize(activeDocument);
+		var activeLayer = activeDocument.activeLayer;
+
+		layersDisplay = new LayersDisplay(activeDocument.layers);
+		layersDisplay.hide();
+
+		if(!cast(activeLayer, ArtLayer).isBackgroundLayer)
+			activeLayer.visible = true;
 
 		var event = PixelSelectorEvent.UNSELECTED;
 
@@ -56,7 +66,7 @@ class PixelSelector
 			if(pixelColor.rgbHexValue == checkedRgbHexValue){
 
 				activeDocument.selection.deselect();
-				selectPixel(pixelColor.x, pixelColor.x);
+				selectPixel(pixelColor.x, pixelColor.y);
 				activeDocument.selection.similar(0, false);
 
 				event = PixelSelectorEvent.SELECTED;
@@ -66,6 +76,7 @@ class PixelSelector
 		}catch(error:Dynamic){}
 
 		colorSampler.remove();
+		layersDisplay.restore();
 
 		return Serializer.run(event);
 	}
@@ -89,7 +100,7 @@ private class PixelSelectorTest
 			case PixelSelectorInitialErrorEvent.NONE: "";
 		}
 
-		var pixelColor = new PixelColor("FF0000", 0, 0);
+		var pixelColor = PixelColor.create("FF0000", 0, 0);
 		var serializedPixelColor = Serializer.run(pixelColor);
 		var result = pixelSelecter.execute(serializedPixelColor);
 		var event:PixelSelectorEvent = Unserializer.run(result);

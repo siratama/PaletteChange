@@ -199,7 +199,6 @@ private class Scanner
 					var hexValue = colorSampler.color.rgb.hexValue;
 
 					if(!conversionRgbHexValueMap[hexValue] && paletteMap.map[hexValue] != null){
-
 						var conversionData = new ConversionData(x, y, paletteMap.map[hexValue]);
 						conversionDataSet.push(conversionData);
 						conversionRgbHexValueMap[hexValue] = true;

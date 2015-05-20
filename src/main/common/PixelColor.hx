@@ -1,9 +1,9 @@
 package common;
 class PixelColor
 {
-	public var rgbHexValue(default, never):String;
-	public var x(default, never):Int;
-	public var y(default, never):Int;
+	public var rgbHexValue(default, null):String;
+	public var x(default, null):Int;
+	public var y(default, null):Int;
 	private static inline var NOT_SET_POSITION = -1;
 
 	public static function create(rgbHexValue:String, x:Int, y:Int):PixelColor
@@ -22,10 +22,20 @@ class PixelColor
 		pixelColor.y = NOT_SET_POSITION;
 		return pixelColor;
 	}
-	public function new(){}
+	private function new(){}
 
 	public function isNotSetPosition():Bool
 	{
 		return x == NOT_SET_POSITION;
+	}
+	public function equalPosition(checked:PixelColor):Bool
+	{
+		return x == checked.x && y == checked.y;
+	}
+
+	public function updatePosition(x:Int, y:Int)
+	{
+		this.x = x;
+		this.y = y;
 	}
 }

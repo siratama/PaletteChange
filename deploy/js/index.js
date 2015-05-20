@@ -257,7 +257,7 @@ var common = {};
 common.CanvasColorSamplerEvent = $hxClasses["common.CanvasColorSamplerEvent"] = { __ename__ : ["common","CanvasColorSamplerEvent"], __constructs__ : ["NONE","RESULT"] };
 common.CanvasColorSamplerEvent.NONE = ["NONE",0];
 common.CanvasColorSamplerEvent.NONE.__enum__ = common.CanvasColorSamplerEvent;
-common.CanvasColorSamplerEvent.RESULT = function(rgbHexColorSet) { var $x = ["RESULT",1,rgbHexColorSet]; $x.__enum__ = common.CanvasColorSamplerEvent; return $x; };
+common.CanvasColorSamplerEvent.RESULT = function(pixelColorSet) { var $x = ["RESULT",1,pixelColorSet]; $x.__enum__ = common.CanvasColorSamplerEvent; return $x; };
 common.CanvasColorSamplerInitialErrorEvent = $hxClasses["common.CanvasColorSamplerInitialErrorEvent"] = { __ename__ : ["common","CanvasColorSamplerInitialErrorEvent"], __constructs__ : ["NONE","ERROR"] };
 common.CanvasColorSamplerInitialErrorEvent.NONE = ["NONE",0];
 common.CanvasColorSamplerInitialErrorEvent.NONE.__enum__ = common.CanvasColorSamplerInitialErrorEvent;
@@ -278,6 +278,56 @@ common.PaletteChangeInitialErrorEvent = $hxClasses["common.PaletteChangeInitialE
 common.PaletteChangeInitialErrorEvent.NONE = ["NONE",0];
 common.PaletteChangeInitialErrorEvent.NONE.__enum__ = common.PaletteChangeInitialErrorEvent;
 common.PaletteChangeInitialErrorEvent.ERROR = function(message) { var $x = ["ERROR",1,message]; $x.__enum__ = common.PaletteChangeInitialErrorEvent; return $x; };
+common.PixelColor = function() {
+};
+$hxClasses["common.PixelColor"] = common.PixelColor;
+common.PixelColor.__name__ = ["common","PixelColor"];
+common.PixelColor.create = function(rgbHexValue,x,y) {
+	var pixelColor = new common.PixelColor();
+	pixelColor.rgbHexValue = rgbHexValue;
+	pixelColor.x = x;
+	pixelColor.y = y;
+	return pixelColor;
+};
+common.PixelColor.createWithoutPosition = function(rgbHexValue) {
+	var pixelColor = new common.PixelColor();
+	pixelColor.rgbHexValue = rgbHexValue;
+	pixelColor.x = -1;
+	pixelColor.y = -1;
+	return pixelColor;
+};
+common.PixelColor.prototype = {
+	isNotSetPosition: function() {
+		return this.x == -1;
+	}
+	,equalPosition: function(checked) {
+		return this.x == checked.x && this.y == checked.y;
+	}
+	,updatePosition: function(x,y) {
+		this.x = x;
+		this.y = y;
+	}
+	,__class__: common.PixelColor
+};
+common.PixelColorSearchEvent = $hxClasses["common.PixelColorSearchEvent"] = { __ename__ : ["common","PixelColorSearchEvent"], __constructs__ : ["NONE","SELECTED","UNSELECTED"] };
+common.PixelColorSearchEvent.NONE = ["NONE",0];
+common.PixelColorSearchEvent.NONE.__enum__ = common.PixelColorSearchEvent;
+common.PixelColorSearchEvent.SELECTED = function(x,y) { var $x = ["SELECTED",1,x,y]; $x.__enum__ = common.PixelColorSearchEvent; return $x; };
+common.PixelColorSearchEvent.UNSELECTED = ["UNSELECTED",2];
+common.PixelColorSearchEvent.UNSELECTED.__enum__ = common.PixelColorSearchEvent;
+common.PixelColorSearchInitialErrorEvent = $hxClasses["common.PixelColorSearchInitialErrorEvent"] = { __ename__ : ["common","PixelColorSearchInitialErrorEvent"], __constructs__ : ["NONE","ERROR"] };
+common.PixelColorSearchInitialErrorEvent.NONE = ["NONE",0];
+common.PixelColorSearchInitialErrorEvent.NONE.__enum__ = common.PixelColorSearchInitialErrorEvent;
+common.PixelColorSearchInitialErrorEvent.ERROR = function(message) { var $x = ["ERROR",1,message]; $x.__enum__ = common.PixelColorSearchInitialErrorEvent; return $x; };
+common.PixelSelectorEvent = $hxClasses["common.PixelSelectorEvent"] = { __ename__ : ["common","PixelSelectorEvent"], __constructs__ : ["SELECTED","UNSELECTED"] };
+common.PixelSelectorEvent.SELECTED = ["SELECTED",0];
+common.PixelSelectorEvent.SELECTED.__enum__ = common.PixelSelectorEvent;
+common.PixelSelectorEvent.UNSELECTED = ["UNSELECTED",1];
+common.PixelSelectorEvent.UNSELECTED.__enum__ = common.PixelSelectorEvent;
+common.PixelSelectorInitialErrorEvent = $hxClasses["common.PixelSelectorInitialErrorEvent"] = { __ename__ : ["common","PixelSelectorInitialErrorEvent"], __constructs__ : ["NONE","ERROR"] };
+common.PixelSelectorInitialErrorEvent.NONE = ["NONE",0];
+common.PixelSelectorInitialErrorEvent.NONE.__enum__ = common.PixelSelectorInitialErrorEvent;
+common.PixelSelectorInitialErrorEvent.ERROR = function(message) { var $x = ["ERROR",1,message]; $x.__enum__ = common.PixelSelectorInitialErrorEvent; return $x; };
 var extension = {};
 extension.AbstractCSInterface = function(csInterface) {
 	this.csInterface = csInterface;
@@ -386,14 +436,14 @@ extension.CanvasColorSamplerRunner.prototype = {
 					this.mainFunction = $bind(this,this.sample);
 					break;
 				case 1:
-					var rgbHexColorSet = canvasColorSamplerEvent[2];
+					var pixelColorSet = canvasColorSamplerEvent[2];
 					var _g1 = this.clickedPaletteKind;
 					switch(_g1[1]) {
 					case 0:
-						this.canvasColorSamplerUI.paletteContainer.before.palette.updateRgbHexColorSet(rgbHexColorSet);
+						this.canvasColorSamplerUI.paletteContainer.before.palette.addColorSet(pixelColorSet);
 						break;
 					case 1:
-						this.canvasColorSamplerUI.paletteContainer.after.palette.updateRgbHexColorSet(rgbHexColorSet);
+						this.canvasColorSamplerUI.paletteContainer.after.palette.addColorSet(pixelColorSet);
 						break;
 					}
 					this.canvasColorSamplerUI.updatePageIndex();
@@ -422,7 +472,8 @@ extension.CanvasColorSamplerRunner.prototype = {
 };
 extension.JsxLoader = function() {
 	this.csInterface = extension.AbstractCSInterface.create();
-	this.loadCanvasColorSampler();
+	this.loadIndex = 0;
+	this.load();
 };
 $hxClasses["extension.JsxLoader"] = extension.JsxLoader;
 extension.JsxLoader.__name__ = ["extension","JsxLoader"];
@@ -433,29 +484,19 @@ extension.JsxLoader.prototype = {
 	,run: function() {
 		this.mainFunction();
 	}
-	,loadCanvasColorSampler: function() {
+	,load: function() {
 		var _g = this;
+		var fileName = extension.JsxLoader.LOAD_JSX_SET[this.loadIndex];
+		var filePath = this.csInterface.getExtensionSystemPath() + "/jsx/" + fileName + ".jsx";
 		this.loaded = false;
-		var filePath = this.getJsxPath("CanvasColorSampler");
 		this.csInterface.evalFile(filePath,function(result) {
 			_g.loaded = true;
 		});
-		this.mainFunction = $bind(this,this.observeToLoadCanvasColorSampler);
+		this.mainFunction = $bind(this,this.observeToLoad);
 	}
-	,observeToLoadCanvasColorSampler: function() {
-		if(this.loaded) this.loadPaletteChange();
-	}
-	,loadPaletteChange: function() {
-		var _g = this;
-		this.loaded = false;
-		var filePath = this.getJsxPath("PaletteChange");
-		this.csInterface.evalFile(filePath,function(result) {
-			_g.loaded = true;
-		});
-		this.mainFunction = $bind(this,this.observeToLoadPaletteChange);
-	}
-	,observeToLoadPaletteChange: function() {
-		if(this.loaded) this.mainFunction = $bind(this,this.finish);
+	,observeToLoad: function() {
+		if(!this.loaded) return;
+		if(++this.loadIndex < extension.JsxLoader.LOAD_JSX_SET.length) this.load(); else this.mainFunction = $bind(this,this.finish);
 	}
 	,finish: function() {
 	}
@@ -584,7 +625,7 @@ extension.Panel.prototype = {
 		if(extension.overlay.OverlayWindow.instance == null) extension.overlay.OverlayWindow.instance = new extension.overlay.OverlayWindow(); else extension.overlay.OverlayWindow.instance;
 		this.canvasColorSamplerRunner = new extension.CanvasColorSamplerRunner();
 		this.paletteChangeRunner = new extension.PaletteChangeRunner();
-		this.colorPicker = new extension.color_picker.ColorPicker();
+		this.colorPickerUI = new extension.color_picker.ColorPickerUI();
 		this.startRunning($bind(this,this.loadJsx),50);
 	}
 	,setPersistent: function() {
@@ -618,15 +659,15 @@ extension.Panel.prototype = {
 	}
 	,observeToClickUI: function() {
 		this.canvasColorSamplerUI.run();
-		if(this.canvasColorSamplerUI.paletteContainer.before.scanButton.isClicked()) this.initializeToCallCanvasColorSampler(extension.color_sampler.palette.PaletteKind.BEFORE); else if(this.canvasColorSamplerUI.paletteContainer.after.scanButton.isClicked()) this.initializeToCallCanvasColorSampler(extension.color_sampler.palette.PaletteKind.AFTER); else if(this.paletteChangeUI.runButton.isClicked()) this.initializeToCallPaletteChange(); else if(this.canvasColorSamplerUI.paletteContainer.before.palette.searchClickedCell()) this.initializeToCallColorPicker(extension.color_sampler.palette.PaletteKind.BEFORE,this.canvasColorSamplerUI.paletteContainer.before.palette.clickedCell.rgbHexColor); else if(this.canvasColorSamplerUI.paletteContainer.after.palette.searchClickedCell()) this.initializeToCallColorPicker(extension.color_sampler.palette.PaletteKind.AFTER,this.canvasColorSamplerUI.paletteContainer.after.palette.clickedCell.rgbHexColor);
+		if(this.canvasColorSamplerUI.paletteContainer.before.scanButton.isClicked()) this.initializeToCallCanvasColorSampler(extension.color_sampler.palette.PaletteKind.BEFORE); else if(this.canvasColorSamplerUI.paletteContainer.after.scanButton.isClicked()) this.initializeToCallCanvasColorSampler(extension.color_sampler.palette.PaletteKind.AFTER); else if(this.paletteChangeUI.runButton.isClicked()) this.initializeToCallPaletteChange(); else if(this.canvasColorSamplerUI.paletteContainer.before.palette.searchClickedCell()) this.initializeToCallColorPicker(extension.color_sampler.palette.PaletteKind.BEFORE,this.canvasColorSamplerUI.paletteContainer.before.palette.clickedCell.pixelColor); else if(this.canvasColorSamplerUI.paletteContainer.after.palette.searchClickedCell()) this.initializeToCallColorPicker(extension.color_sampler.palette.PaletteKind.AFTER,this.canvasColorSamplerUI.paletteContainer.after.palette.clickedCell.pixelColor);
 	}
-	,initializeToCallColorPicker: function(paletteKind,rgbHexColor) {
-		this.selectedPaletteKind = paletteKind;
-		this.colorPicker.show(rgbHexColor);
+	,initializeToCallColorPicker: function(paletteKind,pixelColor) {
+		this.colorPickerUI.show(paletteKind,pixelColor);
 		this.changeRunning($bind(this,this.callColorPicker),50);
 	}
 	,callColorPicker: function() {
-		var event = this.colorPicker.getEvent();
+		this.colorPickerUI.run();
+		var event = this.colorPickerUI.getEvent();
 		switch(event[1]) {
 		case 0:
 			return;
@@ -634,8 +675,6 @@ extension.Panel.prototype = {
 			this.initializeToClickUI();
 			break;
 		case 2:
-			var rgbHexColor = event[2];
-			this.canvasColorSamplerUI.changeCellColor(this.selectedPaletteKind,rgbHexColor);
 			this.initializeToClickUI();
 			break;
 		}
@@ -660,38 +699,373 @@ extension.Panel.prototype = {
 	,__class__: extension.Panel
 };
 extension.color_picker = {};
-extension.color_picker.ColorPickerEvent = $hxClasses["extension.color_picker.ColorPickerEvent"] = { __ename__ : ["extension","color_picker","ColorPickerEvent"], __constructs__ : ["NONE","CANCELLED","GOTTEN"] };
-extension.color_picker.ColorPickerEvent.NONE = ["NONE",0];
-extension.color_picker.ColorPickerEvent.NONE.__enum__ = extension.color_picker.ColorPickerEvent;
-extension.color_picker.ColorPickerEvent.CANCELLED = ["CANCELLED",1];
-extension.color_picker.ColorPickerEvent.CANCELLED.__enum__ = extension.color_picker.ColorPickerEvent;
-extension.color_picker.ColorPickerEvent.GOTTEN = function(rgbHexValue) { var $x = ["GOTTEN",2,rgbHexValue]; $x.__enum__ = extension.color_picker.ColorPickerEvent; return $x; };
-extension.color_picker.ColorPicker = function() {
+extension.color_picker.ColorPickerDialogEvent = $hxClasses["extension.color_picker.ColorPickerDialogEvent"] = { __ename__ : ["extension","color_picker","ColorPickerDialogEvent"], __constructs__ : ["NONE","CANCELLED","GOTTEN"] };
+extension.color_picker.ColorPickerDialogEvent.NONE = ["NONE",0];
+extension.color_picker.ColorPickerDialogEvent.NONE.__enum__ = extension.color_picker.ColorPickerDialogEvent;
+extension.color_picker.ColorPickerDialogEvent.CANCELLED = ["CANCELLED",1];
+extension.color_picker.ColorPickerDialogEvent.CANCELLED.__enum__ = extension.color_picker.ColorPickerDialogEvent;
+extension.color_picker.ColorPickerDialogEvent.GOTTEN = function(rgbHexValue) { var $x = ["GOTTEN",2,rgbHexValue]; $x.__enum__ = extension.color_picker.ColorPickerDialogEvent; return $x; };
+extension.color_picker.ColorPickerDialog = function() {
 	this.csInterface = extension.AbstractCSInterface.create();
 };
-$hxClasses["extension.color_picker.ColorPicker"] = extension.color_picker.ColorPicker;
-extension.color_picker.ColorPicker.__name__ = ["extension","color_picker","ColorPicker"];
-extension.color_picker.ColorPicker.prototype = {
+$hxClasses["extension.color_picker.ColorPickerDialog"] = extension.color_picker.ColorPickerDialog;
+extension.color_picker.ColorPickerDialog.__name__ = ["extension","color_picker","ColorPickerDialog"];
+extension.color_picker.ColorPickerDialog.prototype = {
 	getEvent: function() {
 		var n = this.event;
-		this.event = extension.color_picker.ColorPickerEvent.NONE;
+		this.event = extension.color_picker.ColorPickerDialogEvent.NONE;
 		return n;
 	}
-	,show: function(rgbHexValue) {
+	,show: function() {
 		var _g = this;
-		if(rgbHexValue != null) this.csInterface.evalScript("app.foregroundColor.rgb.hexValue = \"" + rgbHexValue + "\";");
-		this.event = extension.color_picker.ColorPickerEvent.NONE;
+		this.event = extension.color_picker.ColorPickerDialogEvent.NONE;
 		this.csInterface.showColorPicker(true,function(bool) {
-			if(bool == "false") _g.event = extension.color_picker.ColorPickerEvent.CANCELLED; else _g.observeGettingColor();
+			if(bool == "false") _g.event = extension.color_picker.ColorPickerDialogEvent.CANCELLED; else _g.observeGettingColor();
 		});
 	}
 	,observeGettingColor: function() {
 		var _g = this;
 		this.csInterface.evalScript("app.foregroundColor.rgb.hexValue;",function(data) {
-			_g.event = extension.color_picker.ColorPickerEvent.GOTTEN(data);
+			_g.event = extension.color_picker.ColorPickerDialogEvent.GOTTEN(data);
 		});
 	}
-	,__class__: extension.color_picker.ColorPicker
+	,__class__: extension.color_picker.ColorPickerDialog
+};
+extension.color_picker.ColorPickerUIEvent = $hxClasses["extension.color_picker.ColorPickerUIEvent"] = { __ename__ : ["extension","color_picker","ColorPickerUIEvent"], __constructs__ : ["NONE","DIALOG_CANCELLED_STILL_TRANSPARENT","CLOSED"] };
+extension.color_picker.ColorPickerUIEvent.NONE = ["NONE",0];
+extension.color_picker.ColorPickerUIEvent.NONE.__enum__ = extension.color_picker.ColorPickerUIEvent;
+extension.color_picker.ColorPickerUIEvent.DIALOG_CANCELLED_STILL_TRANSPARENT = ["DIALOG_CANCELLED_STILL_TRANSPARENT",1];
+extension.color_picker.ColorPickerUIEvent.DIALOG_CANCELLED_STILL_TRANSPARENT.__enum__ = extension.color_picker.ColorPickerUIEvent;
+extension.color_picker.ColorPickerUIEvent.CLOSED = ["CLOSED",2];
+extension.color_picker.ColorPickerUIEvent.CLOSED.__enum__ = extension.color_picker.ColorPickerUIEvent;
+extension.color_picker.ColorPickerUI = function() {
+	this.csInterface = extension.AbstractCSInterface.create();
+	if(extension.color_sampler.CanvasColorSamplerUI.instance == null) this.canvasColorSamplerUI = extension.color_sampler.CanvasColorSamplerUI.instance = new extension.color_sampler.CanvasColorSamplerUI(); else this.canvasColorSamplerUI = extension.color_sampler.CanvasColorSamplerUI.instance;
+	this.dialog = new extension.color_picker.ColorPickerDialog();
+	this.pixelSelectorRunner = new extension.color_picker.PixelSelectorRunner();
+	this.pixelColorSearchRunner = new extension.color_picker.PixelColorSearchRunner();
+	this.element = new $("#color_picker");
+	this.displayElement = new $(".display",this.element);
+	this.editColorButton = new extension.parts.Button(this.element,"edit_button");
+	this.selectCanvasButton = new extension.parts.Button(this.element,"select_button");
+	this.closeButton = new extension.parts.Button(this.element,"close_button");
+};
+$hxClasses["extension.color_picker.ColorPickerUI"] = extension.color_picker.ColorPickerUI;
+extension.color_picker.ColorPickerUI.__name__ = ["extension","color_picker","ColorPickerUI"];
+extension.color_picker.ColorPickerUI.prototype = {
+	getEvent: function() {
+		var n = this.event;
+		this.event = extension.color_picker.ColorPickerUIEvent.NONE;
+		return n;
+	}
+	,run: function() {
+		this.mainFunction();
+	}
+	,show: function(paletteKind,pixelColor) {
+		this.paletteKind = paletteKind;
+		this.pixelColor = pixelColor;
+		this.element.css("display","block");
+		this.event = extension.color_picker.ColorPickerUIEvent.NONE;
+		if(pixelColor != null) {
+			this.csInterface.evalScript("app.foregroundColor.rgb.hexValue = \"" + pixelColor.rgbHexValue + "\";");
+			this.displayElement.css("background-color","#" + pixelColor.rgbHexValue);
+			if(!pixelColor.isNotSetPosition()) this.initializeToPixelSelector(); else this.initializeToObserveToClickUI();
+		} else {
+			this.displayElement.css("background-color","transparent");
+			this.showDialog();
+		}
+	}
+	,initializeToPixelSelector: function() {
+		this.pixelSelectorRunner.call(this.pixelColor);
+		this.mainFunction = $bind(this,this.selectPixel);
+	}
+	,selectPixel: function() {
+		this.pixelSelectorRunner.run();
+		var event = this.pixelSelectorRunner.getEvent();
+		switch(event[1]) {
+		case 0:
+			return;
+		case 1:
+			var message = event[2];
+			this.initializeToObserveToClickUI();
+			break;
+		case 2:
+			var pixelSelectorEvent = event[2];
+			this.initializeToObserveToClickUI();
+			break;
+		}
+	}
+	,initializeToObserveToClickUI: function() {
+		this.mainFunction = $bind(this,this.observeToClickUI);
+	}
+	,observeToClickUI: function() {
+		if(this.editColorButton.isClicked()) this.showDialog(); else if(this.selectCanvasButton.isClicked()) this.searchPixelColor(); else if(this.closeButton.isClicked()) this.destroy(extension.color_picker.ColorPickerUIEvent.CLOSED);
+	}
+	,searchPixelColor: function() {
+		this.pixelColorSearchRunner.call(this.pixelColor.rgbHexValue);
+		this.mainFunction = $bind(this,this.observeToSearchPixelColor);
+	}
+	,observeToSearchPixelColor: function() {
+		this.pixelColorSearchRunner.run();
+		var event = this.pixelColorSearchRunner.getEvent();
+		switch(event[1]) {
+		case 0:
+			return;
+		case 1:
+			var message = event[2];
+			js.Lib.alert(message);
+			this.initializeToObserveToClickUI();
+			break;
+		case 2:case 3:
+			this.initializeToObserveToClickUI();
+			break;
+		case 4:
+			var pixelColor = event[2];
+			this.pixelColor = pixelColor;
+			this.canvasColorSamplerUI.updateClickedCellScanPosition(this.paletteKind,pixelColor.x,pixelColor.y);
+			this.initializeToObserveToClickUI();
+			break;
+		}
+	}
+	,showDialog: function() {
+		this.dialog.show();
+		this.mainFunction = $bind(this,this.observeDialog);
+	}
+	,observeDialog: function() {
+		var event = this.dialog.getEvent();
+		switch(event[1]) {
+		case 0:
+			return;
+		case 1:
+			if(this.pixelColor == null) this.destroy(extension.color_picker.ColorPickerUIEvent.DIALOG_CANCELLED_STILL_TRANSPARENT); else this.initializeToObserveToClickUI();
+			break;
+		case 2:
+			var rgbHexValue = event[2];
+			if(this.canvasColorSamplerUI.isUnregisterableColor(this.paletteKind,rgbHexValue)) {
+				js.Lib.alert("The color overlaps.");
+				this.destroy(extension.color_picker.ColorPickerUIEvent.DIALOG_CANCELLED_STILL_TRANSPARENT);
+			} else {
+				this.displayElement.css("background-color","#" + rgbHexValue);
+				this.pixelColor = common.PixelColor.createWithoutPosition(rgbHexValue);
+				this.canvasColorSamplerUI.changeClickedCellColor(this.paletteKind,this.pixelColor);
+				this.initializeToObserveToClickUI();
+			}
+			break;
+		}
+	}
+	,destroy: function(event) {
+		this.element.css("display","none");
+		this.event = event;
+		this.mainFunction = $bind(this,this.finish);
+	}
+	,finish: function() {
+	}
+	,__class__: extension.color_picker.ColorPickerUI
+};
+extension.color_picker.PixelColorSearchRunnerEvent = $hxClasses["extension.color_picker.PixelColorSearchRunnerEvent"] = { __ename__ : ["extension","color_picker","PixelColorSearchRunnerEvent"], __constructs__ : ["NONE","ERROR","CANCEL","UNSELECTED","SELECTED"] };
+extension.color_picker.PixelColorSearchRunnerEvent.NONE = ["NONE",0];
+extension.color_picker.PixelColorSearchRunnerEvent.NONE.__enum__ = extension.color_picker.PixelColorSearchRunnerEvent;
+extension.color_picker.PixelColorSearchRunnerEvent.ERROR = function(message) { var $x = ["ERROR",1,message]; $x.__enum__ = extension.color_picker.PixelColorSearchRunnerEvent; return $x; };
+extension.color_picker.PixelColorSearchRunnerEvent.CANCEL = ["CANCEL",2];
+extension.color_picker.PixelColorSearchRunnerEvent.CANCEL.__enum__ = extension.color_picker.PixelColorSearchRunnerEvent;
+extension.color_picker.PixelColorSearchRunnerEvent.UNSELECTED = ["UNSELECTED",3];
+extension.color_picker.PixelColorSearchRunnerEvent.UNSELECTED.__enum__ = extension.color_picker.PixelColorSearchRunnerEvent;
+extension.color_picker.PixelColorSearchRunnerEvent.SELECTED = function(pixelColor) { var $x = ["SELECTED",4,pixelColor]; $x.__enum__ = extension.color_picker.PixelColorSearchRunnerEvent; return $x; };
+extension.color_picker.PixelColorSearchRunner = function() {
+	this.csInterface = extension.AbstractCSInterface.create();
+	if(extension.overlay.OverlayWindow.instance == null) this.overlayWindow = extension.overlay.OverlayWindow.instance = new extension.overlay.OverlayWindow(); else this.overlayWindow = extension.overlay.OverlayWindow.instance;
+};
+$hxClasses["extension.color_picker.PixelColorSearchRunner"] = extension.color_picker.PixelColorSearchRunner;
+extension.color_picker.PixelColorSearchRunner.__name__ = ["extension","color_picker","PixelColorSearchRunner"];
+extension.color_picker.PixelColorSearchRunner.prototype = {
+	getEvent: function() {
+		var n = this.event;
+		this.event = extension.color_picker.PixelColorSearchRunnerEvent.NONE;
+		return n;
+	}
+	,run: function() {
+		this.mainFunction();
+	}
+	,call: function(searchedRgbHexValue) {
+		var _g = this;
+		this.searchedRgbHexValue = searchedRgbHexValue;
+		this.overlayWindow.showCanvasColorSamplerRunning();
+		this.jsxEvent = common.JsxEvent.NONE;
+		this.csInterface.evalScript("var " + "pixelColorSearch" + " = new " + "PixelColorSearch" + "();");
+		this.csInterface.evalScript("" + "pixelColorSearch" + ".getInitialErrorEvent();",function(result) {
+			_g.jsxEvent = common.JsxEvent.GOTTEN(result);
+		});
+		this.mainFunction = $bind(this,this.observeToRecieveInitialErrorEvent);
+	}
+	,observeToRecieveInitialErrorEvent: function() {
+		{
+			var _g = this.recieveJsxEvent();
+			switch(_g[1]) {
+			case 0:
+				return;
+			case 1:
+				var serializedEvent = _g[2];
+				var initialErrorEvent = haxe.Unserializer.run(serializedEvent);
+				switch(initialErrorEvent[1]) {
+				case 1:
+					var message = initialErrorEvent[2];
+					this.destroy(extension.color_picker.PixelColorSearchRunnerEvent.ERROR(message));
+					break;
+				case 0:
+					this.initializeToSearch();
+					break;
+				}
+				break;
+			}
+		}
+	}
+	,initializeToSearch: function() {
+		this.event = extension.color_picker.PixelColorSearchRunnerEvent.NONE;
+		this.csInterface.evalScript("" + "pixelColorSearch" + ".initialize(\"" + this.searchedRgbHexValue + "\");");
+		this.mainFunction = $bind(this,this.search);
+	}
+	,search: function() {
+		var _g = this;
+		if(this.overlayWindow.cancelButton.isClicked()) {
+			this.csInterface.evalScript("" + "pixelColorSearch" + ".interrupt();");
+			this.destroy(extension.color_picker.PixelColorSearchRunnerEvent.CANCEL);
+		} else {
+			this.jsxEvent = common.JsxEvent.NONE;
+			this.csInterface.evalScript("" + "pixelColorSearch" + ".run();");
+			this.csInterface.evalScript("" + "pixelColorSearch" + ".getSerializedEvent();",function(result) {
+				_g.jsxEvent = common.JsxEvent.GOTTEN(result);
+			});
+			this.mainFunction = $bind(this,this.observeToSearch);
+		}
+	}
+	,observeToSearch: function() {
+		{
+			var _g = this.recieveJsxEvent();
+			switch(_g[1]) {
+			case 0:
+				return;
+			case 1:
+				var serializedEvent = _g[2];
+				var pixelColorSearchEvent = haxe.Unserializer.run(serializedEvent);
+				switch(pixelColorSearchEvent[1]) {
+				case 0:
+					this.mainFunction = $bind(this,this.search);
+					break;
+				case 2:
+					this.destroy(extension.color_picker.PixelColorSearchRunnerEvent.UNSELECTED);
+					break;
+				case 1:
+					var y = pixelColorSearchEvent[3];
+					var x = pixelColorSearchEvent[2];
+					var pixelColor = common.PixelColor.create(this.searchedRgbHexValue,x,y);
+					this.destroy(extension.color_picker.PixelColorSearchRunnerEvent.SELECTED(pixelColor));
+					break;
+				}
+				break;
+			}
+		}
+	}
+	,recieveJsxEvent: function() {
+		var n = this.jsxEvent;
+		this.jsxEvent = common.JsxEvent.NONE;
+		return n;
+	}
+	,destroy: function(event) {
+		this.event = event;
+		this.overlayWindow.hide();
+		this.mainFunction = $bind(this,this.finish);
+	}
+	,finish: function() {
+	}
+	,__class__: extension.color_picker.PixelColorSearchRunner
+};
+extension.color_picker.PixelSelectorRunnerEvent = $hxClasses["extension.color_picker.PixelSelectorRunnerEvent"] = { __ename__ : ["extension","color_picker","PixelSelectorRunnerEvent"], __constructs__ : ["NONE","ERROR","FINISH"] };
+extension.color_picker.PixelSelectorRunnerEvent.NONE = ["NONE",0];
+extension.color_picker.PixelSelectorRunnerEvent.NONE.__enum__ = extension.color_picker.PixelSelectorRunnerEvent;
+extension.color_picker.PixelSelectorRunnerEvent.ERROR = function(message) { var $x = ["ERROR",1,message]; $x.__enum__ = extension.color_picker.PixelSelectorRunnerEvent; return $x; };
+extension.color_picker.PixelSelectorRunnerEvent.FINISH = function(pixelSelectorEvent) { var $x = ["FINISH",2,pixelSelectorEvent]; $x.__enum__ = extension.color_picker.PixelSelectorRunnerEvent; return $x; };
+extension.color_picker.PixelSelectorRunner = function() {
+	this.csInterface = extension.AbstractCSInterface.create();
+};
+$hxClasses["extension.color_picker.PixelSelectorRunner"] = extension.color_picker.PixelSelectorRunner;
+extension.color_picker.PixelSelectorRunner.__name__ = ["extension","color_picker","PixelSelectorRunner"];
+extension.color_picker.PixelSelectorRunner.prototype = {
+	getEvent: function() {
+		var n = this.event;
+		this.event = extension.color_picker.PixelSelectorRunnerEvent.NONE;
+		return n;
+	}
+	,run: function() {
+		this.mainFunction();
+	}
+	,call: function(selectedPixelColor) {
+		var _g = this;
+		this.selectedPixelColor = selectedPixelColor;
+		this.jsxEvent = common.JsxEvent.NONE;
+		this.csInterface.evalScript("var " + "pixelSelector" + " = new " + "PixelSelector" + "();");
+		this.csInterface.evalScript("" + "pixelSelector" + ".getInitialErrorEvent();",function(result) {
+			_g.jsxEvent = common.JsxEvent.GOTTEN(result);
+		});
+		this.mainFunction = $bind(this,this.observeToRecieveInitialErrorEvent);
+	}
+	,observeToRecieveInitialErrorEvent: function() {
+		{
+			var _g = this.recieveJsxEvent();
+			switch(_g[1]) {
+			case 0:
+				return;
+			case 1:
+				var serializedEvent = _g[2];
+				var initialErrorEvent = haxe.Unserializer.run(serializedEvent);
+				switch(initialErrorEvent[1]) {
+				case 1:
+					var message = initialErrorEvent[2];
+					this.destroy(extension.color_picker.PixelSelectorRunnerEvent.ERROR(message));
+					break;
+				case 0:
+					this.select();
+					break;
+				}
+				break;
+			}
+		}
+	}
+	,select: function() {
+		var _g = this;
+		var serializedPixelColor = haxe.Serializer.run(this.selectedPixelColor);
+		this.jsxEvent = common.JsxEvent.NONE;
+		this.event = extension.color_picker.PixelSelectorRunnerEvent.NONE;
+		this.csInterface.evalScript("" + "pixelSelector" + ".execute(\"" + serializedPixelColor + "\");",function(result) {
+			_g.jsxEvent = common.JsxEvent.GOTTEN(result);
+		});
+		this.mainFunction = $bind(this,this.observeToSelect);
+	}
+	,observeToSelect: function() {
+		{
+			var _g = this.recieveJsxEvent();
+			switch(_g[1]) {
+			case 0:
+				return;
+			case 1:
+				var serializedEvent = _g[2];
+				var pixelSelectorEvent = haxe.Unserializer.run(serializedEvent);
+				this.destroy(extension.color_picker.PixelSelectorRunnerEvent.FINISH(pixelSelectorEvent));
+				break;
+			}
+		}
+	}
+	,recieveJsxEvent: function() {
+		var n = this.jsxEvent;
+		this.jsxEvent = common.JsxEvent.NONE;
+		return n;
+	}
+	,destroy: function(event) {
+		this.event = event;
+		this.mainFunction = $bind(this,this.finish);
+	}
+	,finish: function() {
+	}
+	,__class__: extension.color_picker.PixelSelectorRunner
 };
 extension.color_sampler = {};
 extension.color_sampler.CanvasColorSamplerUI = function() {
@@ -740,18 +1114,26 @@ extension.color_sampler.CanvasColorSamplerUI.prototype = {
 			return;
 		}
 	}
-	,changeCellColor: function(paletteKind,rgbHexColor) {
-		var palette;
+	,isUnregisterableColor: function(paletteKind,rgbHexValue) {
+		var palette = this.getPalette(paletteKind);
+		return palette.isUnregisterableColor(rgbHexValue);
+	}
+	,changeClickedCellColor: function(paletteKind,pixelColor) {
+		var palette = this.getPalette(paletteKind);
+		palette.changeClickedCellColor(pixelColor);
+		this.updatePageIndex();
+	}
+	,updateClickedCellScanPosition: function(paletteKind,x,y) {
+		var palette = this.getPalette(paletteKind);
+		palette.updateClickedCellScanPosition(x,y);
+	}
+	,getPalette: function(paletteKind) {
 		switch(paletteKind[1]) {
 		case 0:
-			palette = this.paletteContainer.before.palette;
-			break;
+			return this.paletteContainer.before.palette;
 		case 1:
-			palette = this.paletteContainer.after.palette;
-			break;
+			return this.paletteContainer.after.palette;
 		}
-		palette.changeCellColor(rgbHexColor);
-		this.updatePageIndex();
 	}
 	,__class__: extension.color_sampler.CanvasColorSamplerUI
 };
@@ -858,7 +1240,7 @@ extension.parts = {};
 extension.parts.Button = function(parentElement,className) {
 	var _g = this;
 	this.element = new $("." + className,parentElement);
-	this.element.mousedown(function(event) {
+	this.element.click(function(event) {
 		_g.clicked = true;
 	});
 };
@@ -911,8 +1293,8 @@ extension.color_sampler.PaletteContainer.prototype = {
 		if(beforeMaximumIndex >= afterMaximumIndex) return beforeMaximumIndex; else return afterMaximumIndex;
 	}
 	,getRgbHexValueSets: function() {
-		var beforePalette = this.before.palette.rgbHexColorSet.slice();
-		var afterPalette = this.after.palette.rgbHexColorSet.slice();
+		var beforePalette = this.before.palette.getRgbHexValueSet();
+		var afterPalette = this.after.palette.getRgbHexValueSet();
 		var beforeLength = beforePalette.length;
 		var afterLength = afterPalette.length;
 		if(beforeLength > afterLength) beforePalette.splice(afterLength,beforeLength); else if(afterLength > beforeLength) afterPalette.splice(beforeLength,afterLength);
@@ -925,60 +1307,76 @@ extension.color_sampler.palette.Palette = function(parentElement,kind) {
 	this.kind = kind;
 	this.PAGE_CELL_TOTAL = 50;
 	this.element = new $(".palette",parentElement);
-	this.rgbHexColorMap = new haxe.ds.StringMap();
-	this.rgbHexColorSet = [];
+	this.rgbHexValueMap = new haxe.ds.StringMap();
+	this.pixelColorSet = [];
 	this.lines = [];
 	var _g = 0;
 	while(_g < 5) {
 		var i = _g++;
-		this.lines.push(new extension.color_sampler.palette.Line(this.element,i));
+		this.lines.push(new extension.color_sampler.palette._Palette.Line(this.element,i));
 	}
 	this.setEditableLastCell();
 };
 $hxClasses["extension.color_sampler.palette.Palette"] = extension.color_sampler.palette.Palette;
 extension.color_sampler.palette.Palette.__name__ = ["extension","color_sampler","palette","Palette"];
 extension.color_sampler.palette.Palette.prototype = {
-	updateRgbHexColor: function(addedRgbHexColor) {
-		this.updateAllowDuplicateColor();
-		this.addRgbHexColor(addedRgbHexColor);
-		this.update();
-	}
-	,updateRgbHexColorSet: function(addedRgbHexColorSet) {
-		this.updateAllowDuplicateColor();
-		this.addRgbHexColorSet(addedRgbHexColorSet);
-		this.update();
-	}
-	,updateAllowDuplicateColor: function() {
-		var _g = this.kind;
-		switch(_g[1]) {
-		case 0:
-			this.allowDuplicateColor = false;
-			break;
-		case 1:
-			this.allowDuplicateColor = (extension.option.Setting.instance == null?extension.option.Setting.instance = new extension.option.Setting():extension.option.Setting.instance).isAllowedDuplucatePalletColorInPalletAfter();
-			break;
+	getRgbHexValueSet: function() {
+		var rgbHexValueSet = new Array();
+		var _g = 0;
+		var _g1 = this.pixelColorSet;
+		while(_g < _g1.length) {
+			var pixelColor = _g1[_g];
+			++_g;
+			rgbHexValueSet.push(pixelColor.rgbHexValue);
 		}
+		return rgbHexValueSet;
 	}
-	,addRgbHexColorSet: function(addedRgbHexColorSet) {
-		var _g1 = 0;
-		var _g = addedRgbHexColorSet.length;
-		while(_g1 < _g) {
-			var i = _g1++;
-			this.addRgbHexColor(addedRgbHexColorSet[i]);
-		}
-	}
-	,addRgbHexColor: function(addedRgbHexColor) {
-		if(this.rgbHexColorMap.exists(addedRgbHexColor) && !this.allowDuplicateColor) return;
-		this.rgbHexColorMap.set(addedRgbHexColor,true);
-		this.rgbHexColorSet.push(addedRgbHexColor);
+	,isUnregisterableColor: function(rgbHexValue) {
+		return this.rgbHexValueMap.exists(rgbHexValue) && !this.isAllowedDuplicateColor();
 	}
 	,clear: function() {
-		this.rgbHexColorSet = [];
-		this.rgbHexColorMap = new haxe.ds.StringMap();
+		this.pixelColorSet = [];
+		this.rgbHexValueMap = new haxe.ds.StringMap();
 		this.update();
 	}
 	,getMaximumIndex: function() {
-		if(this.rgbHexColorSet.length < this.PAGE_CELL_TOTAL) return 0; else return Math.floor(this.rgbHexColorSet.length / this.PAGE_CELL_TOTAL);
+		if(this.pixelColorSet.length < this.PAGE_CELL_TOTAL) return 0; else return Math.floor(this.pixelColorSet.length / this.PAGE_CELL_TOTAL);
+	}
+	,addColorSet: function(addedPixelColorSet) {
+		var isAllowedDuplicateColor = this.isAllowedDuplicateColor();
+		var _g = 0;
+		while(_g < addedPixelColorSet.length) {
+			var pixelColor = addedPixelColorSet[_g];
+			++_g;
+			if(this.rgbHexValueMap.exists(pixelColor.rgbHexValue) && !isAllowedDuplicateColor) continue;
+			this.rgbHexValueMap.set(pixelColor.rgbHexValue,true);
+			this.pixelColorSet.push(pixelColor);
+		}
+		this.updateAllPixelColorPosition(addedPixelColorSet);
+		this.update();
+	}
+	,updateAllPixelColorPosition: function(scannedPixelColorSet) {
+		var _g = 0;
+		while(_g < scannedPixelColorSet.length) {
+			var scannedPixelColor = scannedPixelColorSet[_g];
+			++_g;
+			var _g1 = 0;
+			var _g2 = this.pixelColorSet;
+			while(_g1 < _g2.length) {
+				var pixelColor = _g2[_g1];
+				++_g1;
+				if(scannedPixelColor.rgbHexValue == pixelColor.rgbHexValue) pixelColor.updatePosition(scannedPixelColor.x,scannedPixelColor.y);
+			}
+		}
+	}
+	,isAllowedDuplicateColor: function() {
+		var _g = this.kind;
+		switch(_g[1]) {
+		case 0:
+			return false;
+		case 1:
+			return (extension.option.Setting.instance == null?extension.option.Setting.instance = new extension.option.Setting():extension.option.Setting.instance).isAllowedDuplucatePalletColorInPalletAfter();
+		}
 	}
 	,update: function() {
 		this.updateLine();
@@ -990,10 +1388,10 @@ extension.color_sampler.palette.Palette.prototype = {
 		while(_g < 5) {
 			var i = _g++;
 			var splicedStartPosition = displayedFirstCellIndex + i * 10;
-			var lineRgbHexColorSet;
-			if(splicedStartPosition > this.rgbHexColorSet.length) lineRgbHexColorSet = []; else if(splicedStartPosition + 10 < this.rgbHexColorSet.length) lineRgbHexColorSet = this.rgbHexColorSet.slice(splicedStartPosition,splicedStartPosition + 10); else lineRgbHexColorSet = this.rgbHexColorSet.slice(splicedStartPosition);
+			var linePixelColorSet;
+			if(splicedStartPosition > this.pixelColorSet.length) linePixelColorSet = []; else if(splicedStartPosition + 10 < this.pixelColorSet.length) linePixelColorSet = this.pixelColorSet.slice(splicedStartPosition,splicedStartPosition + 10); else linePixelColorSet = this.pixelColorSet.slice(splicedStartPosition);
 			var line = this.lines[i];
-			line.update(lineRgbHexColorSet);
+			line.update(linePixelColorSet);
 		}
 	}
 	,setEditableLastCell: function() {
@@ -1010,7 +1408,7 @@ extension.color_sampler.palette.Palette.prototype = {
 	}
 	,getLastFilledLineIndex: function() {
 		var startPosition = (extension.color_sampler.PageUI.instance == null?extension.color_sampler.PageUI.instance = new extension.color_sampler.PageUI():extension.color_sampler.PageUI.instance).pageNumber.index * this.PAGE_CELL_TOTAL;
-		var coloringCellTotal = this.rgbHexColorSet.length - startPosition;
+		var coloringCellTotal = this.pixelColorSet.length - startPosition;
 		if(coloringCellTotal >= this.PAGE_CELL_TOTAL || coloringCellTotal < 0) return extension.color_sampler.palette.LastFilledLine.ANOTHER_PAGE; else return extension.color_sampler.palette.LastFilledLine.INDEX(Math.floor(coloringCellTotal / 10));
 	}
 	,searchClickedCell: function() {
@@ -1027,19 +1425,23 @@ extension.color_sampler.palette.Palette.prototype = {
 		}
 		return false;
 	}
-	,changeCellColor: function(rgbHexColor) {
-		this.updateAllowDuplicateColor();
-		if(!this.clickedCell.painted) this.addRgbHexColor(rgbHexColor); else {
-			if(this.rgbHexColorMap.exists(rgbHexColor) && !this.allowDuplicateColor) return;
-			var baseRgbHexColor = this.clickedCell.rgbHexColor;
-			this.rgbHexColorMap.remove(baseRgbHexColor);
-			this.rgbHexColorMap.set(rgbHexColor,true);
+	,changeClickedCellColor: function(pixelColor) {
+		if(!this.clickedCell.painted) {
+			this.rgbHexValueMap.set(pixelColor.rgbHexValue,true);
+			this.pixelColorSet.push(pixelColor);
+		} else {
+			var baseRgbHexValue = this.clickedCell.pixelColor.rgbHexValue;
+			this.rgbHexValueMap.remove(baseRgbHexValue);
+			this.rgbHexValueMap.set(pixelColor.rgbHexValue,true);
 			var displayedFirstCellIndex = (extension.color_sampler.PageUI.instance == null?extension.color_sampler.PageUI.instance = new extension.color_sampler.PageUI():extension.color_sampler.PageUI.instance).pageNumber.index * this.PAGE_CELL_TOTAL;
 			var registeredIndex = this.clickedCell.index + displayedFirstCellIndex;
-			this.rgbHexColorSet.splice(registeredIndex,1);
-			this.rgbHexColorSet.splice(registeredIndex,0,rgbHexColor);
+			this.pixelColorSet.splice(registeredIndex,1);
+			this.pixelColorSet.splice(registeredIndex,0,pixelColor);
 		}
 		this.update();
+	}
+	,updateClickedCellScanPosition: function(x,y) {
+		this.clickedCell.pixelColor.updatePosition(x,y);
 	}
 	,__class__: extension.color_sampler.palette.Palette
 };
@@ -1047,26 +1449,27 @@ extension.color_sampler.palette.LastFilledLine = $hxClasses["extension.color_sam
 extension.color_sampler.palette.LastFilledLine.ANOTHER_PAGE = ["ANOTHER_PAGE",0];
 extension.color_sampler.palette.LastFilledLine.ANOTHER_PAGE.__enum__ = extension.color_sampler.palette.LastFilledLine;
 extension.color_sampler.palette.LastFilledLine.INDEX = function(index) { var $x = ["INDEX",1,index]; $x.__enum__ = extension.color_sampler.palette.LastFilledLine; return $x; };
-extension.color_sampler.palette.Line = function(parentElement,lineIndex) {
+extension.color_sampler.palette._Palette = {};
+extension.color_sampler.palette._Palette.Line = function(parentElement,lineIndex) {
 	this.element = new $("<tr>").attr("class","line").appendTo(parentElement);
 	this.cells = [];
 	var _g = 0;
 	while(_g < 10) {
 		var i = _g++;
 		var cellIndex = lineIndex * 10 + i;
-		var cell = new extension.color_sampler.palette.Cell(this.element,cellIndex);
+		var cell = new extension.color_sampler.palette._Palette.Cell(this.element,cellIndex);
 		this.cells.push(cell);
 	}
 };
-$hxClasses["extension.color_sampler.palette.Line"] = extension.color_sampler.palette.Line;
-extension.color_sampler.palette.Line.__name__ = ["extension","color_sampler","palette","Line"];
-extension.color_sampler.palette.Line.prototype = {
-	update: function(rgbHexColorSet) {
+$hxClasses["extension.color_sampler.palette._Palette.Line"] = extension.color_sampler.palette._Palette.Line;
+extension.color_sampler.palette._Palette.Line.__name__ = ["extension","color_sampler","palette","_Palette","Line"];
+extension.color_sampler.palette._Palette.Line.prototype = {
+	update: function(pixelColorSet) {
 		var _g = 0;
 		while(_g < 10) {
 			var i = _g++;
 			var cell = this.cells[i];
-			if(i < rgbHexColorSet.length) cell.fill(rgbHexColorSet[i]); else cell.clear();
+			if(i < pixelColorSet.length) cell.fill(pixelColorSet[i]); else cell.clear();
 		}
 	}
 	,setEditableLastCell: function() {
@@ -1080,18 +1483,18 @@ extension.color_sampler.palette.Line.prototype = {
 		}
 	}
 	,searchClickedCell: function() {
-		var _g1 = 0;
-		var _g = this.cells.length;
-		while(_g1 < _g) {
-			var i = _g1++;
-			var cell = this.cells[i];
+		var _g = 0;
+		var _g1 = this.cells;
+		while(_g < _g1.length) {
+			var cell = _g1[_g];
+			++_g;
 			if(cell.isClicked()) return cell;
 		}
 		return null;
 	}
-	,__class__: extension.color_sampler.palette.Line
+	,__class__: extension.color_sampler.palette._Palette.Line
 };
-extension.color_sampler.palette.Cell = function(parentElement,index) {
+extension.color_sampler.palette._Palette.Cell = function(parentElement,index) {
 	var _g = this;
 	this.index = index;
 	this.element = new $("<td>").attr("class","cell").appendTo(parentElement);
@@ -1099,22 +1502,22 @@ extension.color_sampler.palette.Cell = function(parentElement,index) {
 		if(_g.element.attr("class") == "cell editable" || _g.element.attr("class") == "cell active") _g.clicked = true;
 	});
 };
-$hxClasses["extension.color_sampler.palette.Cell"] = extension.color_sampler.palette.Cell;
-extension.color_sampler.palette.Cell.__name__ = ["extension","color_sampler","palette","Cell"];
-extension.color_sampler.palette.Cell.prototype = {
+$hxClasses["extension.color_sampler.palette._Palette.Cell"] = extension.color_sampler.palette._Palette.Cell;
+extension.color_sampler.palette._Palette.Cell.__name__ = ["extension","color_sampler","palette","_Palette","Cell"];
+extension.color_sampler.palette._Palette.Cell.prototype = {
 	isClicked: function() {
 		var n = this.clicked;
 		this.clicked = false;
 		return n;
 	}
-	,fill: function(rgbHexColor) {
-		this.rgbHexColor = rgbHexColor;
-		this.element.css("background-color","#" + rgbHexColor);
+	,fill: function(pixelColor) {
+		this.pixelColor = pixelColor;
+		this.element.css("background-color","#" + pixelColor.rgbHexValue);
 		this.painted = true;
 		this.element.attr("class","cell active");
 	}
 	,clear: function() {
-		this.rgbHexColor = null;
+		this.pixelColor = null;
 		this.element.css("background-color","transparent");
 		this.painted = false;
 		this.element.attr("class","cell");
@@ -1122,7 +1525,7 @@ extension.color_sampler.palette.Cell.prototype = {
 	,setEditabled: function() {
 		this.element.attr("class","cell editable");
 	}
-	,__class__: extension.color_sampler.palette.Cell
+	,__class__: extension.color_sampler.palette._Palette.Cell
 };
 extension.color_sampler.palette.PaletteArea = function(parentElement,kind) {
 	var idName;
@@ -1994,17 +2397,23 @@ adobe.cep._UIColorType.UIColorType_Impl_.GRADATION = 2;
 common.ClassName.CANVAS_COLOR_SAMPLER = "CanvasColorSampler";
 common.ClassName.PALETTE_CHANGE = "PaletteChange";
 common.ClassName.INITIAL_ERROR_CHECK = "InitialErrorCheck";
-extension.CanvasColorSamplerRunner.CANVAS_COLOR_SAMPLER_INSTANCE_NAME = "canvasColorSampler";
+common.ClassName.PIXEL_COLOR_SEARCH = "PixelColorSearch";
+common.ClassName.PIXEL_SELECTOR = "PixelSelector";
+common.PixelColor.NOT_SET_POSITION = -1;
+extension.CanvasColorSamplerRunner.INSTANCE_NAME = "canvasColorSampler";
 extension.JsxLoader.JSX_DIRECTORY = "/jsx/";
 extension.JsxLoader.JSX_EXTENSION = ".jsx";
-extension.PaletteChangeRunner.PALETTE_CHANGE_INSTANCE_NAME = "paletteChange";
+extension.JsxLoader.LOAD_JSX_SET = ["CanvasColorSampler","PaletteChange"];
+extension.PaletteChangeRunner.INSTANCE_NAME = "paletteChange";
 extension.Panel.TIMER_SPEED_CALM = 250;
 extension.Panel.TIMER_SPEED_RUNNING = 50;
+extension.color_picker.PixelColorSearchRunner.INSTANCE_NAME = "pixelColorSearch";
+extension.color_picker.PixelSelectorRunner.INSTANCE_NAME = "pixelSelector";
 extension.color_sampler.PageNumber.DEFAULT_INDEX = 0;
 extension.color_sampler.palette.Palette.LINE_TOTAL = 5;
-extension.color_sampler.palette.Line.CELL_TOTAL = 10;
-extension.color_sampler.palette.Cell.EDITABLE = "cell editable";
-extension.color_sampler.palette.Cell.ACTIVE = "cell active";
+extension.color_sampler.palette._Palette.Line.CELL_TOTAL = 10;
+extension.color_sampler.palette._Palette.Cell.EDITABLE = "cell editable";
+extension.color_sampler.palette._Palette.Cell.ACTIVE = "cell active";
 extension.overlay.OverlayWindow.FACE_SPEED = "fast";
 extension.parts.TitleBar.SLIDE_SPEED = "fast";
 haxe.Serializer.USE_CACHE = false;

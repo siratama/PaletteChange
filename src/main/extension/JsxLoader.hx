@@ -11,8 +11,8 @@ class JsxLoader
 	private static var LOAD_JSX_SET = [
 		ClassName.CANVAS_COLOR_SAMPLER,
 		ClassName.PALETTE_CHANGE,
-		ClassName.PIXEL_SELECTOR,
-		ClassName.PIXEL_COLOR_SEARCH
+		//ClassName.PIXEL_SELECTOR,
+		//ClassName.PIXEL_COLOR_SEARCH
 	];
 	private var loadIndex:Int;
 
@@ -51,37 +51,6 @@ class JsxLoader
 			mainFunction = finish;
 	}
 
-	/*
-	private function loadCanvasColorSampler()
-	{
-		loaded = false;
-		var filePath = getJsxPath(ClassName.CANVAS_COLOR_SAMPLER);
-		csInterface.evalFile(filePath, function(result){
-			loaded = true;
-		});
-		mainFunction = observeToLoadCanvasColorSampler;
-	}
-	private function observeToLoadCanvasColorSampler()
-	{
-		if(loaded)
-			loadPaletteChange();
-		
-	}
-	private function loadPaletteChange()
-	{
-		loaded = false;
-		var filePath = getJsxPath(ClassName.PALETTE_CHANGE);
-		csInterface.evalFile(filePath, function(result){
-			loaded = true;
-		});
-		mainFunction = observeToLoadPaletteChange;
-	}
-	private function observeToLoadPaletteChange()
-	{
-		if(loaded)
-			mainFunction = finish;
-	}
-	*/
 	private function finish(){}
 	public function isFinished():Bool
 		return Reflect.compareMethods(mainFunction, finish);

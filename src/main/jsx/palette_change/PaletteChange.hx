@@ -12,7 +12,6 @@ class PaletteChange
 	private var mainFunction:Void->Void;
 	private var application:Application;
 	private var converter:Converter;
-	//private var converter:ConverterType2;
 	private var paletteMap:PaletteMap;
 
 	private var event:PaletteChangeEvent;
@@ -29,7 +28,6 @@ class PaletteChange
 		application = app;
 		paletteMap = PaletteMap.instance;
 		converter = new Converter();
-		//converter = new ConverterType2();
 	}
 	public function getInitialErrorEvent():String
 	{

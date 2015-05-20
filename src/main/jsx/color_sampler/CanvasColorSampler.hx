@@ -1,5 +1,6 @@
 package jsx.color_sampler;
 
+import common.PixelColor;
 import jsx.util.ColorSamplePosition;
 import jsx.util.Bounds;
 import psd.LayerTypeName;
@@ -26,7 +27,7 @@ class CanvasColorSampler
 	private var layersDisplay:LayersDisplay;
 	private var interruptCommand:Bool;
 
-	private var rgbHexValueSet:Array<String>;
+	private var pixelColorSet:Array<PixelColor>;
 	private var rgbHexValueMap:Map<String, Bool>;
 	private var bounds:Bounds;
 	private var positionX:Int;
@@ -77,7 +78,7 @@ class CanvasColorSampler
 
 		bounds = activeLayer.bounds.convert();
 
-		rgbHexValueSet = [];
+		pixelColorSet = [];
 		rgbHexValueMap = new Map();
 		positionX = Std.int(bounds.left);
 		positionY = Std.int(bounds.top);
@@ -102,7 +103,8 @@ class CanvasColorSampler
 					//call Map.exists method is error from extension panel
 					if(!rgbHexValueMap[rgbHexValue])
 					{
-						rgbHexValueSet.push(rgbHexValue);
+						var pixelColor = PixelColor.create(rgbHexValue, x, y);
+						pixelColorSet.push(pixelColor);
 						rgbHexValueMap.set(rgbHexValue, true);
 					}
 				//colorSampler.color is transparent
@@ -130,7 +132,7 @@ class CanvasColorSampler
 	private function finish()
 	{
 		layersDisplay.restore();
-		event = CanvasColorSamplerEvent.RESULT(rgbHexValueSet);
+		event = CanvasColorSamplerEvent.RESULT(pixelColorSet);
 	}
 	public function interrupt()
 	{
@@ -160,8 +162,8 @@ private class CanvasColorSamplerTest
 		switch(event)
 		{
 			case CanvasColorSamplerEvent.NONE: return;
-			case CanvasColorSamplerEvent.RESULT(rgbHexColorSet):
-				js.Lib.alert(rgbHexColorSet);
+			case CanvasColorSamplerEvent.RESULT(pixelColorSet):
+				js.Lib.alert(pixelColorSet);
 		}
 	}
 }

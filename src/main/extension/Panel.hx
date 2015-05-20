@@ -23,8 +23,7 @@ class Panel
 	private var csInterface:AbstractCSInterface;
 	private var jsxLoader:JsxLoader;
 
-	private var colorPicker:ColorPickerUI;
-	private var selectedPaletteKind:PaletteKind;
+	private var colorPickerUI:ColorPickerUI;
 
 	private var canvasColorSamplerRunner:CanvasColorSamplerRunner;
 	private var canvasColorSamplerUI:CanvasColorSamplerUI;
@@ -50,7 +49,7 @@ class Panel
 		OverlayWindow.instance;
 		canvasColorSamplerRunner = new CanvasColorSamplerRunner();
 		paletteChangeRunner = new PaletteChangeRunner();
-		colorPicker = new ColorPickerUI();
+		colorPickerUI = new ColorPickerUI();
 
 		startRunning(loadJsx, TIMER_SPEED_RUNNING);
 	}
@@ -118,23 +117,21 @@ class Panel
 	//
 	private function initializeToCallColorPicker(paletteKind:PaletteKind, pixelColor:PixelColor)
 	{
-		this.selectedPaletteKind = paletteKind;
-		colorPicker.show(pixelColor);
+		colorPickerUI.show(paletteKind, pixelColor);
 		changeRunning(callColorPicker, TIMER_SPEED_RUNNING);
 	}
 	private function callColorPicker()
 	{
-		var event = colorPicker.getEvent();
+		colorPickerUI.run();
+
+		var event = colorPickerUI.getEvent();
 		switch(event){
 			case ColorPickerUIEvent.NONE: return;
 
-			case ColorPickerUIEvent.ERROR(message):
-				js.Lib.alert(message);
 			case ColorPickerUIEvent.DIALOG_CANCELLED_STILL_TRANSPARENT:
 				initializeToClickUI();
 
-			case ColorPickerUIEvent.CLOSED(pixelColor):
-				canvasColorSamplerUI.changeCellColor(selectedPaletteKind, pixelColor);
+			case ColorPickerUIEvent.CLOSED:
 				initializeToClickUI();
 		}
 	}
