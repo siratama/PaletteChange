@@ -6,6 +6,7 @@ import common.PaletteChangeEvent;
 import psd.Application;
 import psd.Lib.app;
 
+@:keep
 @:native("PaletteChange")
 class PaletteChange
 {

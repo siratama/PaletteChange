@@ -101,6 +101,11 @@ Reflect.fields = function(o) {
 Reflect.isFunction = function(f) {
 	return typeof(f) == "function" && !(f.__name__ || f.__ename__);
 };
+Reflect.compareMethods = function(f1,f2) {
+	if(f1 == f2) return true;
+	if(!Reflect.isFunction(f1) || !Reflect.isFunction(f2)) return false;
+	return f1.scope == f2.scope && f1.method == f2.method && f1.method != null;
+};
 Reflect.deleteField = function(o,field) {
 	if(!Object.prototype.hasOwnProperty.call(o,field)) return false;
 	delete(o[field]);
@@ -218,7 +223,62 @@ Type["typeof"] = function(v) {
 		return ValueType.TUnknown;
 	}
 };
+Type.enumIndex = function(e) {
+	return e[1];
+};
 var common = common || {};
+common.CanvasColorSamplerEvent = $hxClasses["common.CanvasColorSamplerEvent"] = { __ename__ : ["common","CanvasColorSamplerEvent"], __constructs__ : ["NONE","RESULT"] };
+common.CanvasColorSamplerEvent.NONE = ["NONE",0];
+common.CanvasColorSamplerEvent.NONE.toString = $estr;
+common.CanvasColorSamplerEvent.NONE.__enum__ = common.CanvasColorSamplerEvent;
+common.CanvasColorSamplerEvent.RESULT = function(pixelColorSet) { var $x = ["RESULT",1,pixelColorSet]; $x.__enum__ = common.CanvasColorSamplerEvent; $x.toString = $estr; return $x; };
+common.CanvasColorSamplerInitialErrorEvent = $hxClasses["common.CanvasColorSamplerInitialErrorEvent"] = { __ename__ : ["common","CanvasColorSamplerInitialErrorEvent"], __constructs__ : ["NONE","ERROR"] };
+common.CanvasColorSamplerInitialErrorEvent.NONE = ["NONE",0];
+common.CanvasColorSamplerInitialErrorEvent.NONE.toString = $estr;
+common.CanvasColorSamplerInitialErrorEvent.NONE.__enum__ = common.CanvasColorSamplerInitialErrorEvent;
+common.CanvasColorSamplerInitialErrorEvent.ERROR = function(message) { var $x = ["ERROR",1,message]; $x.__enum__ = common.CanvasColorSamplerInitialErrorEvent; $x.toString = $estr; return $x; };
+common.PaletteChangeEvent = $hxClasses["common.PaletteChangeEvent"] = { __ename__ : ["common","PaletteChangeEvent"], __constructs__ : ["NONE","SUCCESS"] };
+common.PaletteChangeEvent.NONE = ["NONE",0];
+common.PaletteChangeEvent.NONE.toString = $estr;
+common.PaletteChangeEvent.NONE.__enum__ = common.PaletteChangeEvent;
+common.PaletteChangeEvent.SUCCESS = ["SUCCESS",1];
+common.PaletteChangeEvent.SUCCESS.toString = $estr;
+common.PaletteChangeEvent.SUCCESS.__enum__ = common.PaletteChangeEvent;
+common.PaletteChangeInitialErrorEvent = $hxClasses["common.PaletteChangeInitialErrorEvent"] = { __ename__ : ["common","PaletteChangeInitialErrorEvent"], __constructs__ : ["NONE","ERROR"] };
+common.PaletteChangeInitialErrorEvent.NONE = ["NONE",0];
+common.PaletteChangeInitialErrorEvent.NONE.toString = $estr;
+common.PaletteChangeInitialErrorEvent.NONE.__enum__ = common.PaletteChangeInitialErrorEvent;
+common.PaletteChangeInitialErrorEvent.ERROR = function(message) { var $x = ["ERROR",1,message]; $x.__enum__ = common.PaletteChangeInitialErrorEvent; $x.toString = $estr; return $x; };
+common.PixelColor = $hxClasses["common.PixelColor"] = function() {
+};
+common.PixelColor.__name__ = ["common","PixelColor"];
+common.PixelColor.create = function(rgbHexValue,x,y) {
+	var pixelColor = new common.PixelColor();
+	pixelColor.rgbHexValue = rgbHexValue;
+	pixelColor.x = x;
+	pixelColor.y = y;
+	return pixelColor;
+};
+common.PixelColor.createWithoutPosition = function(rgbHexValue) {
+	var pixelColor = new common.PixelColor();
+	pixelColor.rgbHexValue = rgbHexValue;
+	pixelColor.x = -1;
+	pixelColor.y = -1;
+	return pixelColor;
+};
+common.PixelColor.prototype = {
+	isNotSetPosition: function() {
+		return this.x == -1;
+	}
+	,equalPosition: function(checked) {
+		return this.x == checked.x && this.y == checked.y;
+	}
+	,updatePosition: function(x,y) {
+		this.x = x;
+		this.y = y;
+	}
+	,__class__: common.PixelColor
+};
 common.PixelColorSearchEvent = $hxClasses["common.PixelColorSearchEvent"] = { __ename__ : ["common","PixelColorSearchEvent"], __constructs__ : ["NONE","SELECTED","UNSELECTED"] };
 common.PixelColorSearchEvent.NONE = ["NONE",0];
 common.PixelColorSearchEvent.NONE.toString = $estr;
@@ -989,6 +1049,15 @@ js.Lib.__name__ = ["js","Lib"];
 js.Lib.alert = function(v) {
 	alert(js.Boot.__string_rec(v,""));
 };
+var jsx = jsx || {};
+jsx.PaletteChangePack = $hxClasses["jsx.PaletteChangePack"] = function() {
+};
+jsx.PaletteChangePack.__name__ = ["jsx","PaletteChangePack"];
+jsx.PaletteChangePack.main = function() {
+};
+jsx.PaletteChangePack.prototype = {
+	__class__: jsx.PaletteChangePack
+};
 var PixelColorSearch = $hxClasses["PixelColorSearch"] = function() {
 	this.application = psd.Lib.app;
 	this.colorSamplePosition = new jsx.util.ColorSamplePosition();
@@ -1084,7 +1153,6 @@ PixelColorSearch.prototype = {
 	}
 	,__class__: PixelColorSearch
 };
-var jsx = jsx || {};
 if(!jsx.color_picker) jsx.color_picker = {};
 if(!jsx.color_picker._PixelColorSearch) jsx.color_picker._PixelColorSearch = {};
 jsx.color_picker._PixelColorSearch.PixelColorSearchTest = $hxClasses["jsx.color_picker._PixelColorSearch.PixelColorSearchTest"] = function() { };
@@ -1124,6 +1192,513 @@ jsx.color_picker._PixelColorSearch.PixelColorSearchTest.execute = function() {
 			}
 		}
 	} catch( e ) { if( e != "__break__" ) throw e; }
+};
+var PixelSelector = $hxClasses["PixelSelector"] = function() {
+	this.application = psd.Lib.app;
+	this.colorSamplePosition = new jsx.util.ColorSamplePosition();
+};
+PixelSelector.__name__ = ["PixelSelector"];
+PixelSelector.main = function() {
+};
+PixelSelector.prototype = {
+	getInitialErrorEvent: function() {
+		var event;
+		if(this.application.documents.length == 0) event = common.PixelSelectorInitialErrorEvent.ERROR("Open document."); else event = common.PixelSelectorInitialErrorEvent.NONE;
+		return haxe.Serializer.run(event);
+	}
+	,execute: function(serializedPixelColor) {
+		var pixelColor = haxe.Unserializer.run(serializedPixelColor);
+		this.activeDocument = this.application.activeDocument;
+		this.colorSamplePosition.initialize(this.activeDocument);
+		var activeLayer = this.activeDocument.activeLayer;
+		this.layersDisplay = new jsx.util.LayersDisplay(this.activeDocument.layers);
+		this.layersDisplay.hide();
+		if(!(js.Boot.__cast(activeLayer , ArtLayer)).isBackgroundLayer) activeLayer.visible = true;
+		var event = common.PixelSelectorEvent.UNSELECTED;
+		var adjustX = this.colorSamplePosition.getAdjustX(pixelColor.x);
+		var adjustY = this.colorSamplePosition.getAdjustY(pixelColor.y);
+		var colorSampler = this.activeDocument.colorSamplers.add([adjustX,adjustY]);
+		try {
+			var checkedRgbHexValue = colorSampler.color.rgb.hexValue;
+			if(pixelColor.rgbHexValue == checkedRgbHexValue) {
+				this.activeDocument.selection.deselect();
+				this.selectPixel(pixelColor.x,pixelColor.y);
+				this.activeDocument.selection.similar(0,false);
+				event = common.PixelSelectorEvent.SELECTED;
+			}
+		} catch( error ) {
+		}
+		colorSampler.remove();
+		this.layersDisplay.restore();
+		return haxe.Serializer.run(event);
+	}
+	,selectPixel: function(x,y) {
+		this.activeDocument.selection.select([[x,y],[x + 1,y],[x + 1,y + 1],[x,y + 1]]);
+	}
+	,__class__: PixelSelector
+};
+if(!jsx.color_picker._PixelSelector) jsx.color_picker._PixelSelector = {};
+jsx.color_picker._PixelSelector.PixelSelectorTest = $hxClasses["jsx.color_picker._PixelSelector.PixelSelectorTest"] = function() { };
+jsx.color_picker._PixelSelector.PixelSelectorTest.__name__ = ["jsx","color_picker","_PixelSelector","PixelSelectorTest"];
+jsx.color_picker._PixelSelector.PixelSelectorTest.execute = function() {
+	var pixelSelecter = new PixelSelector();
+	var errorEvent = haxe.Unserializer.run(pixelSelecter.getInitialErrorEvent());
+	switch(errorEvent[1]) {
+	case 1:
+		var message = errorEvent[2];
+		js.Lib.alert(message);
+		return;
+	case 0:
+		"";
+		break;
+	}
+	var pixelColor = common.PixelColor.create("FF0000",0,0);
+	var serializedPixelColor = haxe.Serializer.run(pixelColor);
+	var result = pixelSelecter.execute(serializedPixelColor);
+	var event = haxe.Unserializer.run(result);
+	js.Lib.alert(event);
+};
+var CanvasColorSampler = $hxClasses["CanvasColorSampler"] = function() {
+	this.application = psd.Lib.app;
+	this.colorSamplePosition = new jsx.util.ColorSamplePosition();
+};
+CanvasColorSampler.__name__ = ["CanvasColorSampler"];
+CanvasColorSampler.main = function() {
+};
+CanvasColorSampler.prototype = {
+	getSerializedEvent: function() {
+		return haxe.Serializer.run(this.event);
+	}
+	,run: function() {
+		this.mainFunction();
+	}
+	,getInitialErrorEvent: function() {
+		var event;
+		if(this.application.documents.length == 0) event = common.CanvasColorSamplerInitialErrorEvent.ERROR("Open document."); else if(this.application.activeDocument.activeLayer.typename == LayerTypeName.LAYER_SET) event = common.CanvasColorSamplerInitialErrorEvent.ERROR("Select layer."); else event = common.CanvasColorSamplerInitialErrorEvent.NONE;
+		return haxe.Serializer.run(event);
+	}
+	,initialize: function() {
+		this.activeDocument = this.application.activeDocument;
+		this.colorSamplePosition.initialize(this.activeDocument);
+		var activeLayer = this.activeDocument.activeLayer;
+		this.layersDisplay = new jsx.util.LayersDisplay(this.activeDocument.layers);
+		this.layersDisplay.hide();
+		if(!(js.Boot.__cast(activeLayer , ArtLayer)).isBackgroundLayer) activeLayer.visible = true;
+		this.bounds = jsx.util.Bounds.convert(activeLayer.bounds);
+		this.pixelColorSet = [];
+		this.rgbHexValueMap = new haxe.ds.StringMap();
+		this.positionX = this.bounds.left | 0;
+		this.positionY = this.bounds.top | 0;
+		this.event = common.CanvasColorSamplerEvent.NONE;
+		this.mainFunction = $bind(this,this.scan);
+	}
+	,scan: function() {
+		this.scanPixelCount = 0;
+		var _g1 = this.positionY;
+		var _g = this.bounds.bottom | 0;
+		while(_g1 < _g) {
+			var y = _g1++;
+			var adjustY;
+			if(y == this.colorSamplePosition.activeDocumentHeight) adjustY = y; else adjustY = y + 0.1;
+			var _g3 = this.positionX;
+			var _g2 = this.bounds.right | 0;
+			while(_g3 < _g2) {
+				var x = _g3++;
+				var adjustX;
+				if(x == this.colorSamplePosition.activeDocumentWidth) adjustX = x; else adjustX = x + 0.1;
+				var colorSampler = this.activeDocument.colorSamplers.add([adjustX,adjustY]);
+				try {
+					var rgbHexValue = colorSampler.color.rgb.hexValue;
+					if(!this.rgbHexValueMap.get(rgbHexValue)) {
+						var pixelColor = common.PixelColor.create(rgbHexValue,x,y);
+						this.pixelColorSet.push(pixelColor);
+						this.rgbHexValueMap.set(rgbHexValue,true);
+					}
+				} catch( error ) {
+				}
+				colorSampler.remove();
+				if(++this.scanPixelCount < 10) continue;
+				this.adjustPosition(x,y);
+				return;
+			}
+			this.positionX = this.bounds.left | 0;
+		}
+		this.mainFunction = $bind(this,this.finish);
+	}
+	,adjustPosition: function(x,y) {
+		this.positionX = x + 1;
+		this.positionY = y;
+		if(this.positionX >= (this.bounds.right | 0)) {
+			this.positionX = this.bounds.left | 0;
+			this.positionY++;
+		}
+	}
+	,finish: function() {
+		this.layersDisplay.restore();
+		this.event = common.CanvasColorSamplerEvent.RESULT(this.pixelColorSet);
+	}
+	,interrupt: function() {
+		this.layersDisplay.restore();
+	}
+	,__class__: CanvasColorSampler
+};
+if(!jsx.color_sampler) jsx.color_sampler = {};
+if(!jsx.color_sampler._CanvasColorSampler) jsx.color_sampler._CanvasColorSampler = {};
+jsx.color_sampler._CanvasColorSampler.CanvasColorSamplerTest = $hxClasses["jsx.color_sampler._CanvasColorSampler.CanvasColorSamplerTest"] = function() { };
+jsx.color_sampler._CanvasColorSampler.CanvasColorSamplerTest.__name__ = ["jsx","color_sampler","_CanvasColorSampler","CanvasColorSamplerTest"];
+jsx.color_sampler._CanvasColorSampler.CanvasColorSamplerTest.execute = function() {
+	var canvasColorSampler = new CanvasColorSampler();
+	var initialErrorEvent = haxe.Unserializer.run(canvasColorSampler.getInitialErrorEvent());
+	switch(initialErrorEvent[1]) {
+	case 1:
+		var message = initialErrorEvent[2];
+		js.Lib.alert(message);
+		return;
+	case 0:
+		"";
+		break;
+	}
+	canvasColorSampler.initialize();
+	canvasColorSampler.run();
+	canvasColorSampler.run();
+	var result = canvasColorSampler.getSerializedEvent();
+	var event = haxe.Unserializer.run(result);
+	switch(event[1]) {
+	case 0:
+		return;
+	case 1:
+		var pixelColorSet = event[2];
+		js.Lib.alert(pixelColorSet);
+		break;
+	}
+};
+if(!jsx.palette_change) jsx.palette_change = {};
+jsx.palette_change.Converter = $hxClasses["jsx.palette_change.Converter"] = function() {
+	this.application = psd.Lib.app;
+	this.painter = new jsx.palette_change._Converter.Painter();
+	this.scanner = new jsx.palette_change._Converter.Scanner();
+};
+jsx.palette_change.Converter.__name__ = ["jsx","palette_change","Converter"];
+jsx.palette_change.Converter.prototype = {
+	run: function() {
+		this.mainFunction();
+	}
+	,initialize: function(ignoreLockedLayer) {
+		this.ignoreLockedLayer = ignoreLockedLayer;
+		this.activeDocument = this.application.activeDocument;
+		this.layers = this.activeDocument.layers;
+		this.layersDisplay = new jsx.util.LayersDisplay(this.layers);
+		this.layersDisplay.hide();
+		this.sampleLayerIndex = 0;
+		this.mainFunction = $bind(this,this.setSampleLayer);
+	}
+	,setSampleLayer: function() {
+		if(this.sampleLayerIndex < this.layers.length) {
+			this.sampleLayer = this.layers[this.sampleLayerIndex];
+			if((js.Boot.__cast(this.sampleLayer , ArtLayer)).isBackgroundLayer) this.sampleLayerIndex++; else if(this.ignoreLockedLayer && this.sampleLayer.allLocked) this.sampleLayerIndex++; else this.initializeToScan();
+		} else {
+			this.layersDisplay.restore();
+			this.mainFunction = $bind(this,this.finish);
+		}
+	}
+	,initializeToScan: function() {
+		this.scanner.initialize(this.activeDocument,this.sampleLayer);
+		this.mainFunction = $bind(this,this.scan);
+	}
+	,scan: function() {
+		this.scanner.run();
+		if(this.scanner.isFinished()) this.initializeToPaint();
+	}
+	,initializeToPaint: function() {
+		if(this.scanner.conversionDataSet.length > 0) {
+			this.painter.initialize(this.activeDocument,this.sampleLayer,this.scanner.conversionDataSet);
+			this.mainFunction = $bind(this,this.paint);
+		} else this.destroyToPaint();
+	}
+	,paint: function() {
+		this.painter.run();
+		if(this.painter.isFinished()) this.destroyToPaint();
+	}
+	,destroyToPaint: function() {
+		this.sampleLayerIndex++;
+		this.mainFunction = $bind(this,this.setSampleLayer);
+	}
+	,finish: function() {
+	}
+	,isFinished: function() {
+		return Reflect.compareMethods(this.mainFunction,$bind(this,this.finish));
+	}
+	,interrupt: function() {
+		this.layersDisplay.restore();
+	}
+	,__class__: jsx.palette_change.Converter
+};
+if(!jsx.palette_change._Converter) jsx.palette_change._Converter = {};
+jsx.palette_change._Converter.ConversionData = $hxClasses["jsx.palette_change._Converter.ConversionData"] = function(pixelX,pixelY,rgbHexValue) {
+	this.pixelX = pixelX;
+	this.pixelY = pixelY;
+	this.rgbHexValue = rgbHexValue;
+};
+jsx.palette_change._Converter.ConversionData.__name__ = ["jsx","palette_change","_Converter","ConversionData"];
+jsx.palette_change._Converter.ConversionData.prototype = {
+	__class__: jsx.palette_change._Converter.ConversionData
+};
+jsx.palette_change._Converter.Scanner = $hxClasses["jsx.palette_change._Converter.Scanner"] = function() {
+	if(jsx.palette_change.PaletteMap.instance == null) this.paletteMap = jsx.palette_change.PaletteMap.instance = new jsx.palette_change.PaletteMap(); else this.paletteMap = jsx.palette_change.PaletteMap.instance;
+	this.colorSamplePosition = new jsx.util.ColorSamplePosition();
+};
+jsx.palette_change._Converter.Scanner.__name__ = ["jsx","palette_change","_Converter","Scanner"];
+jsx.palette_change._Converter.Scanner.prototype = {
+	run: function() {
+		this.mainFunction();
+	}
+	,initialize: function(activeDocument,sampleLayer) {
+		this.activeDocument = activeDocument;
+		this.colorSamplePosition.initialize(activeDocument);
+		activeDocument.activeLayer = sampleLayer;
+		if(!(js.Boot.__cast(sampleLayer , ArtLayer)).isBackgroundLayer) sampleLayer.visible = true;
+		this.sampleBounds = jsx.util.Bounds.convert(sampleLayer.bounds);
+		this.samplePositionX = this.sampleBounds.left | 0;
+		this.samplePositionY = this.sampleBounds.top | 0;
+		this.conversionDataSet = [];
+		this.conversionRgbHexValueMap = new haxe.ds.StringMap();
+		this.mainFunction = $bind(this,this.execute);
+	}
+	,execute: function() {
+		this.scanPixelCount = 0;
+		var _g1 = this.samplePositionY;
+		var _g = this.sampleBounds.bottom | 0;
+		while(_g1 < _g) {
+			var y = _g1++;
+			var adjustY;
+			if(y == this.colorSamplePosition.activeDocumentHeight) adjustY = y; else adjustY = y + 0.1;
+			var _g3 = this.samplePositionX;
+			var _g2 = this.sampleBounds.right | 0;
+			while(_g3 < _g2) {
+				var x = _g3++;
+				var adjustX;
+				if(x == this.colorSamplePosition.activeDocumentWidth) adjustX = x; else adjustX = x + 0.1;
+				var colorSampler = this.activeDocument.colorSamplers.add([adjustX,adjustY]);
+				try {
+					var hexValue = colorSampler.color.rgb.hexValue;
+					if(!this.conversionRgbHexValueMap.get(hexValue) && this.paletteMap.map.get(hexValue) != null) {
+						var conversionData = new jsx.palette_change._Converter.ConversionData(x,y,this.paletteMap.map.get(hexValue));
+						this.conversionDataSet.push(conversionData);
+						this.conversionRgbHexValueMap.set(hexValue,true);
+						true;
+					}
+				} catch( error ) {
+				}
+				colorSampler.remove();
+				if(++this.scanPixelCount < 10) continue;
+				this.adjustPosition(x,y);
+				return;
+			}
+			this.samplePositionX = this.sampleBounds.left | 0;
+		}
+		this.mainFunction = $bind(this,this.finish);
+	}
+	,adjustPosition: function(x,y) {
+		this.samplePositionX = x + 1;
+		this.samplePositionY = y;
+		if(this.samplePositionX >= (this.sampleBounds.right | 0)) {
+			this.samplePositionX = this.sampleBounds.left | 0;
+			this.samplePositionY++;
+		}
+	}
+	,finish: function() {
+	}
+	,isFinished: function() {
+		return Reflect.compareMethods(this.mainFunction,$bind(this,this.finish));
+	}
+	,__class__: jsx.palette_change._Converter.Scanner
+};
+jsx.palette_change._Converter.Painter = $hxClasses["jsx.palette_change._Converter.Painter"] = function() {
+	this.colorSamplePosition = new jsx.util.ColorSamplePosition();
+};
+jsx.palette_change._Converter.Painter.__name__ = ["jsx","palette_change","_Converter","Painter"];
+jsx.palette_change._Converter.Painter.prototype = {
+	run: function() {
+		this.mainFunction();
+	}
+	,initialize: function(activeDocument,sampleLayer,conversionDataSet) {
+		this.activeDocument = activeDocument;
+		this.conversionDataSet = conversionDataSet;
+		this.sampleLayer = sampleLayer;
+		if(sampleLayer.allLocked) {
+			sampleLayer.allLocked = false;
+			this.wasLocked = true;
+		}
+		this.colorSamplePosition.initialize(activeDocument);
+		this.duplicatedPaintLayer = sampleLayer.duplicate();
+		this.mainFunction = $bind(this,this.setPaintedConversionData);
+	}
+	,setPaintedConversionData: function() {
+		if(this.conversionDataSet.length > 0) {
+			this.paintedConversionData = this.conversionDataSet.shift();
+			this.mainFunction = $bind(this,this.execute);
+		} else this.mergeLayer();
+	}
+	,execute: function() {
+		this.activeDocument.activeLayer = this.sampleLayer;
+		this.selectPixel(this.paintedConversionData.pixelX,this.paintedConversionData.pixelY);
+		this.activeDocument.selection.similar(0,false);
+		this.activeDocument.activeLayer = this.duplicatedPaintLayer;
+		var color = new SolidColor();
+		color.rgb.hexValue = this.paintedConversionData.rgbHexValue;
+		this.activeDocument.selection.fill(color);
+		this.activeDocument.selection.deselect();
+		this.mainFunction = $bind(this,this.setPaintedConversionData);
+	}
+	,selectPixel: function(x,y) {
+		this.activeDocument.selection.select([[x,y],[x + 1,y],[x + 1,y + 1],[x,y + 1]]);
+	}
+	,mergeLayer: function() {
+		this.leftTopPixelWasTransparent = this.fillPixel(0,0);
+		this.rightBottomPixelWasTransparent = this.fillPixel((this.activeDocument.width | 0) - 1,(this.activeDocument.height | 0) - 1);
+		this.activeDocument.selection.selectAll();
+		this.activeDocument.selection.copy(false);
+		this.activeDocument.activeLayer.remove();
+		this.activeDocument.activeLayer = this.sampleLayer;
+		this.activeDocument.selection.clear();
+		this.activeDocument.paste(false);
+		if(this.leftTopPixelWasTransparent) this.clearPixel(0,0);
+		if(this.rightBottomPixelWasTransparent) this.clearPixel((this.activeDocument.width | 0) - 1,(this.activeDocument.height | 0) - 1);
+		if(!(js.Boot.__cast(this.sampleLayer , ArtLayer)).isBackgroundLayer) this.sampleLayer.visible = false;
+		if(this.wasLocked) this.sampleLayer.allLocked = true;
+		this.mainFunction = $bind(this,this.finish);
+	}
+	,fillPixel: function(x,y) {
+		var sampleX;
+		if(x == this.colorSamplePosition.activeDocumentWidth) sampleX = x; else sampleX = x + 0.1;
+		var sampleY;
+		if(y == this.colorSamplePosition.activeDocumentWidth) sampleY = y; else sampleY = y + 0.1;
+		var isTransparent = true;
+		var colorSampler = this.activeDocument.colorSamplers.add([sampleX,sampleY]);
+		try {
+			var hexValue = colorSampler.color.rgb.hexValue;
+			isTransparent = false;
+		} catch( error ) {
+		}
+		colorSampler.remove();
+		if(!isTransparent) return false;
+		this.selectPixel(x,y);
+		var color = new SolidColor();
+		color.rgb.hexValue = "ff0000";
+		this.activeDocument.selection.fill(color);
+		this.activeDocument.selection.deselect();
+		return true;
+	}
+	,clearPixel: function(x,y) {
+		this.selectPixel(x,y);
+		this.activeDocument.selection.clear();
+		this.activeDocument.selection.deselect();
+	}
+	,finish: function() {
+	}
+	,isFinished: function() {
+		return Reflect.compareMethods(this.mainFunction,$bind(this,this.finish));
+	}
+	,__class__: jsx.palette_change._Converter.Painter
+};
+var PaletteChange = $hxClasses["PaletteChange"] = function() {
+	this.application = psd.Lib.app;
+	if(jsx.palette_change.PaletteMap.instance == null) this.paletteMap = jsx.palette_change.PaletteMap.instance = new jsx.palette_change.PaletteMap(); else this.paletteMap = jsx.palette_change.PaletteMap.instance;
+	this.converter = new jsx.palette_change.Converter();
+};
+PaletteChange.__name__ = ["PaletteChange"];
+PaletteChange.main = function() {
+};
+PaletteChange.prototype = {
+	getSerializedEvent: function() {
+		return haxe.Serializer.run(this.event);
+	}
+	,getInitialErrorEvent: function() {
+		var event;
+		if(this.application.documents.length == 0) event = common.PaletteChangeInitialErrorEvent.ERROR("Open document."); else event = common.PaletteChangeInitialErrorEvent.NONE;
+		return haxe.Serializer.run(event);
+	}
+	,run: function() {
+		this.mainFunction();
+	}
+	,execute: function(code,ignoreLockedLayer) {
+		this.event = common.PaletteChangeEvent.NONE;
+		this.paletteMap.convert(code);
+		this.converter.initialize(ignoreLockedLayer);
+		this.mainFunction = $bind(this,this.convert);
+	}
+	,convert: function() {
+		this.converter.run();
+		if(this.converter.isFinished()) this.event = common.PaletteChangeEvent.SUCCESS;
+	}
+	,interrupt: function() {
+		this.converter.interrupt();
+	}
+	,__class__: PaletteChange
+};
+if(!jsx.palette_change._PaletteChange) jsx.palette_change._PaletteChange = {};
+jsx.palette_change._PaletteChange.PaletteChangeTest = $hxClasses["jsx.palette_change._PaletteChange.PaletteChangeTest"] = function() { };
+jsx.palette_change._PaletteChange.PaletteChangeTest.__name__ = ["jsx","palette_change","_PaletteChange","PaletteChangeTest"];
+jsx.palette_change._PaletteChange.PaletteChangeTest.execute = function() {
+	var paletteChange = new PaletteChange();
+	{
+		var _g = haxe.Unserializer.run(paletteChange.getInitialErrorEvent());
+		switch(Type.enumIndex(_g)) {
+		case 1:
+			var message = _g[2];
+			js.Lib.alert(message);
+			return;
+		case 0:
+			"";
+			break;
+		}
+	}
+	var arr = [["FF0000"],["0000FF"]];
+	var code = haxe.Serializer.run(arr);
+	paletteChange.execute(code,true);
+	var _g1 = 0;
+	try {
+		while(_g1 < 100) {
+			var i = _g1++;
+			paletteChange.run();
+			var result = paletteChange.getSerializedEvent();
+			var event = haxe.Unserializer.run(result);
+			switch(event[1]) {
+			case 0:
+				"";
+				break;
+			case 1:
+				js.Lib.alert("success!");
+				throw "__break__";
+				break;
+			}
+		}
+	} catch( e ) { if( e != "__break__" ) throw e; }
+};
+jsx.palette_change.PaletteMap = $hxClasses["jsx.palette_change.PaletteMap"] = function() {
+};
+jsx.palette_change.PaletteMap.__name__ = ["jsx","palette_change","PaletteMap"];
+jsx.palette_change.PaletteMap.get_instance = function() {
+	if(jsx.palette_change.PaletteMap.instance == null) return jsx.palette_change.PaletteMap.instance = new jsx.palette_change.PaletteMap(); else return jsx.palette_change.PaletteMap.instance;
+};
+jsx.palette_change.PaletteMap.prototype = {
+	convert: function(code) {
+		var rgbHexValueSets = haxe.Unserializer.run(code);
+		var beforeRgbHexValueSet = rgbHexValueSets[0];
+		var afterRgbHexValueSet = rgbHexValueSets[1];
+		this.map = new haxe.ds.StringMap();
+		var _g1 = 0;
+		var _g = beforeRgbHexValueSet.length;
+		while(_g1 < _g) {
+			var i = _g1++;
+			var beforeRgbHexValue = beforeRgbHexValueSet[i];
+			var afterRgbHexValue = afterRgbHexValueSet[i];
+			if(beforeRgbHexValue == afterRgbHexValue) continue;
+			this.map.set(beforeRgbHexValue,afterRgbHexValue);
+			afterRgbHexValue;
+		}
+	}
+	,__class__: jsx.palette_change.PaletteMap
 };
 if(!jsx.util) jsx.util = {};
 jsx.util.Bounds = $hxClasses["jsx.util.Bounds"] = function(left,top,right,bottom) {
@@ -1239,6 +1814,7 @@ var Bool = $hxClasses.Bool = Boolean;
 Bool.__ename__ = ["Bool"];
 var Class = $hxClasses.Class = { __name__ : ["Class"]};
 var Enum = { };
+common.PixelColor.NOT_SET_POSITION = -1;
 haxe.Serializer.USE_CACHE = false;
 haxe.Serializer.USE_ENUM_INDEX = false;
 haxe.Serializer.BASE64 = "ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz0123456789%:";
@@ -1246,7 +1822,9 @@ haxe.Unserializer.DEFAULT_RESOLVER = Type;
 haxe.Unserializer.BASE64 = "ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz0123456789%:";
 haxe.ds.ObjectMap.count = 0;
 PixelColorSearch.ONCE_SCAN_PIXEL = 10;
+CanvasColorSampler.ONCE_SCAN_PIXEL = 10;
+jsx.palette_change._Converter.Scanner.ONCE_SCAN_PIXEL = 10;
 LayerTypeName.LAYER_SET = "LayerSet";
 psd.Lib.app = app;
 psd.UnitType.PIXEL = "px";
-PixelColorSearch.main();
+jsx.PaletteChangePack.main();

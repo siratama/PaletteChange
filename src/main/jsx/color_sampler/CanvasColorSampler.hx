@@ -17,6 +17,7 @@ import psd.Lib.app;
 
 using jsx.util.Bounds;
 
+@:keep
 @:native("CanvasColorSampler")
 class CanvasColorSampler
 {

@@ -15,6 +15,7 @@ import psd.Application;
 import psd.Document;
 import psd.Lib.app;
 
+@:keep
 @:native("PixelSelector")
 class PixelSelector
 {

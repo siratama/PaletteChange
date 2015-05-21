@@ -1,7 +1,5 @@
-(function () { "use strict";
-var $hxClasses = {},$estr = function() { return js.Boot.__string_rec(this,''); };
-var HxOverrides = function() { };
-$hxClasses["HxOverrides"] = HxOverrides;
+var $hxClasses = $hxClasses || {},$estr = function() { return js.Boot.__string_rec(this,''); };
+var HxOverrides = $hxClasses["HxOverrides"] = function() { };
 HxOverrides.__name__ = ["HxOverrides"];
 HxOverrides.dateStr = function(date) {
 	var m = date.getMonth() + 1;
@@ -55,10 +53,9 @@ HxOverrides.iter = function(a) {
 		return this.arr[this.cur++];
 	}};
 };
-var List = function() {
+var List = $hxClasses["List"] = function() {
 	this.length = 0;
 };
-$hxClasses["List"] = List;
 List.__name__ = ["List"];
 List.prototype = {
 	add: function(item) {
@@ -79,12 +76,10 @@ List.prototype = {
 	}
 	,__class__: List
 };
-var IMap = function() { };
-$hxClasses["IMap"] = IMap;
+var IMap = $hxClasses["IMap"] = function() { };
 IMap.__name__ = ["IMap"];
 Math.__name__ = ["Math"];
-var Reflect = function() { };
-$hxClasses["Reflect"] = Reflect;
+var Reflect = $hxClasses["Reflect"] = function() { };
 Reflect.__name__ = ["Reflect"];
 Reflect.field = function(o,field) {
 	try {
@@ -111,8 +106,7 @@ Reflect.deleteField = function(o,field) {
 	delete(o[field]);
 	return true;
 };
-var Std = function() { };
-$hxClasses["Std"] = Std;
+var Std = $hxClasses["Std"] = function() { };
 Std.__name__ = ["Std"];
 Std.string = function(s) {
 	return js.Boot.__string_rec(s,"");
@@ -120,10 +114,9 @@ Std.string = function(s) {
 Std.parseFloat = function(x) {
 	return parseFloat(x);
 };
-var StringBuf = function() {
+var StringBuf = $hxClasses["StringBuf"] = function() {
 	this.b = "";
 };
-$hxClasses["StringBuf"] = StringBuf;
 StringBuf.__name__ = ["StringBuf"];
 StringBuf.prototype = {
 	add: function(x) {
@@ -131,8 +124,7 @@ StringBuf.prototype = {
 	}
 	,__class__: StringBuf
 };
-var StringTools = function() { };
-$hxClasses["StringTools"] = StringTools;
+var StringTools = $hxClasses["StringTools"] = function() { };
 StringTools.__name__ = ["StringTools"];
 StringTools.fastCodeAt = function(s,index) {
 	return s.charCodeAt(index);
@@ -161,8 +153,7 @@ ValueType.TEnum = function(e) { var $x = ["TEnum",7,e]; $x.__enum__ = ValueType;
 ValueType.TUnknown = ["TUnknown",8];
 ValueType.TUnknown.toString = $estr;
 ValueType.TUnknown.__enum__ = ValueType;
-var Type = function() { };
-$hxClasses["Type"] = Type;
+var Type = $hxClasses["Type"] = function() { };
 Type.__name__ = ["Type"];
 Type.getClassName = function(c) {
 	var a = c.__name__;
@@ -227,10 +218,9 @@ Type["typeof"] = function(v) {
 		return ValueType.TUnknown;
 	}
 };
-var common = {};
-common.PixelColor = function() {
+var common = common || {};
+common.PixelColor = $hxClasses["common.PixelColor"] = function() {
 };
-$hxClasses["common.PixelColor"] = common.PixelColor;
 common.PixelColor.__name__ = ["common","PixelColor"];
 common.PixelColor.create = function(rgbHexValue,x,y) {
 	var pixelColor = new common.PixelColor();
@@ -271,8 +261,8 @@ common.PixelSelectorInitialErrorEvent.NONE = ["NONE",0];
 common.PixelSelectorInitialErrorEvent.NONE.toString = $estr;
 common.PixelSelectorInitialErrorEvent.NONE.__enum__ = common.PixelSelectorInitialErrorEvent;
 common.PixelSelectorInitialErrorEvent.ERROR = function(message) { var $x = ["ERROR",1,message]; $x.__enum__ = common.PixelSelectorInitialErrorEvent; $x.toString = $estr; return $x; };
-var haxe = {};
-haxe.Serializer = function() {
+var haxe = haxe || {};
+haxe.Serializer = $hxClasses["haxe.Serializer"] = function() {
 	this.buf = new StringBuf();
 	this.cache = new Array();
 	this.useCache = haxe.Serializer.USE_CACHE;
@@ -280,7 +270,6 @@ haxe.Serializer = function() {
 	this.shash = new haxe.ds.StringMap();
 	this.scount = 0;
 };
-$hxClasses["haxe.Serializer"] = haxe.Serializer;
 haxe.Serializer.__name__ = ["haxe","Serializer"];
 haxe.Serializer.run = function(v) {
 	var s = new haxe.Serializer();
@@ -529,7 +518,7 @@ haxe.Serializer.prototype = {
 	}
 	,__class__: haxe.Serializer
 };
-haxe.Unserializer = function(buf) {
+haxe.Unserializer = $hxClasses["haxe.Unserializer"] = function(buf) {
 	this.buf = buf;
 	this.length = buf.length;
 	this.pos = 0;
@@ -542,7 +531,6 @@ haxe.Unserializer = function(buf) {
 	}
 	this.setResolver(r);
 };
-$hxClasses["haxe.Unserializer"] = haxe.Unserializer;
 haxe.Unserializer.__name__ = ["haxe","Unserializer"];
 haxe.Unserializer.initCodes = function() {
 	var codes = new Array();
@@ -799,11 +787,10 @@ haxe.Unserializer.prototype = {
 	}
 	,__class__: haxe.Unserializer
 };
-haxe.ds = {};
-haxe.ds.IntMap = function() {
+if(!haxe.ds) haxe.ds = {};
+haxe.ds.IntMap = $hxClasses["haxe.ds.IntMap"] = function() {
 	this.h = { };
 };
-$hxClasses["haxe.ds.IntMap"] = haxe.ds.IntMap;
 haxe.ds.IntMap.__name__ = ["haxe","ds","IntMap"];
 haxe.ds.IntMap.__interfaces__ = [IMap];
 haxe.ds.IntMap.prototype = {
@@ -822,11 +809,10 @@ haxe.ds.IntMap.prototype = {
 	}
 	,__class__: haxe.ds.IntMap
 };
-haxe.ds.ObjectMap = function() {
+haxe.ds.ObjectMap = $hxClasses["haxe.ds.ObjectMap"] = function() {
 	this.h = { };
 	this.h.__keys__ = { };
 };
-$hxClasses["haxe.ds.ObjectMap"] = haxe.ds.ObjectMap;
 haxe.ds.ObjectMap.__name__ = ["haxe","ds","ObjectMap"];
 haxe.ds.ObjectMap.__interfaces__ = [IMap];
 haxe.ds.ObjectMap.prototype = {
@@ -844,10 +830,9 @@ haxe.ds.ObjectMap.prototype = {
 	}
 	,__class__: haxe.ds.ObjectMap
 };
-haxe.ds.StringMap = function() {
+haxe.ds.StringMap = $hxClasses["haxe.ds.StringMap"] = function() {
 	this.h = { };
 };
-$hxClasses["haxe.ds.StringMap"] = haxe.ds.StringMap;
 haxe.ds.StringMap.__name__ = ["haxe","ds","StringMap"];
 haxe.ds.StringMap.__interfaces__ = [IMap];
 haxe.ds.StringMap.prototype = {
@@ -866,12 +851,11 @@ haxe.ds.StringMap.prototype = {
 	}
 	,__class__: haxe.ds.StringMap
 };
-haxe.io = {};
-haxe.io.Bytes = function(length,b) {
+if(!haxe.io) haxe.io = {};
+haxe.io.Bytes = $hxClasses["haxe.io.Bytes"] = function(length,b) {
 	this.length = length;
 	this.b = b;
 };
-$hxClasses["haxe.io.Bytes"] = haxe.io.Bytes;
 haxe.io.Bytes.__name__ = ["haxe","io","Bytes"];
 haxe.io.Bytes.alloc = function(length) {
 	var a = new Array();
@@ -891,8 +875,7 @@ haxe.io.Bytes.prototype = {
 	}
 	,__class__: haxe.io.Bytes
 };
-haxe.io.Eof = function() { };
-$hxClasses["haxe.io.Eof"] = haxe.io.Eof;
+haxe.io.Eof = $hxClasses["haxe.io.Eof"] = function() { };
 haxe.io.Eof.__name__ = ["haxe","io","Eof"];
 haxe.io.Eof.prototype = {
 	toString: function() {
@@ -900,9 +883,8 @@ haxe.io.Eof.prototype = {
 	}
 	,__class__: haxe.io.Eof
 };
-var js = {};
-js.Boot = function() { };
-$hxClasses["js.Boot"] = js.Boot;
+var js = js || {};
+js.Boot = $hxClasses["js.Boot"] = function() { };
 js.Boot.__name__ = ["js","Boot"];
 js.Boot.getClass = function(o) {
 	if((o instanceof Array) && o.__enum__ == null) return Array; else return o.__class__;
@@ -1019,17 +1001,15 @@ js.Boot.__instanceof = function(o,cl) {
 js.Boot.__cast = function(o,t) {
 	if(js.Boot.__instanceof(o,t)) return o; else throw "Cannot cast " + Std.string(o) + " to " + Std.string(t);
 };
-js.Lib = function() { };
-$hxClasses["js.Lib"] = js.Lib;
+js.Lib = $hxClasses["js.Lib"] = function() { };
 js.Lib.__name__ = ["js","Lib"];
 js.Lib.alert = function(v) {
 	alert(js.Boot.__string_rec(v,""));
 };
-var PixelSelector = function() {
+var PixelSelector = $hxClasses["PixelSelector"] = function() {
 	this.application = psd.Lib.app;
 	this.colorSamplePosition = new jsx.util.ColorSamplePosition();
 };
-$hxClasses["PixelSelector"] = PixelSelector;
 PixelSelector.__name__ = ["PixelSelector"];
 PixelSelector.main = function() {
 };
@@ -1070,11 +1050,10 @@ PixelSelector.prototype = {
 	}
 	,__class__: PixelSelector
 };
-var jsx = {};
-jsx.color_picker = {};
-jsx.color_picker._PixelSelector = {};
-jsx.color_picker._PixelSelector.PixelSelectorTest = function() { };
-$hxClasses["jsx.color_picker._PixelSelector.PixelSelectorTest"] = jsx.color_picker._PixelSelector.PixelSelectorTest;
+var jsx = jsx || {};
+if(!jsx.color_picker) jsx.color_picker = {};
+if(!jsx.color_picker._PixelSelector) jsx.color_picker._PixelSelector = {};
+jsx.color_picker._PixelSelector.PixelSelectorTest = $hxClasses["jsx.color_picker._PixelSelector.PixelSelectorTest"] = function() { };
 jsx.color_picker._PixelSelector.PixelSelectorTest.__name__ = ["jsx","color_picker","_PixelSelector","PixelSelectorTest"];
 jsx.color_picker._PixelSelector.PixelSelectorTest.execute = function() {
 	var pixelSelecter = new PixelSelector();
@@ -1094,10 +1073,9 @@ jsx.color_picker._PixelSelector.PixelSelectorTest.execute = function() {
 	var event = haxe.Unserializer.run(result);
 	js.Lib.alert(event);
 };
-jsx.util = {};
-jsx.util.ColorSamplePosition = function() {
+if(!jsx.util) jsx.util = {};
+jsx.util.ColorSamplePosition = $hxClasses["jsx.util.ColorSamplePosition"] = function() {
 };
-$hxClasses["jsx.util.ColorSamplePosition"] = jsx.util.ColorSamplePosition;
 jsx.util.ColorSamplePosition.__name__ = ["jsx","util","ColorSamplePosition"];
 jsx.util.ColorSamplePosition.prototype = {
 	initialize: function(activeDocument) {
@@ -1112,12 +1090,11 @@ jsx.util.ColorSamplePosition.prototype = {
 	}
 	,__class__: jsx.util.ColorSamplePosition
 };
-jsx.util.LayersDisplay = function(layers) {
+jsx.util.LayersDisplay = $hxClasses["jsx.util.LayersDisplay"] = function(layers) {
 	this.layers = layers;
 	this.defaultLayerVisibleSet = [];
 	this.layersDisplayMap = new haxe.ds.ObjectMap();
 };
-$hxClasses["jsx.util.LayersDisplay"] = jsx.util.LayersDisplay;
 jsx.util.LayersDisplay.__name__ = ["jsx","util","LayersDisplay"];
 jsx.util.LayersDisplay.prototype = {
 	hide: function() {
@@ -1158,18 +1135,15 @@ jsx.util.LayersDisplay.prototype = {
 	}
 	,__class__: jsx.util.LayersDisplay
 };
-var LayerTypeName = function() { };
-$hxClasses["LayerTypeName"] = LayerTypeName;
+var LayerTypeName = $hxClasses["LayerTypeName"] = function() { };
 LayerTypeName.__name__ = ["LayerTypeName"];
-var psd = {};
-psd.Lib = function() { };
-$hxClasses["psd.Lib"] = psd.Lib;
+var psd = psd || {};
+psd.Lib = $hxClasses["psd.Lib"] = function() { };
 psd.Lib.__name__ = ["psd","Lib"];
 psd.Lib.writeln = function(message) {
 	$.writeln(message);
 };
-psd.UnitType = function() { };
-$hxClasses["psd.UnitType"] = psd.UnitType;
+psd.UnitType = $hxClasses["psd.UnitType"] = function() { };
 psd.UnitType.__name__ = ["psd","UnitType"];
 Math.NaN = Number.NaN;
 Math.NEGATIVE_INFINITY = Number.NEGATIVE_INFINITY;
@@ -1206,4 +1180,3 @@ LayerTypeName.LAYER_SET = "LayerSet";
 psd.Lib.app = app;
 psd.UnitType.PIXEL = "px";
 PixelSelector.main();
-})();

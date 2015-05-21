@@ -9,10 +9,13 @@ class JsxLoader
 	private var loaded:Bool;
 
 	private static var LOAD_JSX_SET = [
+		ClassName.PALETTE_CHANGE_PACK
+		/*
 		ClassName.CANVAS_COLOR_SAMPLER,
 		ClassName.PALETTE_CHANGE,
-		//ClassName.PIXEL_SELECTOR,
-		//ClassName.PIXEL_COLOR_SEARCH
+		ClassName.PIXEL_SELECTOR,
+		ClassName.PIXEL_COLOR_SEARCH
+		*/
 	];
 	private var loadIndex:Int;
 

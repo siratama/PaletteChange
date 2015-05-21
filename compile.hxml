@@ -8,12 +8,19 @@
 -debug
 
 --next
+-js deploy/jsx/PaletteChangePack.jsx
+-main jsx.PaletteChangePack
+-cp src/main
+-cp src/extern
+-D js-classic
+
+--next
 
 -js deploy/jsx/CanvasColorSampler.jsx
 -main jsx.color_sampler.CanvasColorSampler
 -cp src/main
 -cp src/extern
-$-D js-classic
+-D js-classic
 
 --next
 
