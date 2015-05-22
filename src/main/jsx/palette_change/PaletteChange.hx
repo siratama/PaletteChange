@@ -21,7 +21,7 @@ class PaletteChange
 	}
 
 	public static function main(){
-		PaletteChangeTest.execute();
+		//PaletteChangeTest.execute();
 	}
 
 	public function new()
@@ -49,7 +49,7 @@ class PaletteChange
 	{
 		event = PaletteChangeEvent.NONE;
 		paletteMap.convert(code);
-		converter.initialize(ignoreLockedLayer);
+		converter.initialize(ignoreLockedLayer, application.activeDocument, application.activeDocument.layers);
 		mainFunction = convert;
 	}
 	private function convert()
