@@ -1,5 +1,6 @@
 package jsx.palette_change;
 
+import psd.LayerTypeName;
 import jsx.util.ColorSamplePosition;
 import psd.Lib;
 import psd.UnitValue;
@@ -62,7 +63,12 @@ class Converter
 		{
 			sampleLayer = layers[sampleLayerIndex];
 
-			if(cast(sampleLayer, ArtLayer).isBackgroundLayer){
+			if(sampleLayer.typename == LayerTypeName.LAYER_SET)
+			{
+				js.Lib.alert("check");
+				sampleLayerIndex++;
+			}
+			else if(cast(sampleLayer, ArtLayer).isBackgroundLayer){
 				sampleLayerIndex++;
 			}
 			else if(ignoreLockedLayer && sampleLayer.allLocked){

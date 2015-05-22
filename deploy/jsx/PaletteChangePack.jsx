@@ -1395,7 +1395,10 @@ jsx.palette_change.Converter.prototype = {
 	,setSampleLayer: function() {
 		if(this.sampleLayerIndex < this.layers.length) {
 			this.sampleLayer = this.layers[this.sampleLayerIndex];
-			if((js.Boot.__cast(this.sampleLayer , ArtLayer)).isBackgroundLayer) this.sampleLayerIndex++; else if(this.ignoreLockedLayer && this.sampleLayer.allLocked) this.sampleLayerIndex++; else this.initializeToScan();
+			if(this.sampleLayer.typename == LayerTypeName.LAYER_SET) {
+				js.Lib.alert("check");
+				this.sampleLayerIndex++;
+			} else if((js.Boot.__cast(this.sampleLayer , ArtLayer)).isBackgroundLayer) this.sampleLayerIndex++; else if(this.ignoreLockedLayer && this.sampleLayer.allLocked) this.sampleLayerIndex++; else this.initializeToScan();
 		} else {
 			this.layersDisplay.restore();
 			this.mainFunction = $bind(this,this.finish);
@@ -1608,6 +1611,7 @@ var PaletteChange = $hxClasses["PaletteChange"] = function() {
 };
 PaletteChange.__name__ = ["PaletteChange"];
 PaletteChange.main = function() {
+	jsx.palette_change._PaletteChange.PaletteChangeTest.execute();
 };
 PaletteChange.prototype = {
 	getSerializedEvent: function() {
