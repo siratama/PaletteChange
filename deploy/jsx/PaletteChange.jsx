@@ -996,11 +996,11 @@ jsx.palette_change.Converter.prototype = {
 	run: function() {
 		this.mainFunction();
 	}
-	,initialize: function(ignoreLockedLayer) {
+	,initialize: function(ignoreLockedLayer,activeDocument,layers) {
 		this.ignoreLockedLayer = ignoreLockedLayer;
-		this.activeDocument = this.application.activeDocument;
-		this.layers = this.activeDocument.layers;
-		this.layersDisplay = new jsx.util.LayersDisplay(this.layers);
+		this.activeDocument = activeDocument;
+		this.layers = layers;
+		this.layersDisplay = new jsx.util.LayersDisplay(layers);
 		this.layersDisplay.hide();
 		this.sampleLayerIndex = 0;
 		this.mainFunction = $bind(this,this.setSampleLayer);
@@ -1008,14 +1008,22 @@ jsx.palette_change.Converter.prototype = {
 	,setSampleLayer: function() {
 		if(this.sampleLayerIndex < this.layers.length) {
 			this.sampleLayer = this.layers[this.sampleLayerIndex];
+			this.sampleLayerIndex++;
 			if(this.sampleLayer.typename == LayerTypeName.LAYER_SET) {
-				js.Lib.alert("check");
-				this.sampleLayerIndex++;
-			} else if((js.Boot.__cast(this.sampleLayer , ArtLayer)).isBackgroundLayer) this.sampleLayerIndex++; else if(this.ignoreLockedLayer && this.sampleLayer.allLocked) this.sampleLayerIndex++; else this.initializeToScan();
+				this.innerConverter = new jsx.palette_change.Converter();
+				this.innerConverter.initialize(this.ignoreLockedLayer,this.activeDocument,(js.Boot.__cast(this.sampleLayer , LayerSet)).layers);
+				this.mainFunction = $bind(this,this.runInnerConverter);
+			} else if((js.Boot.__cast(this.sampleLayer , ArtLayer)).isBackgroundLayer) {
+			} else if(this.ignoreLockedLayer && this.sampleLayer.allLocked) {
+			} else this.initializeToScan();
 		} else {
 			this.layersDisplay.restore();
 			this.mainFunction = $bind(this,this.finish);
 		}
+	}
+	,runInnerConverter: function() {
+		this.innerConverter.run();
+		if(this.innerConverter.isFinished()) this.mainFunction = $bind(this,this.setSampleLayer);
 	}
 	,initializeToScan: function() {
 		this.scanner.initialize(this.activeDocument,this.sampleLayer);
@@ -1036,7 +1044,6 @@ jsx.palette_change.Converter.prototype = {
 		if(this.painter.isFinished()) this.destroyToPaint();
 	}
 	,destroyToPaint: function() {
-		this.sampleLayerIndex++;
 		this.mainFunction = $bind(this,this.setSampleLayer);
 	}
 	,finish: function() {
@@ -1224,7 +1231,6 @@ var PaletteChange = $hxClasses["PaletteChange"] = function() {
 };
 PaletteChange.__name__ = ["PaletteChange"];
 PaletteChange.main = function() {
-	jsx.palette_change._PaletteChange.PaletteChangeTest.execute();
 };
 PaletteChange.prototype = {
 	getSerializedEvent: function() {
@@ -1241,7 +1247,7 @@ PaletteChange.prototype = {
 	,execute: function(code,ignoreLockedLayer) {
 		this.event = common.PaletteChangeEvent.NONE;
 		this.paletteMap.convert(code);
-		this.converter.initialize(ignoreLockedLayer);
+		this.converter.initialize(ignoreLockedLayer,this.application.activeDocument,this.application.activeDocument.layers);
 		this.mainFunction = $bind(this,this.convert);
 	}
 	,convert: function() {

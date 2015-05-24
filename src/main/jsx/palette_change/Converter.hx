@@ -1,9 +1,9 @@
 package jsx.palette_change;
 
+import psd.LayerSet;
 import psd.LayerTypeName;
 import jsx.util.ColorSamplePosition;
 import psd.Lib;
-import psd.UnitValue;
 import jsx.util.Bounds;
 import psd.ColorSampler;
 import psd.ArtLayer;
@@ -32,6 +32,7 @@ class Converter
 
 	private var sampleLayerIndex:Int;
 	private var sampleLayer:Layer;
+	private var innerConverter:Converter;
 
 	public function new()
 	{
@@ -45,11 +46,11 @@ class Converter
 	}
 
 	//
-	public function initialize(ignoreLockedLayer:Bool)
+	public function initialize(ignoreLockedLayer:Bool, activeDocument:Document, layers:Layers)
 	{
 		this.ignoreLockedLayer = ignoreLockedLayer;
-		activeDocument = application.activeDocument;
-		layers = activeDocument.layers;
+		this.activeDocument = activeDocument;
+		this.layers = layers;
 
 		layersDisplay = new LayersDisplay(layers);
 		layersDisplay.hide();
@@ -62,17 +63,17 @@ class Converter
 		if(sampleLayerIndex < layers.length)
 		{
 			sampleLayer = layers[sampleLayerIndex];
+			sampleLayerIndex++;
 
 			if(sampleLayer.typename == LayerTypeName.LAYER_SET)
 			{
-				js.Lib.alert("check");
-				sampleLayerIndex++;
+				innerConverter = new Converter();
+				innerConverter.initialize(ignoreLockedLayer, activeDocument ,cast(sampleLayer, LayerSet).layers);
+				mainFunction = runInnerConverter;
 			}
 			else if(cast(sampleLayer, ArtLayer).isBackgroundLayer){
-				sampleLayerIndex++;
 			}
 			else if(ignoreLockedLayer && sampleLayer.allLocked){
-				sampleLayerIndex++;
 			}
 			else{
 				initializeToScan();
@@ -81,6 +82,13 @@ class Converter
 		else{
 			layersDisplay.restore();
 			mainFunction = finish;
+		}
+	}
+	private function runInnerConverter()
+	{
+		innerConverter.run();
+		if(innerConverter.isFinished()){
+			mainFunction = setSampleLayer;
 		}
 	}
 
@@ -116,7 +124,6 @@ class Converter
 	}
 	private function destroyToPaint()
 	{
-		sampleLayerIndex++;
 		mainFunction = setSampleLayer;
 	}
 
