@@ -1064,6 +1064,7 @@ var PixelColorSearch = $hxClasses["PixelColorSearch"] = function() {
 };
 PixelColorSearch.__name__ = ["PixelColorSearch"];
 PixelColorSearch.main = function() {
+	jsx.color_picker._PixelColorSearch.PixelColorSearchTest.execute();
 };
 PixelColorSearch.prototype = {
 	getSerializedEvent: function() {
@@ -1074,7 +1075,7 @@ PixelColorSearch.prototype = {
 	}
 	,getInitialErrorEvent: function() {
 		var event;
-		if(this.application.documents.length == 0) event = common.PixelColorSearchInitialErrorEvent.ERROR("Open document."); else event = common.PixelColorSearchInitialErrorEvent.NONE;
+		if(this.application.documents.length == 0) event = common.PixelColorSearchInitialErrorEvent.ERROR("Open document."); else if(this.application.activeDocument.activeLayer.typename == LayerTypeName.LAYER_SET) event = common.PixelColorSearchInitialErrorEvent.ERROR("Select layer."); else event = common.PixelColorSearchInitialErrorEvent.NONE;
 		return haxe.Serializer.run(event);
 	}
 	,initialize: function(checkedRgbHexValue) {

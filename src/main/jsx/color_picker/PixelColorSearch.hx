@@ -1,5 +1,6 @@
 package jsx.color_picker;
 
+import psd.LayerTypeName;
 import common.PixelSelectorEvent.PixelSelectorInitialErrorEvent;
 import common.PixelColorSearchEvent;
 import jsx.util.Bounds;
@@ -39,7 +40,7 @@ class PixelColorSearch
 
 	public static function main()
 	{
-		//PixelColorSearchTest.execute();
+		PixelColorSearchTest.execute();
 	}
 	public function new()
 	{
@@ -55,6 +56,8 @@ class PixelColorSearch
 		var event =
 			(application.documents.length == 0) ?
 				PixelColorSearchInitialErrorEvent.ERROR("Open document."):
+			(application.activeDocument.activeLayer.typename == LayerTypeName.LAYER_SET) ?
+				PixelColorSearchInitialErrorEvent.ERROR("Select layer."):
 				PixelColorSearchInitialErrorEvent.NONE;
 
 		return Serializer.run(event);
