@@ -1,7 +1,7 @@
 PaletteChange
 =======
 
-図
+![ ](assets/readme/main.png)
 
 PaletteChange is a extension panel for Photoshop CC
 
@@ -30,7 +30,7 @@ All color of the selection layer (active layer) is picked out, and it's register
 
 選択したレイヤー(アクティブレイヤー)内のすべての色を抽出し、パレットに自動的に登録します。
 
-図
+![ ](assets/readme/feature_color_sampling.png)
 
 ### Canvas selection function with the palette color
 ### パレット色のキャンバス選択機能
@@ -39,7 +39,7 @@ When the color of the palette is chosen, the color in the canvas is selected.
 
 パレットの色を選択すると、キャンバス内でその色が使用されている箇所が選択されます。
 
-図
+![ ](assets/readme/feature_select_color.png)
 
 Note: It's selected based on the last information from which the color was picked out.
 When being not selected, it's necessary to pick out first.
@@ -71,7 +71,7 @@ I'll recommend to put a PaletteChange panel and an information window panel in t
 よって、PaletteChange パネルと情報ウインドウパネルは
 別々の位置に収める事をおすすめします。
 
-図
+![ ](assets/readme/recommend.png)
 
 ## The main use
 ## 主な用途
@@ -99,12 +99,12 @@ PaletteChange の処理速度はあまり早くはありません。大きな形
 
 For example in case of a figure of 100x100 pixel, the color sampling takes time for more than 5 minutes to 1 layer.
 (Time changes by the performance of the PC.)
-Therefore PaletteChange assumes use to a small pixelart.
 
 例えば、図のサイズが 100x100 px の場合、1レイヤーに付き、5分以上 色抽出に時間を要する事もあります。(PCの性能により時間は上下します)
-よって PaletteChange は小さめの図、ドット絵に対して実行する事を想定しています。
 
-図
+Therefore PaletteChange assumes use to a small pixelart.
+
+よって PaletteChange は小さめの図、ドット絵に対して実行する事を想定しています。
 
 Note: The color is sampled along the shape of the figure. The document size won't be a sample area.
 
@@ -177,10 +177,10 @@ Windows の場合「Ctrl + /」で、まとめてロックの切り替えがを�
 
 ### 背景レイヤーの扱い
 
-PaletteChange では「背景レイヤー」からの色の抽出は可能ですが、色の塗替えを行うことはできません。
-
 Photoshop デフォルト設定では、psd ファイル新規作成時、「背景レイヤー」が自動的に作成されます。
 「背景レイヤー」は通常のレイヤーとは異なり、「表示切り替え不可・ロックは外せない・着色が可能」なレイヤーとなります。
+
+PaletteChange では「背景レイヤー」からの色の抽出は可能ですが、「背景レイヤー」への色の着色は対応していません。
 
 
 ### Photoshop CC フレームアニメーション作成機能には不具合あり
