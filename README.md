@@ -76,11 +76,11 @@ Note: The color is sampled along the shape of the figure. The document size won'
 
 ![ ](assets/readme/how_to_use.png)
 
-### Scan button
+### Scan canvas button
 
 All color of the selection layer (active layer) is picked out and registered with a palette automatically.
 
-### Palette clear button
+### Clear palette button
 
 The color registered with a palette is erased completely.
 

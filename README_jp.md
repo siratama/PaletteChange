@@ -77,11 +77,11 @@ PaletteChange の処理速度はあまり早くはありません。大きな形
 
 ![ ](assets/readme/how_to_use.png)
 
-### SCAN ボタン
+### Scan canvas ボタン
 
 選択したレイヤー(アクティブレイヤー)内のすべての色を抽出し、パレットに自動的に登録します。
 
-### PALETTE CLEAR ボタン
+### Clear palette ボタン
 
 パレットに登録している色を全て消去します。
 
