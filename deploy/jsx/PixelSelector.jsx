@@ -1018,7 +1018,6 @@ var PixelSelector = $hxClasses["PixelSelector"] = function() {
 };
 PixelSelector.__name__ = ["PixelSelector"];
 PixelSelector.main = function() {
-	jsx.color_picker._PixelSelector.PixelSelectorTest.execute();
 };
 PixelSelector.prototype = {
 	getInitialErrorEvent: function() {

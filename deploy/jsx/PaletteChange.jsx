@@ -1231,7 +1231,6 @@ var PaletteChange = $hxClasses["PaletteChange"] = function() {
 };
 PaletteChange.__name__ = ["PaletteChange"];
 PaletteChange.main = function() {
-	jsx.palette_change._PaletteChange.PaletteChangeTest.execute();
 };
 PaletteChange.prototype = {
 	getSerializedEvent: function() {

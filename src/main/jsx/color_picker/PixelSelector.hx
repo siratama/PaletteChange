@@ -29,7 +29,7 @@ class PixelSelector
 
 	public static function main()
 	{
-		PixelSelectorTest.execute();
+		//PixelSelectorTest.execute();
 	}
 	public function new()
 	{

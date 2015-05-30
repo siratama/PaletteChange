@@ -9,9 +9,9 @@ PaletteChange は Photoshop CC 用拡張パネルです。
 
 全てのレイヤーに対し、キャンバス内で使用されているパレットAの色を パレットBの色に塗り替えます。
 
-## 動画
+## 紹介動画
 
-[PaletteChange 使用例: http://]()
+[http://youtu.be/35kD5Nu2WOw](http://youtu.be/35kD5Nu2WOw)
 
 ## ダウンロード
 

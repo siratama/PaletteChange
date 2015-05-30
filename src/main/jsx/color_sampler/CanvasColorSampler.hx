@@ -43,7 +43,7 @@ class CanvasColorSampler
 	}
 
 	public static function main(){
-		CanvasColorSamplerTest.execute();
+		//CanvasColorSamplerTest.execute();
 	}
 
 	public function new()

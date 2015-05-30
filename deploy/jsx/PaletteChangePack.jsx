@@ -1070,7 +1070,6 @@ var PixelColorSearch = $hxClasses["PixelColorSearch"] = function() {
 };
 PixelColorSearch.__name__ = ["PixelColorSearch"];
 PixelColorSearch.main = function() {
-	jsx.color_picker._PixelColorSearch.PixelColorSearchTest.execute();
 };
 PixelColorSearch.prototype = {
 	getSerializedEvent: function() {
@@ -1206,7 +1205,6 @@ var PixelSelector = $hxClasses["PixelSelector"] = function() {
 };
 PixelSelector.__name__ = ["PixelSelector"];
 PixelSelector.main = function() {
-	jsx.color_picker._PixelSelector.PixelSelectorTest.execute();
 };
 PixelSelector.prototype = {
 	getInitialErrorEvent: function() {
@@ -1278,7 +1276,6 @@ var CanvasColorSampler = $hxClasses["CanvasColorSampler"] = function() {
 };
 CanvasColorSampler.__name__ = ["CanvasColorSampler"];
 CanvasColorSampler.main = function() {
-	jsx.color_sampler._CanvasColorSampler.CanvasColorSamplerTest.execute();
 };
 CanvasColorSampler.prototype = {
 	getSerializedEvent: function() {
@@ -1633,7 +1630,6 @@ var PaletteChange = $hxClasses["PaletteChange"] = function() {
 };
 PaletteChange.__name__ = ["PaletteChange"];
 PaletteChange.main = function() {
-	jsx.palette_change._PaletteChange.PaletteChangeTest.execute();
 };
 PaletteChange.prototype = {
 	getSerializedEvent: function() {

@@ -22,7 +22,7 @@ class PaletteChange
 	}
 
 	public static function main(){
-		PaletteChangeTest.execute();
+		//PaletteChangeTest.execute();
 	}
 
 	public function new()

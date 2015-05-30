@@ -1010,7 +1010,6 @@ var CanvasColorSampler = $hxClasses["CanvasColorSampler"] = function() {
 };
 CanvasColorSampler.__name__ = ["CanvasColorSampler"];
 CanvasColorSampler.main = function() {
-	jsx.color_sampler._CanvasColorSampler.CanvasColorSamplerTest.execute();
 };
 CanvasColorSampler.prototype = {
 	getSerializedEvent: function() {

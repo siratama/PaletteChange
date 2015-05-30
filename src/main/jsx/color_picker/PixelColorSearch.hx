@@ -39,7 +39,7 @@ class PixelColorSearch
 
 	public static function main()
 	{
-		PixelColorSearchTest.execute();
+		//PixelColorSearchTest.execute();
 	}
 	public function new()
 	{
