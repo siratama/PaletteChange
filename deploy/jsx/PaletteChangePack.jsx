@@ -299,11 +299,17 @@ common.PixelSelectorEvent.SELECTED.__enum__ = common.PixelSelectorEvent;
 common.PixelSelectorEvent.UNSELECTED = ["UNSELECTED",1];
 common.PixelSelectorEvent.UNSELECTED.toString = $estr;
 common.PixelSelectorEvent.UNSELECTED.__enum__ = common.PixelSelectorEvent;
-common.PixelSelectorInitialErrorEvent = $hxClasses["common.PixelSelectorInitialErrorEvent"] = { __ename__ : ["common","PixelSelectorInitialErrorEvent"], __constructs__ : ["NONE","ERROR"] };
+common.PixelSelectorInitialErrorEvent = $hxClasses["common.PixelSelectorInitialErrorEvent"] = { __ename__ : ["common","PixelSelectorInitialErrorEvent"], __constructs__ : ["NONE","UNSELECTED_SINGLE_LAYER","SELECTED_LAYER_SET","ERROR"] };
 common.PixelSelectorInitialErrorEvent.NONE = ["NONE",0];
 common.PixelSelectorInitialErrorEvent.NONE.toString = $estr;
 common.PixelSelectorInitialErrorEvent.NONE.__enum__ = common.PixelSelectorInitialErrorEvent;
-common.PixelSelectorInitialErrorEvent.ERROR = function(message) { var $x = ["ERROR",1,message]; $x.__enum__ = common.PixelSelectorInitialErrorEvent; $x.toString = $estr; return $x; };
+common.PixelSelectorInitialErrorEvent.UNSELECTED_SINGLE_LAYER = ["UNSELECTED_SINGLE_LAYER",1];
+common.PixelSelectorInitialErrorEvent.UNSELECTED_SINGLE_LAYER.toString = $estr;
+common.PixelSelectorInitialErrorEvent.UNSELECTED_SINGLE_LAYER.__enum__ = common.PixelSelectorInitialErrorEvent;
+common.PixelSelectorInitialErrorEvent.SELECTED_LAYER_SET = ["SELECTED_LAYER_SET",2];
+common.PixelSelectorInitialErrorEvent.SELECTED_LAYER_SET.toString = $estr;
+common.PixelSelectorInitialErrorEvent.SELECTED_LAYER_SET.__enum__ = common.PixelSelectorInitialErrorEvent;
+common.PixelSelectorInitialErrorEvent.ERROR = function(message) { var $x = ["ERROR",3,message]; $x.__enum__ = common.PixelSelectorInitialErrorEvent; $x.toString = $estr; return $x; };
 var haxe = haxe || {};
 haxe.Serializer = $hxClasses["haxe.Serializer"] = function() {
 	this.buf = new StringBuf();
@@ -1200,11 +1206,12 @@ var PixelSelector = $hxClasses["PixelSelector"] = function() {
 };
 PixelSelector.__name__ = ["PixelSelector"];
 PixelSelector.main = function() {
+	jsx.color_picker._PixelSelector.PixelSelectorTest.execute();
 };
 PixelSelector.prototype = {
 	getInitialErrorEvent: function() {
 		var event;
-		if(this.application.documents.length == 0) event = common.PixelSelectorInitialErrorEvent.ERROR("Open document."); else event = common.PixelSelectorInitialErrorEvent.NONE;
+		if(this.application.documents.length == 0) event = common.PixelSelectorInitialErrorEvent.ERROR("Open document."); else if(this.application.activeDocument.activeLayer.typename == LayerTypeName.LAYER_SET) event = common.PixelSelectorInitialErrorEvent.SELECTED_LAYER_SET; else if(!jsx.util.ErrorChecker.isSelectedSingleLayer(this.application.activeDocument)) event = common.PixelSelectorInitialErrorEvent.UNSELECTED_SINGLE_LAYER; else event = common.PixelSelectorInitialErrorEvent.NONE;
 		return haxe.Serializer.run(event);
 	}
 	,execute: function(serializedPixelColor) {
@@ -1245,9 +1252,15 @@ jsx.color_picker._PixelSelector.PixelSelectorTest.execute = function() {
 	var pixelSelecter = new PixelSelector();
 	var errorEvent = haxe.Unserializer.run(pixelSelecter.getInitialErrorEvent());
 	switch(errorEvent[1]) {
-	case 1:
+	case 3:
 		var message = errorEvent[2];
 		js.Lib.alert(message);
+		return;
+	case 2:
+		js.Lib.alert("selected layer set");
+		return;
+	case 1:
+		js.Lib.alert("unselected any layer");
 		return;
 	case 0:
 		"";
@@ -1265,6 +1278,7 @@ var CanvasColorSampler = $hxClasses["CanvasColorSampler"] = function() {
 };
 CanvasColorSampler.__name__ = ["CanvasColorSampler"];
 CanvasColorSampler.main = function() {
+	jsx.color_sampler._CanvasColorSampler.CanvasColorSamplerTest.execute();
 };
 CanvasColorSampler.prototype = {
 	getSerializedEvent: function() {
@@ -1275,7 +1289,7 @@ CanvasColorSampler.prototype = {
 	}
 	,getInitialErrorEvent: function() {
 		var event;
-		if(this.application.documents.length == 0) event = common.CanvasColorSamplerInitialErrorEvent.ERROR("Open document."); else if(this.application.activeDocument.activeLayer.typename == LayerTypeName.LAYER_SET) event = common.CanvasColorSamplerInitialErrorEvent.ERROR("Select layer."); else event = common.CanvasColorSamplerInitialErrorEvent.NONE;
+		if(this.application.documents.length == 0) event = common.CanvasColorSamplerInitialErrorEvent.ERROR("Open document."); else if(this.application.activeDocument.activeLayer.typename == LayerTypeName.LAYER_SET) event = common.CanvasColorSamplerInitialErrorEvent.ERROR("Select layer."); else if(!jsx.util.ErrorChecker.isSelectedSingleLayer(this.application.activeDocument)) event = common.CanvasColorSamplerInitialErrorEvent.ERROR("Select single layer."); else event = common.CanvasColorSamplerInitialErrorEvent.NONE;
 		return haxe.Serializer.run(event);
 	}
 	,initialize: function() {
@@ -1619,6 +1633,7 @@ var PaletteChange = $hxClasses["PaletteChange"] = function() {
 };
 PaletteChange.__name__ = ["PaletteChange"];
 PaletteChange.main = function() {
+	jsx.palette_change._PaletteChange.PaletteChangeTest.execute();
 };
 PaletteChange.prototype = {
 	getSerializedEvent: function() {
@@ -1633,6 +1648,7 @@ PaletteChange.prototype = {
 		this.mainFunction();
 	}
 	,execute: function(code,ignoreLockedLayer) {
+		jsx.util.PrivateAPI.selectSingleLayer(this.application.activeDocument.activeLayer.name);
 		this.event = common.PaletteChangeEvent.NONE;
 		this.paletteMap.convert(code);
 		this.converter.initialize(ignoreLockedLayer,this.application.activeDocument,this.application.activeDocument.layers);
@@ -1668,23 +1684,20 @@ jsx.palette_change._PaletteChange.PaletteChangeTest.execute = function() {
 	var code = haxe.Serializer.run(arr);
 	paletteChange.execute(code,true);
 	var _g1 = 0;
-	try {
-		while(_g1 < 100) {
-			var i = _g1++;
-			paletteChange.run();
-			var result = paletteChange.getSerializedEvent();
-			var event = haxe.Unserializer.run(result);
-			switch(event[1]) {
-			case 0:
-				"";
-				break;
-			case 1:
-				js.Lib.alert("success!");
-				throw "__break__";
-				break;
-			}
+	while(_g1 < 100) {
+		var i = _g1++;
+		paletteChange.run();
+		var result = paletteChange.getSerializedEvent();
+		var event = haxe.Unserializer.run(result);
+		switch(event[1]) {
+		case 0:
+			"";
+			break;
+		case 1:
+			js.Lib.alert("success!");
+			return;
 		}
-	} catch( e ) { if( e != "__break__" ) throw e; }
+	}
 };
 jsx.palette_change.PaletteMap = $hxClasses["jsx.palette_change.PaletteMap"] = function() {
 };
@@ -1744,6 +1757,23 @@ jsx.util.ColorSamplePosition.prototype = {
 	}
 	,__class__: jsx.util.ColorSamplePosition
 };
+jsx.util.ErrorChecker = $hxClasses["jsx.util.ErrorChecker"] = function() { };
+jsx.util.ErrorChecker.__name__ = ["jsx","util","ErrorChecker"];
+jsx.util.ErrorChecker.isSelectedSingleLayer = function(activeDocument) {
+	var selectedSingleLayer = true;
+	var selection = activeDocument.selection;
+	try {
+		selection.deselect();
+		var x = 0;
+		var y = 0;
+		selection.select([[x,y],[x + 1,y],[x + 1,y + 1],[x,y + 1]]);
+		selection.similar(0,false);
+	} catch( error ) {
+		selectedSingleLayer = false;
+	}
+	selection.deselect();
+	return selectedSingleLayer;
+};
 jsx.util.LayersDisplay = $hxClasses["jsx.util.LayersDisplay"] = function(layers) {
 	this.layers = layers;
 	this.defaultLayerVisibleSet = [];
@@ -1789,6 +1819,20 @@ jsx.util.LayersDisplay.prototype = {
 	}
 	,__class__: jsx.util.LayersDisplay
 };
+jsx.util.PrivateAPI = $hxClasses["jsx.util.PrivateAPI"] = function() { };
+jsx.util.PrivateAPI.__name__ = ["jsx","util","PrivateAPI"];
+jsx.util.PrivateAPI.selectSingleLayer = function(layerName) {
+	var idslct = charIDToTypeID("slct");
+	var desc = new ActionDescriptor();
+	var idnull = charIDToTypeID("null");
+	var ref = new ActionReference();
+	var idLyr = charIDToTypeID("Lyr ");
+	ref.putName(idLyr,layerName);
+	desc.putReference(idnull,ref);
+	var idMkVs = charIDToTypeID("MkVs");
+	desc.putBoolean(idMkVs,false);
+	executeAction(idslct,desc,DialogModes.NO);
+};
 var LayerTypeName = $hxClasses["LayerTypeName"] = function() { };
 LayerTypeName.__name__ = ["LayerTypeName"];
 var psd = psd || {};
@@ -1799,6 +1843,18 @@ psd.Lib.writeln = function(message) {
 };
 psd.UnitType = $hxClasses["psd.UnitType"] = function() { };
 psd.UnitType.__name__ = ["psd","UnitType"];
+var psd_private = psd_private || {};
+if(!psd_private._CharacterID) psd_private._CharacterID = {};
+psd_private._CharacterID.CharacterID_Impl_ = $hxClasses["psd_private._CharacterID.CharacterID_Impl_"] = function() { };
+psd_private._CharacterID.CharacterID_Impl_.__name__ = ["psd_private","_CharacterID","CharacterID_Impl_"];
+psd_private.Lib = $hxClasses["psd_private.Lib"] = function() { };
+psd_private.Lib.__name__ = ["psd_private","Lib"];
+psd_private.Lib.charIDToTypeID = function(characterID) {
+	return charIDToTypeID(characterID);
+};
+psd_private.Lib.executeAction = function(typeId,actionDescriptor,dialogModes) {
+	executeAction(typeId,actionDescriptor,dialogModes);
+};
 var $_, $fid = 0;
 function $bind(o,m) { if( m == null ) return null; if( m.__id__ == null ) m.__id__ = $fid++; var f; if( o.hx__closures__ == null ) o.hx__closures__ = {}; else f = o.hx__closures__[m.__id__]; if( f == null ) { f = function(){ return f.method.apply(f.scope, arguments); }; f.scope = o; f.method = m; o.hx__closures__[m.__id__] = f; } return f; }
 Math.NaN = Number.NaN;
@@ -1838,4 +1894,8 @@ jsx.palette_change._Converter.Scanner.ONCE_SCAN_PIXEL = 10;
 LayerTypeName.LAYER_SET = "LayerSet";
 psd.Lib.app = app;
 psd.UnitType.PIXEL = "px";
+psd_private._CharacterID.CharacterID_Impl_.SELECT = "slct";
+psd_private._CharacterID.CharacterID_Impl_.NULL = "null";
+psd_private._CharacterID.CharacterID_Impl_.LAYER = "Lyr ";
+psd_private._CharacterID.CharacterID_Impl_.MKVS = "MkVs";
 jsx.PaletteChangePack.main();

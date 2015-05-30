@@ -99,6 +99,10 @@ class ColorPickerUI
 		switch(event)
 		{
 			case PixelSelectorRunnerEvent.NONE: return;
+			case PixelSelectorRunnerEvent.UNSELECTED_ANY_LAYER:
+				initializeToObserveToClickUI();
+			case PixelSelectorRunnerEvent.SELECTED_LAYER_SET:
+				initializeToObserveToClickUI();
 			case PixelSelectorRunnerEvent.ERROR(message):
 				initializeToObserveToClickUI();
 			case PixelSelectorRunnerEvent.FINISH(pixelSelectorEvent):

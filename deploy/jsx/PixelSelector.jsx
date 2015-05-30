@@ -256,11 +256,17 @@ common.PixelSelectorEvent.SELECTED.__enum__ = common.PixelSelectorEvent;
 common.PixelSelectorEvent.UNSELECTED = ["UNSELECTED",1];
 common.PixelSelectorEvent.UNSELECTED.toString = $estr;
 common.PixelSelectorEvent.UNSELECTED.__enum__ = common.PixelSelectorEvent;
-common.PixelSelectorInitialErrorEvent = $hxClasses["common.PixelSelectorInitialErrorEvent"] = { __ename__ : ["common","PixelSelectorInitialErrorEvent"], __constructs__ : ["NONE","ERROR"] };
+common.PixelSelectorInitialErrorEvent = $hxClasses["common.PixelSelectorInitialErrorEvent"] = { __ename__ : ["common","PixelSelectorInitialErrorEvent"], __constructs__ : ["NONE","UNSELECTED_SINGLE_LAYER","SELECTED_LAYER_SET","ERROR"] };
 common.PixelSelectorInitialErrorEvent.NONE = ["NONE",0];
 common.PixelSelectorInitialErrorEvent.NONE.toString = $estr;
 common.PixelSelectorInitialErrorEvent.NONE.__enum__ = common.PixelSelectorInitialErrorEvent;
-common.PixelSelectorInitialErrorEvent.ERROR = function(message) { var $x = ["ERROR",1,message]; $x.__enum__ = common.PixelSelectorInitialErrorEvent; $x.toString = $estr; return $x; };
+common.PixelSelectorInitialErrorEvent.UNSELECTED_SINGLE_LAYER = ["UNSELECTED_SINGLE_LAYER",1];
+common.PixelSelectorInitialErrorEvent.UNSELECTED_SINGLE_LAYER.toString = $estr;
+common.PixelSelectorInitialErrorEvent.UNSELECTED_SINGLE_LAYER.__enum__ = common.PixelSelectorInitialErrorEvent;
+common.PixelSelectorInitialErrorEvent.SELECTED_LAYER_SET = ["SELECTED_LAYER_SET",2];
+common.PixelSelectorInitialErrorEvent.SELECTED_LAYER_SET.toString = $estr;
+common.PixelSelectorInitialErrorEvent.SELECTED_LAYER_SET.__enum__ = common.PixelSelectorInitialErrorEvent;
+common.PixelSelectorInitialErrorEvent.ERROR = function(message) { var $x = ["ERROR",3,message]; $x.__enum__ = common.PixelSelectorInitialErrorEvent; $x.toString = $estr; return $x; };
 var haxe = haxe || {};
 haxe.Serializer = $hxClasses["haxe.Serializer"] = function() {
 	this.buf = new StringBuf();
@@ -1012,11 +1018,12 @@ var PixelSelector = $hxClasses["PixelSelector"] = function() {
 };
 PixelSelector.__name__ = ["PixelSelector"];
 PixelSelector.main = function() {
+	jsx.color_picker._PixelSelector.PixelSelectorTest.execute();
 };
 PixelSelector.prototype = {
 	getInitialErrorEvent: function() {
 		var event;
-		if(this.application.documents.length == 0) event = common.PixelSelectorInitialErrorEvent.ERROR("Open document."); else event = common.PixelSelectorInitialErrorEvent.NONE;
+		if(this.application.documents.length == 0) event = common.PixelSelectorInitialErrorEvent.ERROR("Open document."); else if(this.application.activeDocument.activeLayer.typename == LayerTypeName.LAYER_SET) event = common.PixelSelectorInitialErrorEvent.SELECTED_LAYER_SET; else if(!jsx.util.ErrorChecker.isSelectedSingleLayer(this.application.activeDocument)) event = common.PixelSelectorInitialErrorEvent.UNSELECTED_SINGLE_LAYER; else event = common.PixelSelectorInitialErrorEvent.NONE;
 		return haxe.Serializer.run(event);
 	}
 	,execute: function(serializedPixelColor) {
@@ -1059,9 +1066,15 @@ jsx.color_picker._PixelSelector.PixelSelectorTest.execute = function() {
 	var pixelSelecter = new PixelSelector();
 	var errorEvent = haxe.Unserializer.run(pixelSelecter.getInitialErrorEvent());
 	switch(errorEvent[1]) {
-	case 1:
+	case 3:
 		var message = errorEvent[2];
 		js.Lib.alert(message);
+		return;
+	case 2:
+		js.Lib.alert("selected layer set");
+		return;
+	case 1:
+		js.Lib.alert("unselected any layer");
 		return;
 	case 0:
 		"";
@@ -1089,6 +1102,23 @@ jsx.util.ColorSamplePosition.prototype = {
 		if(y == this.activeDocumentHeight) return y; else return y + 0.1;
 	}
 	,__class__: jsx.util.ColorSamplePosition
+};
+jsx.util.ErrorChecker = $hxClasses["jsx.util.ErrorChecker"] = function() { };
+jsx.util.ErrorChecker.__name__ = ["jsx","util","ErrorChecker"];
+jsx.util.ErrorChecker.isSelectedSingleLayer = function(activeDocument) {
+	var selectedSingleLayer = true;
+	var selection = activeDocument.selection;
+	try {
+		selection.deselect();
+		var x = 0;
+		var y = 0;
+		selection.select([[x,y],[x + 1,y],[x + 1,y + 1],[x,y + 1]]);
+		selection.similar(0,false);
+	} catch( error ) {
+		selectedSingleLayer = false;
+	}
+	selection.deselect();
+	return selectedSingleLayer;
 };
 jsx.util.LayersDisplay = $hxClasses["jsx.util.LayersDisplay"] = function(layers) {
 	this.layers = layers;

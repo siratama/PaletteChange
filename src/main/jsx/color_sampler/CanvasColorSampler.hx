@@ -16,6 +16,7 @@ import psd.Application;
 import psd.Lib.app;
 
 using jsx.util.Bounds;
+using jsx.util.ErrorChecker;
 
 @:keep
 @:native("CanvasColorSampler")
@@ -42,7 +43,7 @@ class CanvasColorSampler
 	}
 
 	public static function main(){
-		//CanvasColorSamplerTest.execute();
+		CanvasColorSamplerTest.execute();
 	}
 
 	public function new()
@@ -61,6 +62,8 @@ class CanvasColorSampler
 				CanvasColorSamplerInitialErrorEvent.ERROR("Open document."):
 			(application.activeDocument.activeLayer.typename == LayerTypeName.LAYER_SET) ?
 				CanvasColorSamplerInitialErrorEvent.ERROR("Select layer."):
+			(!application.activeDocument.isSelectedSingleLayer()) ?
+				CanvasColorSamplerInitialErrorEvent.ERROR("Select single layer."):
 				CanvasColorSamplerInitialErrorEvent.NONE;
 
 		return Serializer.run(event);

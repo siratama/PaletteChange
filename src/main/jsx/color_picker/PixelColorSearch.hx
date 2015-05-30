@@ -1,7 +1,6 @@
 package jsx.color_picker;
 
 import psd.LayerTypeName;
-import common.PixelSelectorEvent.PixelSelectorInitialErrorEvent;
 import common.PixelColorSearchEvent;
 import jsx.util.Bounds;
 import psd.ArtLayer;
@@ -156,13 +155,13 @@ private class PixelColorSearchTest
 	public static function execute()
 	{
 		var pixelColorSearch = new PixelColorSearch();
-		var errorEvent:PixelSelectorInitialErrorEvent = Unserializer.run(pixelColorSearch.getInitialErrorEvent());
+		var errorEvent:PixelColorSearchInitialErrorEvent = Unserializer.run(pixelColorSearch.getInitialErrorEvent());
 		switch(errorEvent)
 		{
-			case PixelSelectorInitialErrorEvent.ERROR(message):
+			case PixelColorSearchInitialErrorEvent.ERROR(message):
 				js.Lib.alert(message);
 				return;
-			case PixelSelectorInitialErrorEvent.NONE: "";
+			case PixelColorSearchInitialErrorEvent.NONE: "";
 		}
 
 		var checkedRgbHexColor = "FF0000";

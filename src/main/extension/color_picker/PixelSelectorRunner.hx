@@ -12,6 +12,8 @@ enum PixelSelectorRunnerEvent
 {
 	NONE;
 	ERROR(message:String);
+	UNSELECTED_ANY_LAYER;
+	SELECTED_LAYER_SET;
 	FINISH(pixelSelectorEvent:PixelSelectorEvent);
 }
 
@@ -63,6 +65,10 @@ class PixelSelectorRunner
 				{
 					case PixelSelectorInitialErrorEvent.ERROR(message):
 						destroy(PixelSelectorRunnerEvent.ERROR(message));
+					case PixelSelectorInitialErrorEvent.SELECTED_LAYER_SET:
+						destroy(PixelSelectorRunnerEvent.SELECTED_LAYER_SET);
+					case PixelSelectorInitialErrorEvent.UNSELECTED_SINGLE_LAYER:
+						destroy(PixelSelectorRunnerEvent.UNSELECTED_ANY_LAYER);
 					case PixelSelectorInitialErrorEvent.NONE:
 						select();
 				}

@@ -324,10 +324,14 @@ common.PixelSelectorEvent.SELECTED = ["SELECTED",0];
 common.PixelSelectorEvent.SELECTED.__enum__ = common.PixelSelectorEvent;
 common.PixelSelectorEvent.UNSELECTED = ["UNSELECTED",1];
 common.PixelSelectorEvent.UNSELECTED.__enum__ = common.PixelSelectorEvent;
-common.PixelSelectorInitialErrorEvent = $hxClasses["common.PixelSelectorInitialErrorEvent"] = { __ename__ : ["common","PixelSelectorInitialErrorEvent"], __constructs__ : ["NONE","ERROR"] };
+common.PixelSelectorInitialErrorEvent = $hxClasses["common.PixelSelectorInitialErrorEvent"] = { __ename__ : ["common","PixelSelectorInitialErrorEvent"], __constructs__ : ["NONE","UNSELECTED_SINGLE_LAYER","SELECTED_LAYER_SET","ERROR"] };
 common.PixelSelectorInitialErrorEvent.NONE = ["NONE",0];
 common.PixelSelectorInitialErrorEvent.NONE.__enum__ = common.PixelSelectorInitialErrorEvent;
-common.PixelSelectorInitialErrorEvent.ERROR = function(message) { var $x = ["ERROR",1,message]; $x.__enum__ = common.PixelSelectorInitialErrorEvent; return $x; };
+common.PixelSelectorInitialErrorEvent.UNSELECTED_SINGLE_LAYER = ["UNSELECTED_SINGLE_LAYER",1];
+common.PixelSelectorInitialErrorEvent.UNSELECTED_SINGLE_LAYER.__enum__ = common.PixelSelectorInitialErrorEvent;
+common.PixelSelectorInitialErrorEvent.SELECTED_LAYER_SET = ["SELECTED_LAYER_SET",2];
+common.PixelSelectorInitialErrorEvent.SELECTED_LAYER_SET.__enum__ = common.PixelSelectorInitialErrorEvent;
+common.PixelSelectorInitialErrorEvent.ERROR = function(message) { var $x = ["ERROR",3,message]; $x.__enum__ = common.PixelSelectorInitialErrorEvent; return $x; };
 var extension = {};
 extension.AbstractCSInterface = function(csInterface) {
 	this.csInterface = csInterface;
@@ -785,11 +789,17 @@ extension.color_picker.ColorPickerUI.prototype = {
 		switch(event[1]) {
 		case 0:
 			return;
+		case 2:
+			this.initializeToObserveToClickUI();
+			break;
+		case 3:
+			this.initializeToObserveToClickUI();
+			break;
 		case 1:
 			var message = event[2];
 			this.initializeToObserveToClickUI();
 			break;
-		case 2:
+		case 4:
 			var pixelSelectorEvent = event[2];
 			this.initializeToObserveToClickUI();
 			break;
@@ -979,11 +989,15 @@ extension.color_picker.PixelColorSearchRunner.prototype = {
 	}
 	,__class__: extension.color_picker.PixelColorSearchRunner
 };
-extension.color_picker.PixelSelectorRunnerEvent = $hxClasses["extension.color_picker.PixelSelectorRunnerEvent"] = { __ename__ : ["extension","color_picker","PixelSelectorRunnerEvent"], __constructs__ : ["NONE","ERROR","FINISH"] };
+extension.color_picker.PixelSelectorRunnerEvent = $hxClasses["extension.color_picker.PixelSelectorRunnerEvent"] = { __ename__ : ["extension","color_picker","PixelSelectorRunnerEvent"], __constructs__ : ["NONE","ERROR","UNSELECTED_ANY_LAYER","SELECTED_LAYER_SET","FINISH"] };
 extension.color_picker.PixelSelectorRunnerEvent.NONE = ["NONE",0];
 extension.color_picker.PixelSelectorRunnerEvent.NONE.__enum__ = extension.color_picker.PixelSelectorRunnerEvent;
 extension.color_picker.PixelSelectorRunnerEvent.ERROR = function(message) { var $x = ["ERROR",1,message]; $x.__enum__ = extension.color_picker.PixelSelectorRunnerEvent; return $x; };
-extension.color_picker.PixelSelectorRunnerEvent.FINISH = function(pixelSelectorEvent) { var $x = ["FINISH",2,pixelSelectorEvent]; $x.__enum__ = extension.color_picker.PixelSelectorRunnerEvent; return $x; };
+extension.color_picker.PixelSelectorRunnerEvent.UNSELECTED_ANY_LAYER = ["UNSELECTED_ANY_LAYER",2];
+extension.color_picker.PixelSelectorRunnerEvent.UNSELECTED_ANY_LAYER.__enum__ = extension.color_picker.PixelSelectorRunnerEvent;
+extension.color_picker.PixelSelectorRunnerEvent.SELECTED_LAYER_SET = ["SELECTED_LAYER_SET",3];
+extension.color_picker.PixelSelectorRunnerEvent.SELECTED_LAYER_SET.__enum__ = extension.color_picker.PixelSelectorRunnerEvent;
+extension.color_picker.PixelSelectorRunnerEvent.FINISH = function(pixelSelectorEvent) { var $x = ["FINISH",4,pixelSelectorEvent]; $x.__enum__ = extension.color_picker.PixelSelectorRunnerEvent; return $x; };
 extension.color_picker.PixelSelectorRunner = function() {
 	this.csInterface = extension.AbstractCSInterface.create();
 };
@@ -1018,9 +1032,15 @@ extension.color_picker.PixelSelectorRunner.prototype = {
 				var serializedEvent = _g[2];
 				var initialErrorEvent = haxe.Unserializer.run(serializedEvent);
 				switch(initialErrorEvent[1]) {
-				case 1:
+				case 3:
 					var message = initialErrorEvent[2];
 					this.destroy(extension.color_picker.PixelSelectorRunnerEvent.ERROR(message));
+					break;
+				case 2:
+					this.destroy(extension.color_picker.PixelSelectorRunnerEvent.SELECTED_LAYER_SET);
+					break;
+				case 1:
+					this.destroy(extension.color_picker.PixelSelectorRunnerEvent.UNSELECTED_ANY_LAYER);
 					break;
 				case 0:
 					this.select();

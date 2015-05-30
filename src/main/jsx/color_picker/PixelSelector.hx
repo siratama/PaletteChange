@@ -1,5 +1,6 @@
 package jsx.color_picker;
 
+import psd.LayerTypeName;
 import psd.ArtLayer;
 import jsx.util.LayersDisplay;
 import common.PixelColor;
@@ -15,6 +16,8 @@ import psd.Application;
 import psd.Document;
 import psd.Lib.app;
 
+using jsx.util.ErrorChecker;
+
 @:keep
 @:native("PixelSelector")
 class PixelSelector
@@ -26,7 +29,7 @@ class PixelSelector
 
 	public static function main()
 	{
-		//PixelSelectorTest.execute();
+		PixelSelectorTest.execute();
 	}
 	public function new()
 	{
@@ -38,10 +41,15 @@ class PixelSelector
 		var event =
 			(application.documents.length == 0) ?
 				PixelSelectorInitialErrorEvent.ERROR("Open document."):
+			(application.activeDocument.activeLayer.typename == LayerTypeName.LAYER_SET) ?
+				PixelSelectorInitialErrorEvent.SELECTED_LAYER_SET:
+			(!application.activeDocument.isSelectedSingleLayer()) ?
+				PixelSelectorInitialErrorEvent.UNSELECTED_SINGLE_LAYER:
 				PixelSelectorInitialErrorEvent.NONE;
 
 		return Serializer.run(event);
 	}
+
 	public function execute(serializedPixelColor:String):String
 	{
 		var pixelColor:PixelColor = Unserializer.run(serializedPixelColor);
@@ -97,6 +105,12 @@ private class PixelSelectorTest
 		{
 			case PixelSelectorInitialErrorEvent.ERROR(message):
 				js.Lib.alert(message);
+				return;
+			case PixelSelectorInitialErrorEvent.SELECTED_LAYER_SET:
+				js.Lib.alert("selected layer set");
+				return;
+			case PixelSelectorInitialErrorEvent.UNSELECTED_SINGLE_LAYER:
+				js.Lib.alert("unselected any layer");
 				return;
 			case PixelSelectorInitialErrorEvent.NONE: "";
 		}

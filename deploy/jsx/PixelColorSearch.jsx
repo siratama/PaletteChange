@@ -232,18 +232,6 @@ common.PixelColorSearchInitialErrorEvent.NONE = ["NONE",0];
 common.PixelColorSearchInitialErrorEvent.NONE.toString = $estr;
 common.PixelColorSearchInitialErrorEvent.NONE.__enum__ = common.PixelColorSearchInitialErrorEvent;
 common.PixelColorSearchInitialErrorEvent.ERROR = function(message) { var $x = ["ERROR",1,message]; $x.__enum__ = common.PixelColorSearchInitialErrorEvent; $x.toString = $estr; return $x; };
-common.PixelSelectorEvent = $hxClasses["common.PixelSelectorEvent"] = { __ename__ : ["common","PixelSelectorEvent"], __constructs__ : ["SELECTED","UNSELECTED"] };
-common.PixelSelectorEvent.SELECTED = ["SELECTED",0];
-common.PixelSelectorEvent.SELECTED.toString = $estr;
-common.PixelSelectorEvent.SELECTED.__enum__ = common.PixelSelectorEvent;
-common.PixelSelectorEvent.UNSELECTED = ["UNSELECTED",1];
-common.PixelSelectorEvent.UNSELECTED.toString = $estr;
-common.PixelSelectorEvent.UNSELECTED.__enum__ = common.PixelSelectorEvent;
-common.PixelSelectorInitialErrorEvent = $hxClasses["common.PixelSelectorInitialErrorEvent"] = { __ename__ : ["common","PixelSelectorInitialErrorEvent"], __constructs__ : ["NONE","ERROR"] };
-common.PixelSelectorInitialErrorEvent.NONE = ["NONE",0];
-common.PixelSelectorInitialErrorEvent.NONE.toString = $estr;
-common.PixelSelectorInitialErrorEvent.NONE.__enum__ = common.PixelSelectorInitialErrorEvent;
-common.PixelSelectorInitialErrorEvent.ERROR = function(message) { var $x = ["ERROR",1,message]; $x.__enum__ = common.PixelSelectorInitialErrorEvent; $x.toString = $estr; return $x; };
 var haxe = haxe || {};
 haxe.Serializer = $hxClasses["haxe.Serializer"] = function() {
 	this.buf = new StringBuf();

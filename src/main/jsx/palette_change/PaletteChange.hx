@@ -1,5 +1,6 @@
 package jsx.palette_change;
 
+import jsx.util.PrivateAPI;
 import haxe.Unserializer;
 import haxe.Serializer;
 import common.PaletteChangeEvent;
@@ -21,7 +22,7 @@ class PaletteChange
 	}
 
 	public static function main(){
-		//PaletteChangeTest.execute();
+		PaletteChangeTest.execute();
 	}
 
 	public function new()
@@ -47,6 +48,8 @@ class PaletteChange
 	 */
 	public function execute(code:String, ignoreLockedLayer:Bool)
 	{
+		PrivateAPI.selectSingleLayer(application.activeDocument.activeLayer.name);
+
 		event = PaletteChangeEvent.NONE;
 		paletteMap.convert(code);
 		converter.initialize(ignoreLockedLayer, application.activeDocument, application.activeDocument.layers);
@@ -95,7 +98,8 @@ private class PaletteChangeTest
 				case PaletteChangeEvent.NONE: "";
 				case PaletteChangeEvent.SUCCESS:
 					js.Lib.alert("success!");
-					break;
+					//break;
+					return;
 			}
 		}
 	}

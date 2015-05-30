@@ -1010,6 +1010,7 @@ var CanvasColorSampler = $hxClasses["CanvasColorSampler"] = function() {
 };
 CanvasColorSampler.__name__ = ["CanvasColorSampler"];
 CanvasColorSampler.main = function() {
+	jsx.color_sampler._CanvasColorSampler.CanvasColorSamplerTest.execute();
 };
 CanvasColorSampler.prototype = {
 	getSerializedEvent: function() {
@@ -1020,7 +1021,7 @@ CanvasColorSampler.prototype = {
 	}
 	,getInitialErrorEvent: function() {
 		var event;
-		if(this.application.documents.length == 0) event = common.CanvasColorSamplerInitialErrorEvent.ERROR("Open document."); else if(this.application.activeDocument.activeLayer.typename == LayerTypeName.LAYER_SET) event = common.CanvasColorSamplerInitialErrorEvent.ERROR("Select layer."); else event = common.CanvasColorSamplerInitialErrorEvent.NONE;
+		if(this.application.documents.length == 0) event = common.CanvasColorSamplerInitialErrorEvent.ERROR("Open document."); else if(this.application.activeDocument.activeLayer.typename == LayerTypeName.LAYER_SET) event = common.CanvasColorSamplerInitialErrorEvent.ERROR("Select layer."); else if(!jsx.util.ErrorChecker.isSelectedSingleLayer(this.application.activeDocument)) event = common.CanvasColorSamplerInitialErrorEvent.ERROR("Select single layer."); else event = common.CanvasColorSamplerInitialErrorEvent.NONE;
 		return haxe.Serializer.run(event);
 	}
 	,initialize: function() {
@@ -1151,6 +1152,23 @@ jsx.util.ColorSamplePosition.prototype = {
 		if(y == this.activeDocumentHeight) return y; else return y + 0.1;
 	}
 	,__class__: jsx.util.ColorSamplePosition
+};
+jsx.util.ErrorChecker = $hxClasses["jsx.util.ErrorChecker"] = function() { };
+jsx.util.ErrorChecker.__name__ = ["jsx","util","ErrorChecker"];
+jsx.util.ErrorChecker.isSelectedSingleLayer = function(activeDocument) {
+	var selectedSingleLayer = true;
+	var selection = activeDocument.selection;
+	try {
+		selection.deselect();
+		var x = 0;
+		var y = 0;
+		selection.select([[x,y],[x + 1,y],[x + 1,y + 1],[x,y + 1]]);
+		selection.similar(0,false);
+	} catch( error ) {
+		selectedSingleLayer = false;
+	}
+	selection.deselect();
+	return selectedSingleLayer;
 };
 jsx.util.LayersDisplay = $hxClasses["jsx.util.LayersDisplay"] = function(layers) {
 	this.layers = layers;

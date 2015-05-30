@@ -1231,6 +1231,7 @@ var PaletteChange = $hxClasses["PaletteChange"] = function() {
 };
 PaletteChange.__name__ = ["PaletteChange"];
 PaletteChange.main = function() {
+	jsx.palette_change._PaletteChange.PaletteChangeTest.execute();
 };
 PaletteChange.prototype = {
 	getSerializedEvent: function() {
@@ -1245,6 +1246,7 @@ PaletteChange.prototype = {
 		this.mainFunction();
 	}
 	,execute: function(code,ignoreLockedLayer) {
+		jsx.util.PrivateAPI.selectSingleLayer(this.application.activeDocument.activeLayer.name);
 		this.event = common.PaletteChangeEvent.NONE;
 		this.paletteMap.convert(code);
 		this.converter.initialize(ignoreLockedLayer,this.application.activeDocument,this.application.activeDocument.layers);
@@ -1280,23 +1282,20 @@ jsx.palette_change._PaletteChange.PaletteChangeTest.execute = function() {
 	var code = haxe.Serializer.run(arr);
 	paletteChange.execute(code,true);
 	var _g1 = 0;
-	try {
-		while(_g1 < 100) {
-			var i = _g1++;
-			paletteChange.run();
-			var result = paletteChange.getSerializedEvent();
-			var event = haxe.Unserializer.run(result);
-			switch(event[1]) {
-			case 0:
-				"";
-				break;
-			case 1:
-				js.Lib.alert("success!");
-				throw "__break__";
-				break;
-			}
+	while(_g1 < 100) {
+		var i = _g1++;
+		paletteChange.run();
+		var result = paletteChange.getSerializedEvent();
+		var event = haxe.Unserializer.run(result);
+		switch(event[1]) {
+		case 0:
+			"";
+			break;
+		case 1:
+			js.Lib.alert("success!");
+			return;
 		}
-	} catch( e ) { if( e != "__break__" ) throw e; }
+	}
 };
 jsx.palette_change.PaletteMap = $hxClasses["jsx.palette_change.PaletteMap"] = function() {
 };
@@ -1401,6 +1400,20 @@ jsx.util.LayersDisplay.prototype = {
 	}
 	,__class__: jsx.util.LayersDisplay
 };
+jsx.util.PrivateAPI = $hxClasses["jsx.util.PrivateAPI"] = function() { };
+jsx.util.PrivateAPI.__name__ = ["jsx","util","PrivateAPI"];
+jsx.util.PrivateAPI.selectSingleLayer = function(layerName) {
+	var idslct = charIDToTypeID("slct");
+	var desc = new ActionDescriptor();
+	var idnull = charIDToTypeID("null");
+	var ref = new ActionReference();
+	var idLyr = charIDToTypeID("Lyr ");
+	ref.putName(idLyr,layerName);
+	desc.putReference(idnull,ref);
+	var idMkVs = charIDToTypeID("MkVs");
+	desc.putBoolean(idMkVs,false);
+	executeAction(idslct,desc,DialogModes.NO);
+};
 var LayerTypeName = $hxClasses["LayerTypeName"] = function() { };
 LayerTypeName.__name__ = ["LayerTypeName"];
 var psd = psd || {};
@@ -1411,6 +1424,18 @@ psd.Lib.writeln = function(message) {
 };
 psd.UnitType = $hxClasses["psd.UnitType"] = function() { };
 psd.UnitType.__name__ = ["psd","UnitType"];
+var psd_private = psd_private || {};
+if(!psd_private._CharacterID) psd_private._CharacterID = {};
+psd_private._CharacterID.CharacterID_Impl_ = $hxClasses["psd_private._CharacterID.CharacterID_Impl_"] = function() { };
+psd_private._CharacterID.CharacterID_Impl_.__name__ = ["psd_private","_CharacterID","CharacterID_Impl_"];
+psd_private.Lib = $hxClasses["psd_private.Lib"] = function() { };
+psd_private.Lib.__name__ = ["psd_private","Lib"];
+psd_private.Lib.charIDToTypeID = function(characterID) {
+	return charIDToTypeID(characterID);
+};
+psd_private.Lib.executeAction = function(typeId,actionDescriptor,dialogModes) {
+	executeAction(typeId,actionDescriptor,dialogModes);
+};
 var $_, $fid = 0;
 function $bind(o,m) { if( m == null ) return null; if( m.__id__ == null ) m.__id__ = $fid++; var f; if( o.hx__closures__ == null ) o.hx__closures__ = {}; else f = o.hx__closures__[m.__id__]; if( f == null ) { f = function(){ return f.method.apply(f.scope, arguments); }; f.scope = o; f.method = m; o.hx__closures__[m.__id__] = f; } return f; }
 Math.NaN = Number.NaN;
@@ -1447,4 +1472,8 @@ jsx.palette_change._Converter.Scanner.ONCE_SCAN_PIXEL = 10;
 LayerTypeName.LAYER_SET = "LayerSet";
 psd.Lib.app = app;
 psd.UnitType.PIXEL = "px";
+psd_private._CharacterID.CharacterID_Impl_.SELECT = "slct";
+psd_private._CharacterID.CharacterID_Impl_.NULL = "null";
+psd_private._CharacterID.CharacterID_Impl_.LAYER = "Lyr ";
+psd_private._CharacterID.CharacterID_Impl_.MKVS = "MkVs";
 PaletteChange.main();
