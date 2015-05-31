@@ -6,7 +6,7 @@ Document Language [English] | [[Japanese]](README_jp.md)
 
 PaletteChange is a extension panel for Photoshop CC
 
-It's repainted in Palette B Colors from Palette C Colors which is being used by canvas to all layers.
+It's repainted in Palette B Colors from Palette A Colors which is being used by canvas to all layers.
 
 ## Introduction movie
 
