@@ -17,7 +17,8 @@ PaletteChange は Photoshop CC 用拡張パネルです。
 
 * [PaletteChange.zxp](https://raw.github.com/siratama/PaletteChange/master/download/PaletteChange.zxp)
 
-Windows の場合、右クリックから「リンク先のコンテンツを保存」を選択で保存できます。インストールには別途 [Adobe Extension Manager CC(無料)](http://www.adobe.com/jp/exchange/em_download/)が必要です。
+Windows の場合、右クリックから「リンク先のコンテンツを保存」を選択で保存できます。
+インストールには別途 [Extension Manager Command Line tool(ExManCmd)](https://www.adobeexchange.com/resources/28)が必要です。
 
 ## 機能
 

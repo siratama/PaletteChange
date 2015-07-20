@@ -16,7 +16,8 @@ It's repainted in Palette B Colors from Palette A Colors which is being used by 
 
 * [PaletteChange.zxp](https://raw.github.com/siratama/PaletteChange/master/download/PaletteChange.zxp)
 
-In the case of Windows, it can save from a right-click. [Adobe Extension Manager CC(Free)](http://www.adobe.com/exchange/em_download/) is required in order to install. 
+In the case of Windows, it can save from a right-click. 
+[Extension Manager Command Line tool(ExManCmd)](https://www.adobeexchange.com/resources/28) is required in order to install. 
 
 ## Feature
 
